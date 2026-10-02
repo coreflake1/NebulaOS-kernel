@@ -21,4 +21,22 @@ config FB_USING_CACHABLE
 	default n
 	help
 		Using Cacheable mmap to userspace.
+config FB_INGENIC_PAN_VSYNC_GATE
+	bool "wait for a real vsync event before applying a pan_display frame switch"
+	depends on FB_INGENIC_STAGE
+	default n
+	help
+		DISPLAY-V1 prototype (NebulaOS display hardware analysis mission,
+		2026-08-01): dpu_ctrl_rdma_change(), the function FBIOPAN_DISPLAY
+		calls to switch the active scanout frame, never waits for the
+		in-flight frame's scan-out to complete before writing the new
+		frame's address - this can tear if userspace pans faster than the
+		display refreshes. When enabled, ingenicfb_pan_display() waits
+		(bounded, with a safe immediate-update fallback on timeout) for
+		the next real vsync event before applying the switch, reusing the
+		same vsync waitqueue and IRQ event that already drives
+		FBIO_WAITFORVSYNC. Disabled by default - never enable this for a
+		production build until live hardware testing confirms it does not
+		regress the working display path (see
+		docs/NEBULAOS_DISPLAY_LIVE_QUALIFICATION_PLAN.md).
 

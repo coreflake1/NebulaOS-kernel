@@ -13,6 +13,7 @@
 #ifndef __JZ_FB_H__
 #define __JZ_FB_H__
 #include <linux/fb.h>
+#include <linux/atomic.h>
 #include <libdmmu.h>
 
 #include "jz_dsim.h"
@@ -89,6 +90,19 @@ struct ingenicfb_device {
 	int vsync_skip_ratio;
 
 	struct ingenicfb_timestamp timestamp;
+
+#ifdef CONFIG_FB_INGENIC_PAN_VSYNC_GATE
+	/* DISPLAY-V1 prototype (2026-08-01) - a monotonic counter bumped on
+	 * every real vsync IRQ event (ingenicfb_set_vsync_value()),
+	 * independent of struct ingenicfb_timestamp's rp/wp ring buffer so
+	 * this internal gate never interferes with userspace's own
+	 * FBIO_WAITFORVSYNC consumption of that buffer. ingenicfb_pan_display()
+	 * waits on vsync_wq for this to advance past its value at entry. */
+	atomic_t pan_vsync_seq;
+	atomic_t pan_vsync_gated_count;
+	atomic_t pan_vsync_timeout_count;
+	atomic_t pan_vsync_invalid_count;
+#endif
 
 	struct mutex lock;
 	struct mutex suspend_lock;
