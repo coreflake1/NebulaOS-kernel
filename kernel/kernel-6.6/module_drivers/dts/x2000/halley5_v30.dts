@@ -505,7 +505,8 @@
 	pinctrl-2 = <&rtc32k_disable>;
 
 	sd-uhs-sdr104;
-	cap-mmc-highspeed;
+	cap-sd-highspeed;
+	cap-sdio-irq;
 	max-frequency = <100000000>;
 	bus-width = <4>;
 	voltage-ranges = <1800 3300>;
