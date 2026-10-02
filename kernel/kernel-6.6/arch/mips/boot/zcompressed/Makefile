@@ -38,7 +38,7 @@ strip-flags	= $(addprefix --remove-section=,$(drop-sections))
 $(obj)/vmlinux.bin.gz: vmlinux
 	rm -f $(obj)/vmlinux.bin.gz
 	$(OBJCOPY) -O binary $(strip-flags) vmlinux $(obj)/vmlinux.bin
-	gzip -v9f $(obj)/vmlinux.bin
+	gzip -nv9f $(obj)/vmlinux.bin
 
 $(obj)/head.o: $(obj)/head.S $(obj)/vmlinux.bin.gz vmlinux
 	echo $(CC)
