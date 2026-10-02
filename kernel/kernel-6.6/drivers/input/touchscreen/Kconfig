@@ -1410,4 +1410,65 @@ config TOUCHSCREEN_HIMAX_HX83112B
 	  To compile this driver as a module, choose M here: the
 	  module will be called himax_hx83112b.
 
+config TOUCHSCREEN_NS2009_FINAL_QUALIFICATION
+	bool "genuinely one-shot irq-assist qualification mode for pendown-gpios (TOUCH-FINAL-QUALIFICATION)"
+	depends on TOUCHSCREEN_NS2009
+	default n
+	help
+	  TOUCH-FINAL-QUALIFICATION (display/touch investigation mission
+	  follow-on, 2026-08-02+): a NEW, separate driver from the existing
+	  CONFIG_TOUCHSCREEN_NS2009_QUALIFICATION (which this option does
+	  not modify, depend on, or interact with in any way), informed by
+	  a real, live finding from that driver's own irq-observe mode: a
+	  plain FALLING-edge IRQ that only counts/handles events (without
+	  masking the line for the whole contact) hit a real bounce storm
+	  on real hardware - 492 raw IRQ events across only 56 touch/
+	  release cycles, because GPIO79 bounces heavily under edge-
+	  triggered sampling during actual contact.
+
+	  Adds a runtime mode switch (debugfs
+	  ns2009_final_qualification/mode, one of "poll-only" /
+	  "irq-assist", plus "reset-counters" as a write-only command - no
+	  other value is ever accepted) defaulting to poll-only at every
+	  boot, with NO GPIO IRQ requested under any circumstance until a
+	  debugfs client explicitly writes "irq-assist":
+
+	    poll-only  - byte-for-byte identical to the existing,
+	                 unmodified 30ms poll path. No GPIO IRQ requested.
+	    irq-assist - genuinely one-shot: a real hard-IRQ handler masks
+	                 the falling-edge IRQ (disable_irq_nosync())
+	                 immediately, before anything else runs, and that
+	                 mask stays in effect for the ENTIRE duration of
+	                 the contact (not just until a threaded handler
+	                 returns, unlike IRQF_ONESHOT's narrower
+	                 guarantee) - so no further bounce edge can ever
+	                 generate another interrupt for that contact. The
+	                 threaded handler records exactly one logical
+	                 touch-IRQ activation and promotes the existing,
+	                 unmodified poll path to its normal ~30ms cadence
+	                 for the duration. Release requires the pin to read
+	                 idle-HIGH on three separate, consecutive poll
+	                 ticks (not just one) before the IRQ is re-armed -
+	                 debounces the release itself. A ~250ms safety poll
+	                 stays active while idle as a fallback net.
+
+	  A separate, independent debugfs field ("persistent_mode") records
+	  a requested mode in kernel memory for this boot only - never
+	  itself written to disk, and never auto-applied by this driver; a
+	  later, separate piece of work reads/writes it and then explicitly
+	  writes "mode" itself once its own boot-health gates pass.
+
+	  Any of: an IRQ request failure, an unexpected IRQ while the line
+	  is already masked, a release-confirmation timeout, a touch-worker
+	  scheduling failure, an IRQ storm (>50 logical activations/rolling
+	  1s - expected to be far less likely to trip than under the older
+	  driver's own irq-observe mode, since bounce can no longer reach
+	  this handler at all), or repeated immediate re-arm failure
+	  permanently falls the device back to poll-only for the remainder
+	  of that boot - one ratelimited kernel warning only, never
+	  per-event log spam. Fully independent of, and never blocks, any
+	  other qualification feature (touch or otherwise).
+
+	  Disabled by default. If unsure, say N.
+
 endif

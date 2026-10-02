@@ -17,6 +17,44 @@
  * GNU General Public License for more details.
  */
 
+#ifdef CONFIG_TOUCHSCREEN_NS2009_FINAL_QUALIFICATION
+/* NS2009_FINAL_QUALIFICATION (display/touch investigation mission
+ * follow-on, 2026-08-02+): forward declarations only - the real driver
+ * lives entirely in the new, separate ns2009_final_qualification.c (see
+ * that file's own header comment for the full design). Deliberately not a
+ * shared header under module_drivers/include/ for two one-line extern
+ * declarations, matching this project's own established precedent for a
+ * single cross-file symbol reference (pwm-ingenic-v2.c /
+ * nebulaos_backlight_probe_diag.c, see
+ * docs/NEBULAOS_BACKLIGHT_DIAGNOSTIC_PLAN.md) - except here both files are
+ * compiled into the SAME module/built-in object (see the composite
+ * ns2009-y Makefile lines this feature adds), so plain, non-exported
+ * "extern" is correct and sufficient; no EXPORT_SYMBOL_GPL() is needed or
+ * added anywhere by this feature.
+ *
+ * Deliberately placed here, at the very top of the file before any
+ * #include, and never touched again below - this is the ONLY thing this
+ * feature adds outside of a single opaque struct field (see struct
+ * ns2009_data below) and a single two-line hook at the very end of
+ * ns2009_ts_poll(). This keeps this patch's footprint far away from every
+ * insertion point the completely separate, pre-existing
+ * CONFIG_TOUCHSCREEN_NS2009_QUALIFICATION patch
+ * (scripts/build/patches/touch-qualification-unified.patch) uses in this
+ * same file, so the two patches apply cleanly in either order - see
+ * scripts/build/touch-final-qualification-variant.sh's header comment for
+ * the direct verification this project performed of both apply orders. */
+#include <linux/types.h>
+
+struct i2c_client;
+struct input_dev;
+struct gpio_desc;
+
+void *ns2009_nfq_probe(struct i2c_client *client, struct input_dev *input,
+			struct gpio_desc *pendown_gpio,
+			unsigned int normal_poll_interval_ms);
+void ns2009_nfq_on_poll(void *handle, bool pen_down);
+#endif
+
 #include <linux/kernel.h>
 #include <linux/module.h>
 #include <linux/input.h>
@@ -54,6 +92,18 @@ struct ns2009_data {
 	struct touchscreen_properties	prop;
 
 	bool				pen_down;
+
+#ifdef CONFIG_TOUCHSCREEN_NS2009_FINAL_QUALIFICATION
+	/* NS2009_FINAL_QUALIFICATION: fully opaque handle - no struct-layout
+	 * dependency between this file and ns2009_final_qualification.c
+	 * (deliberate: keeps this feature's ns2009.c footprint to a single
+	 * field, see the forward-declaration block near the top of this
+	 * file). NULL until the first poll tick lazily initializes it (see
+	 * ns2009_ts_poll() below); every ns2009_nfq_*() call is written to
+	 * tolerate a NULL/inert handle safely, so this can never affect
+	 * ns2009_ts_probe()'s own success or the existing poll path. */
+	void				*nfq_handle;
+#endif
 
 	/* ke-mainline-klipper touch mission: optional "pendown-gpios" DT
 	 * property, matching stock's real (disassembly-proven) touch-detect
@@ -145,6 +195,18 @@ static void ns2009_ts_poll(struct input_dev *input_dev)
 	ret = ns2009_ts_report(data);
 	if (ret)
 		dev_err(&input_dev->dev, "Poll touch data failed: %d\n", ret);
+
+#ifdef CONFIG_TOUCHSCREEN_NS2009_FINAL_QUALIFICATION
+	/* Lazy first-tick init - input registration has already succeeded
+	 * by the time any poll tick can run, so data->input is always valid
+	 * here. Boot-time behavior is unaffected either way: no GPIO IRQ is
+	 * ever requested until a debugfs client explicitly asks for
+	 * "irq-assist" (see ns2009_final_qualification.c). */
+	if (unlikely(!data->nfq_handle))
+		data->nfq_handle = ns2009_nfq_probe(data->client, data->input,
+						     data->pendown_gpio, POLL_INTERVAL);
+	ns2009_nfq_on_poll(data->nfq_handle, data->pen_down);
+#endif
 }
 
 static void ns2009_ts_config_input_dev(struct ns2009_data *data)

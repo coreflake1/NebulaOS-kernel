@@ -93,6 +93,13 @@ obj-$(CONFIG_TOUCHSCREEN_TOUCHWIN)	+= touchwin.o
 obj-$(CONFIG_TOUCHSCREEN_TS4800)	+= ts4800-ts.o
 obj-$(CONFIG_TOUCHSCREEN_TSC_SERIO)	+= tsc40.o
 obj-$(CONFIG_TOUCHSCREEN_NS2009)	+= ns2009.o
+# NS2009_FINAL_QUALIFICATION (display/touch investigation mission
+# follow-on, 2026-08-02+): compiled into the SAME module/built-in object as
+# ns2009.o, never as an independent loadable module - see
+# ns2009_final_qualification.c's own header comment for why this matters
+# for its plain (non-EXPORT_SYMBOL) extern linkage to ns2009.o.
+ns2009-y := ns2009.o
+ns2009-$(CONFIG_TOUCHSCREEN_NS2009_FINAL_QUALIFICATION) += ns2009_final_qualification.o
 obj-$(CONFIG_TOUCHSCREEN_TSC200X_CORE)	+= tsc200x-core.o
 obj-$(CONFIG_TOUCHSCREEN_TSC2004)	+= tsc2004.o
 obj-$(CONFIG_TOUCHSCREEN_TSC2005)	+= tsc2005.o
