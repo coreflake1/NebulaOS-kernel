@@ -990,3 +990,27 @@
 &mscaler1 {
 	status = "disabled";
 };
+/* NEBULAOS_BACKLIGHT_FINAL_CONTROLLER_VARIANT_DTS_BEGIN */
+/* Post-incident backlight controller redesign (2026-08-02+) -
+ * DISPLAY-B-FINAL kernel-owned exclusive owner of GPC0 (as GPIO
+ * and as PWM channel 0's peripheral function) and the candidate
+ * enable-GPIO PC22. Deliberately does NOT touch the &pwm node's
+ * own pinctrl-0 above (that edit is what caused a real incident -
+ * see nebulaos_backlight_final_controller.c's file header). GPC0's
+ * PWM-function pinmux is instead selected dynamically, only by
+ * this driver's own code, only at the moment pwm-active is
+ * actually entered - the pinctrl-0 group below is named
+ * "pwm-active", deliberately not "default"/"init", so the
+ * device core's automatic pinctrl_bind_pins() never selects it. */
+/ {
+	nebulaos_backlight_final: nebulaos_backlight_final {
+		compatible = "nebulaos,backlight-final-controller";
+		pwms = <&pwm 0 20000>;
+		backlight-gpios = <&gpc 0 GPIO_ACTIVE_HIGH INGENIC_GPIO_NOBIAS>;
+		enable-gpios = <&gpc 22 GPIO_ACTIVE_HIGH INGENIC_GPIO_NOBIAS>;
+		pinctrl-names = "pwm-active";
+		pinctrl-0 = <&pwm0_pc>;
+		status = "okay";
+	};
+};
+/* NEBULAOS_BACKLIGHT_FINAL_CONTROLLER_VARIANT_DTS_END */

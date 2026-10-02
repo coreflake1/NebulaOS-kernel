@@ -5,3 +5,4 @@ obj-$(CONFIG_INGENIC_EFUSE_V2)  += ingenic_efuse_v2.o
 obj-$(CONFIG_JZ_EFUSE_X2500)    += jz_efuse_x2500.o
 obj-$(CONFIG_RMEM)      += rmem.o
 obj-$(CONFIG_BCM_4345C5_RFKILL) += bt_power_bluesleep.o
+obj-$(CONFIG_NEBULAOS_BACKLIGHT_FINAL_CONTROLLER) += nebulaos_backlight_final_controller.o

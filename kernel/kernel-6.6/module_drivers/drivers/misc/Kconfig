@@ -49,3 +49,48 @@ config BCM_4345C5_RFKILL
 	help
 	Creates an rfkill entry in sysfs for power control of Bluetooth
 	bcm-xxxx chips.
+
+config NEBULAOS_BACKLIGHT_FINAL_CONTROLLER
+	bool "NebulaOS kernel-owned backlight final controller (GPC0/PWM0/PC22)"
+	depends on PWM
+	default n
+	help
+	  Post-incident redesign (2026-08-02+) of the backlight hardware
+	  discovery work - see this driver's own file header
+	  (nebulaos_backlight_final_controller.c) for the full incident
+	  writeup and design rationale, and build-work/display-analysis/
+	  backlight-path-analysis.txt for the underlying candidate-hardware
+	  evidence trail.
+
+	  A single kernel-owned platform driver that is the EXCLUSIVE owner
+	  of three candidate backlight hardware resources: GPC0 as a plain
+	  GPIO, GPC0 muxed to PWM channel 0's peripheral function, and the
+	  candidate enable-GPIO PC22. Structurally prevents the exact
+	  incident this redesign follows: probe() NEVER acquires any of the
+	  three resources (no devm_gpiod_get()/devm_pwm_get()/
+	  pinctrl_select_state() calls outside the explicit runtime state-
+	  transition functions), and the shared &pwm controller node's own
+	  pinctrl-0 is never touched - GPC0's PWM-function pinmux is instead
+	  selected dynamically, only by this driver, only at the moment
+	  "pwm-active" is actually entered, via this driver's OWN DT node's
+	  pinctrl-names/pinctrl-0 (a state deliberately never named "default"
+	  or "init", so the device core's automatic pinctrl_bind_pins() never
+	  selects it either - see the driver's file header for the exact
+	  pinctrl-ingenic.c/pinctrl core call chain this relies on).
+
+	  Explicit, mutex-serialized state machine: boot-preserve (the only
+	  state reachable at boot - zero hardware claimed, bootloader's own
+	  GPC0 configuration left completely untouched) -> safe-on (GPC0
+	  GPIO output driven HIGH - the live-proven-safe restoration target)
+	  -> safe-off-test / pwm-active (both bounded, both only reachable
+	  FROM safe-on, both always converge back to safe-on on completion,
+	  timeout, error, or explicit disarm). A kernel workqueue watchdog is
+	  armed BEFORE every hardware mutation (same ordering already proven
+	  correct by CONFIG_NEBULAOS_BACKLIGHT_PROBE_DIAG), independent of
+	  any userspace process's lifetime, with a hard 2-second cap on any
+	  single operation. Never uses legacy /sys/class/gpio sysfs for
+	  anything.
+
+	  Disabled by default - never enable for a production/active-slot
+	  build until live hardware testing confirms correct behavior. If
+	  unsure, say N.
