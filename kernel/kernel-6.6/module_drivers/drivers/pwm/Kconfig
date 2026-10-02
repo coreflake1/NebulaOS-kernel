@@ -21,6 +21,36 @@ config PWM_INGENIC_V2
           will be called pwm-ingenic.
 
 
+config PWM_INGENIC_V2_GET_STATE
+        bool "Ingenic PWM V2 .get_state hardware readback support"
+        depends on PWM_INGENIC_V2
+        default n
+        help
+          NebulaOS PWM state readback patch (2026-08-xx): implements the
+          missing .get_state callback for pwm-ingenic-v2.c, which
+          previously only implemented .apply. Without .get_state, the
+          generic PWM core's one-shot readback at PWM request time
+          (drivers/pwm/core.c:pwm_device_request()) leaves a consumer's
+          cached state at a synthetic all-zero/disabled value regardless
+          of what the hardware is actually doing.
+
+          COMMON_MODE channels (the default - see mode_sel[] in
+          pwm-ingenic-v2.c) get an exact enabled/period/duty_cycle/
+          polarity readback, agreeing with the .apply path to within one
+          hardware tick. DMA_MODE channels (only reachable via a debug
+          sysfs store handler, not expected on a real backlight channel)
+          have no simple duty/period register - period/duty_cycle are
+          reported as 0 and explicitly NOT claimed exact; see the new
+          get_state_exact sysfs attribute and the exported
+          ingenic_pwm_channel_get_state_is_exact().
+
+          See docs/NEBULAOS_PWM_STATE_READBACK_REPORT.md for the full
+          PRESCALE-ambiguity trace and round-trip test results.
+
+          Disabled by default - this project's convention is to never
+          silently change an already-shipping driver's behavior until
+          live-hardware-qualified. If unsure, say N.
+
 config PWM_INGENIC_V3
         bool "Ingenic V3 PWM support"
         depends on SOC_X1600 || SOC_X2600 || SOC_AD100
