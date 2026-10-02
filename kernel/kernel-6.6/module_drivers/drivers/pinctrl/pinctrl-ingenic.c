@@ -675,6 +675,15 @@ static int ingenic_gpio_request(struct gpio_chip *chip, unsigned offset)
 	}
 
 	jzgc->used_pins_bitmap |= 1 << offset;
+	/* NebulaOS pinctrl ownership fix (2026-08-03): a live GPIO request
+	 * for a pin currently marked as pinmux-active is a legitimate
+	 * hand-off (a driver switching this pin from a peripheral function
+	 * back to plain GPIO, e.g. pinctrl_put() followed by gpiod_get() -
+	 * exactly the sequence nebulaos_backlight_final_controller.c uses),
+	 * not a conflict - clear the pinmux-side mark rather than warn. See
+	 * pinmux_used_bitmap's own comment in the header for the full
+	 * design. */
+	jzgc->pinmux_used_bitmap &= ~(1 << offset);
 
 	return pinctrl_gpio_request(gpio);
 }
@@ -1250,13 +1259,25 @@ skip_config:
 	}
 
 	jzgc = gc_to_ingenic_gc(grp->gc);
-	/* if(jzgc->used_pins_bitmap & grp->pinmux_bitmap) { */
-	/*  printk("%s: GP:%s  used_pins_bitmap: 0X%08X\n", __func__, jzgc->name, jzgc->used_pins_bitmap); */
-	/*  printk("current set function pin: chip->name %s, gpio: 0X%08X\n", grp->name, grp->pinmux_bitmap); */
-	/*  dump_stack(); */
-	/*  printk("%s:gpio functions has redefinition\n", __FILE__); */
-	/* } */
-	jzgc->used_pins_bitmap |= grp->pinmux_bitmap;
+	/* NebulaOS pinctrl ownership fix (2026-08-03): this function
+	 * (.dt_node_to_map) runs for EVERY pinctrl-N property a device
+	 * declares, whether or not that state is ever actually selected -
+	 * it only builds the pinctrl_map data structure. Marking
+	 * used_pins_bitmap here (as this code used to, unconditionally)
+	 * conflated "a map was parsed" with "this pin is actively claimed",
+	 * causing a pin referenced only by a deliberately-never-auto-selected
+	 * alternate state (e.g. a device's own named "pwm-active" pinctrl-0,
+	 * chosen specifically to avoid pinctrl_bind_pins()'s automatic
+	 * "default"/"init" selection) to be silently pre-marked used at
+	 * probe time - then the SAME pin's genuine first-ever runtime claim
+	 * (a real gpiod_get()/ingenic_gpio_request()) would find the bit
+	 * already set and log a false "gpio functions has redefinition"
+	 * warning, even though nothing ever actually held the pin
+	 * concurrently. Real ownership tracking now happens only at the
+	 * two genuine runtime claim points - ingenic_gpio_request()/
+	 * ingenic_gpio_free() for GPIO, ingenic_pinmux_enable() for a real
+	 * pinmux activation (see pinmux_used_bitmap in the header) - never
+	 * here at map-parse time. */
 	new_map[*num_maps].type = PIN_MAP_TYPE_MUX_GROUP;
 	new_map[*num_maps].data.mux.function = func->name;
 	new_map[*num_maps].data.mux.group = grp->name;
@@ -1331,6 +1352,22 @@ static int ingenic_pinmux_enable(struct pinctrl_dev *pctldev,
 
 	grp = &pctl->groups[group_selector];
 	jzgc = gc_to_ingenic_gc(grp->gc);
+	/* NebulaOS pinctrl ownership fix (2026-08-03): this is the REAL
+	 * pinmux activation (.set_mux, only called when a state is actually
+	 * selected via pinctrl_select_state()/pinctrl_get_select(), never at
+	 * DT-map-parse time - see ingenic_dt_node_to_map()'s own comment).
+	 * Mirrors ingenic_gpio_request()'s own check-then-warn-then-claim
+	 * pattern, on the separate pinmux_used_bitmap, so two genuinely
+	 * simultaneous, unreleased pinmux claims on the same pin are still
+	 * caught, without reintroducing the parse-time false positive this
+	 * fix removes. */
+	if (jzgc->pinmux_used_bitmap & grp->pinmux_bitmap) {
+		printk("%s: GP:%s  pinmux_used_bitmap: 0X%08X\n", __func__, jzgc->name, jzgc->pinmux_used_bitmap);
+		dump_stack();
+		printk("%s:pinmux functions has redefinition\n", __FILE__);
+	}
+	jzgc->pinmux_used_bitmap |= grp->pinmux_bitmap;
+
 	if (grp->pinmux_func == GPIO_OUTPUT0) {
 		ingenic_gpio_pins_set(jzgc, grp->pinmux_bitmap, 0);
 	} else if (grp->pinmux_func == GPIO_OUTPUT1) {

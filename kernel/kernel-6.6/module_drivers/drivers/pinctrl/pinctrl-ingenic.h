@@ -311,6 +311,23 @@ struct ingenic_gpio_chip {
 	u32             *mcu_gpio_reg;          /*used for gpio irq to mcu
                                       mcu's pending register*/
 	u32             used_pins_bitmap;           /*bitmap of pins for been had requested*/
+	u32             pinmux_used_bitmap;         /* NebulaOS pinctrl ownership fix
+                                     (2026-08-03): tracks pins actively claimed
+                                     via a REAL pinmux function selection
+                                     (ingenic_pinmux_enable(), i.e. .set_mux),
+                                     kept deliberately separate from
+                                     used_pins_bitmap (GPIO-only ownership).
+                                     Parsing a pinctrl map (ingenic_dt_node_to_map(),
+                                     called for every pinctrl-N property whether
+                                     or not it is ever selected) must never mark
+                                     either bitmap - only a genuine runtime GPIO
+                                     request/free or pinmux activation may. A pin
+                                     legitimately handed off between GPIO and
+                                     pinmux ownership (in either direction) is not
+                                     a conflict; two live claims of the SAME kind
+                                     on the same pin without an intervening
+                                     release still is - see ingenic_gpio_request()/
+                                     ingenic_pinmux_enable() for the actual checks. */
 	u32             resume_pending;         /*bitmap of pins wakeup pending when sleep*/
 	u32             sleep_level;            /*bitmap of pins level when sleep*/
 	u32             filter_bitmap;          /*bitmap of pins filter support*/
