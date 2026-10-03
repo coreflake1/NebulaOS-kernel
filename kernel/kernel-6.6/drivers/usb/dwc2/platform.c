@@ -517,9 +517,20 @@ static int dwc2_driver_probe(struct platform_device *dev)
 
 	dev_dbg(hsotg->dev, "registering common handler for irq%d\n",
 		hsotg->irq);
+#if IS_ENABLED(CONFIG_USB_DWC2_SOF_FILTER)
+	/*
+	 * Not IRQF_SHARED: IRQ 9 is DWC2's alone, and a stray second requester
+	 * now fails loudly (-EBUSY) instead of silently defeating the filter.
+	 */
+	retval = devm_request_threaded_irq(hsotg->dev, hsotg->irq,
+					   dwc2_hard_irq, dwc2_thread_irq,
+					   IRQF_ONESHOT, dev_name(hsotg->dev),
+					   hsotg);
+#else
 	retval = devm_request_irq(hsotg->dev, hsotg->irq,
 				  dwc2_handle_common_intr, IRQF_SHARED,
 				  dev_name(hsotg->dev), hsotg);
+#endif
 	if (retval)
 		goto error;
 

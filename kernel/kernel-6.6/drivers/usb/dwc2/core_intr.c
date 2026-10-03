@@ -924,3 +924,39 @@ irqreturn_t dwc2_handle_common_intr(int irq, void *dev)
 	spin_unlock(&hsotg->lock);
 	return retval;
 }
+
+/*
+ * NebulaOS (CONFIG_USB_DWC2_SOF_FILTER): explicit threaded IRQ. The primary
+ * runs in hard-IRQ context, the line stays masked (IRQF_ONESHOT) until the
+ * thread returns.
+ */
+irqreturn_t dwc2_hard_irq(int irq, void *dev)
+{
+	return IRQ_WAKE_THREAD;
+}
+
+irqreturn_t dwc2_thread_irq(int irq, void *dev)
+{
+	struct dwc2_hsotg *hsotg = dev;
+	irqreturn_t retval;
+
+	/* As irq_forced_thread_fn does on !PREEMPT_RT. */
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
+		local_irq_disable();
+	spin_lock(&hsotg->lock);
+	retval = dwc2_handle_irq_locked_all(hsotg);
+	spin_unlock(&hsotg->lock);
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
+		local_irq_enable();
+	/*
+	 * BH flush point. URB givebacks raised above (tasklet_hi_schedule for
+	 * isoc/interrupt, tasklet_schedule for bulk) run here, in this thread
+	 * at its priority, instead of being left to SCHED_OTHER ksoftirqd
+	 * behind CFS load. Unlike a forced-threaded handler, the per-CPU BH
+	 * lock is held only for the givebacks, not for the register and
+	 * channel handling above.
+	 */
+	local_bh_disable();
+	local_bh_enable();
+	return retval;
+}

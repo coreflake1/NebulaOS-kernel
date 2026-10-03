@@ -77,6 +77,19 @@ config USB_DWC2_VERBOSE
 	  WARNING: Enabling this will quickly fill your message log.
 	  If in doubt, say N.
 
+config USB_DWC2_SOF_FILTER
+	bool "Threaded host IRQ with a hard-IRQ idle-SOF filter"
+	depends on USB_DWC2_HOST
+	default y
+	help
+	  Request the DWC2 interrupt as an explicit threaded IRQ (a hard-IRQ
+	  primary handler plus a thread) instead of a forced-threaded one.
+	  The thread does the register and channel handling without holding
+	  the per-CPU softirq lock, and the primary can acknowledge start-of-
+	  frame interrupts that have no due periodic work without waking the
+	  thread (runtime switch: dwc2.sof_filter).
+	  Host-only builds; if in doubt, say Y.
+
 config USB_DWC2_TRACK_MISSED_SOFS
 	bool "Enable Missed SOF Tracking"
 	help
