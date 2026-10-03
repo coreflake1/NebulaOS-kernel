@@ -923,9 +923,13 @@ static int serial_ingenic_startup(struct uart_port *port)
 	}
 
 	/*
-	 * Allocate the IRQ
+	 * Allocate the IRQ. An explicit oneshot threaded handler, not a
+	 * forced-threaded one: a forced thread runs under local_bh_disable(),
+	 * the per-CPU BH lock on PREEMPT_RT, so the UART thread would wait for
+	 * whatever forced-threaded handler (DWC2, MMC) holds it on that CPU.
+	 * The line stays masked until the thread returns, as before.
 	 */
-	retval = request_irq(port->irq, serial_ingenic_irq, 0, up->name, up);
+	retval = request_threaded_irq(port->irq, NULL, serial_ingenic_irq, IRQF_ONESHOT, up->name, up);
 	if (retval) {
 		return retval;
 	}
