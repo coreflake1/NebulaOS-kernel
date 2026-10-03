@@ -41,7 +41,7 @@ static void ingenic_gpio_set_func_normal(struct ingenic_gpio_chip *chip,
         enum gpio_function func, u32 pins)
 {
 	unsigned long flags, func_tmp = func;
-	spin_lock_irqsave(&chip->lock, flags);
+	raw_spin_lock_irqsave(&chip->lock, flags);
 	if (chip->pctl->priv->dual_edge_interrupt) {
 		if (func & 0x10) {
 			ingenic_gpio_writel(chip, PxEDGS, pins);
@@ -104,7 +104,7 @@ static void ingenic_gpio_set_func_normal(struct ingenic_gpio_chip *chip,
 		}
 	}
 	ingenic_gpio_writel(chip, PxFLGC, pins);
-	spin_unlock_irqrestore(&chip->lock, flags);
+	raw_spin_unlock_irqrestore(&chip->lock, flags);
 }
 
 static void ingenic_gpio_fill_func_shadow(struct ingenic_gpio_chip *chip,
@@ -168,7 +168,7 @@ static void ingenic_gpio_set_func_shadow(struct ingenic_gpio_chip *chip,
 	unsigned long flags;
 	unsigned long func_tmp = func;
 
-	spin_lock_irqsave(&pctl->shadow_lock, flags);
+	raw_spin_lock_irqsave(&pctl->shadow_lock, flags);
 
 	if (chip->pctl->priv->dual_edge_interrupt) {
 		ingenic_gpio_fill_func_shadow(chip, func, pins);
@@ -207,7 +207,7 @@ static void ingenic_gpio_set_func_shadow(struct ingenic_gpio_chip *chip,
 	/* clear possible irqs since not enabled by irq core.*/
 	ingenic_gpio_writel(chip, PxFLGC, pins);
 
-	spin_unlock_irqrestore(&pctl->shadow_lock, flags);
+	raw_spin_unlock_irqrestore(&pctl->shadow_lock, flags);
 }
 
 /**************************************************************
@@ -397,9 +397,9 @@ static void ingenic_gpio_irq_mask(struct irq_data *irqd)
 	struct ingenic_pinctrl  *pctl = jzgc->pctl;
 	unsigned long flags;
 
-	spin_lock_irqsave(&pctl->shadow_lock, flags);
+	raw_spin_lock_irqsave(&pctl->shadow_lock, flags);
 	ingenic_gpio_writel(jzgc, PxMSKS, BIT(irqd->hwirq));
-	spin_unlock_irqrestore(&pctl->shadow_lock, flags);
+	raw_spin_unlock_irqrestore(&pctl->shadow_lock, flags);
 }
 
 static void ingenic_gpio_irq_unmask(struct irq_data *irqd)
@@ -408,9 +408,9 @@ static void ingenic_gpio_irq_unmask(struct irq_data *irqd)
 	struct ingenic_pinctrl  *pctl = jzgc->pctl;
 	unsigned long flags;
 
-	spin_lock_irqsave(&pctl->shadow_lock, flags);
+	raw_spin_lock_irqsave(&pctl->shadow_lock, flags);
 	ingenic_gpio_writel(jzgc, PxMSKC, BIT(irqd->hwirq));
-	spin_unlock_irqrestore(&pctl->shadow_lock, flags);
+	raw_spin_unlock_irqrestore(&pctl->shadow_lock, flags);
 }
 
 static void ingenic_gpio_irq_ack(struct irq_data *irqd)
@@ -419,9 +419,9 @@ static void ingenic_gpio_irq_ack(struct irq_data *irqd)
 	struct ingenic_pinctrl  *pctl = jzgc->pctl;
 	unsigned long flags, pins, pins_before, pending;
 
-	spin_lock_irqsave(&pctl->shadow_lock, flags);
+	raw_spin_lock_irqsave(&pctl->shadow_lock, flags);
 	ingenic_gpio_writel(jzgc, PxFLGC, BIT(irqd->hwirq));
-	spin_unlock_irqrestore(&pctl->shadow_lock, flags);
+	raw_spin_unlock_irqrestore(&pctl->shadow_lock, flags);
 
 	if (jzgc->pctl->priv->dual_edge_interrupt) {
 		return;
@@ -600,8 +600,8 @@ static void ingenic_gpio_pins_set(struct ingenic_gpio_chip *jzgc,
 	unsigned long flags, chip_flags;
 	struct ingenic_pinctrl *pctl = jzgc->pctl;
 
-	spin_lock_irqsave(&pctl->shadow_lock, flags);
-	spin_lock_irqsave(&jzgc->lock, chip_flags);
+	raw_spin_lock_irqsave(&pctl->shadow_lock, flags);
+	raw_spin_lock_irqsave(&jzgc->lock, chip_flags);
 
 	if (value) {
 		ingenic_gpio_writel(jzgc, PxPAT0S, pins);
@@ -609,8 +609,8 @@ static void ingenic_gpio_pins_set(struct ingenic_gpio_chip *jzgc,
 		ingenic_gpio_writel(jzgc, PxPAT0C, pins);
 	}
 
-	spin_unlock_irqrestore(&jzgc->lock, chip_flags);
-	spin_unlock_irqrestore(&pctl->shadow_lock, flags);
+	raw_spin_unlock_irqrestore(&jzgc->lock, chip_flags);
+	raw_spin_unlock_irqrestore(&pctl->shadow_lock, flags);
 }
 
 static void ingenic_gpio_set(struct gpio_chip *chip,
@@ -960,7 +960,7 @@ static int ingenic_gpiolib_register(struct ingenic_pinctrl *pctl)
 	                          GFP_KERNEL);
 	pctl->gpio_chips = gpio_chips;
 	pctl->total_pins = 0;
-	spin_lock_init(&pctl->shadow_lock);
+	raw_spin_lock_init(&pctl->shadow_lock);
 
 	for_each_child_of_node(pctl->of_node, np) {
 		if (!of_find_property(np, "gpio-controller", NULL)) {
@@ -977,7 +977,7 @@ static int ingenic_gpiolib_register(struct ingenic_pinctrl *pctl)
 			return ret;
 		}
 		pctl->total_pins += gpio_chips[idx].gc.ngpio;
-		spin_lock_init(&gpio_chips[idx].lock);
+		raw_spin_lock_init(&gpio_chips[idx].lock);
 
 		if (!of_find_property(np, "interrupt-controller", NULL)) {
 			goto next_chip;
@@ -2049,7 +2049,7 @@ unsigned long ingenic_pinctrl_lock(int port)
 
 	chip = &gpctl->gpio_chips[port];
 
-	spin_lock_irqsave(&chip->lock, flags);
+	raw_spin_lock_irqsave(&chip->lock, flags);
 
 	return flags;
 }
@@ -2064,7 +2064,7 @@ unsigned long ingenic_pinctrl_unlock(int port, unsigned long flags)
 
 	chip = &gpctl->gpio_chips[port];
 
-	spin_unlock_irqrestore(&chip->lock, flags);
+	raw_spin_unlock_irqrestore(&chip->lock, flags);
 
 	return flags;
 }

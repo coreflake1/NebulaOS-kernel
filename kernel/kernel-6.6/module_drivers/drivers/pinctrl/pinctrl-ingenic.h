@@ -307,7 +307,7 @@ struct ingenic_gpio_chip {
 	struct irq_domain       *irq_domain;
 	struct pinctrl_gpio_range   grange;
 	struct ingenic_pinctrl      *pctl;
-	spinlock_t          lock;               /*gpio func write lock*/
+	raw_spinlock_t      lock;               /*gpio func write lock*/
 	u32             *mcu_gpio_reg;          /*used for gpio irq to mcu
                                       mcu's pending register*/
 	u32             used_pins_bitmap;           /*bitmap of pins for been had requested*/
@@ -389,7 +389,7 @@ struct ingenic_pinctrl {
 	struct device_node      *of_node;       /*pinctrl device_node*/
 	struct device           *dev;
 
-	spinlock_t          shadow_lock;        /*shadow register access lock*/
+	raw_spinlock_t      shadow_lock;        /*shadow register access lock*/
 	struct ingenic_gpio_chip    *gpio_chips;        /*gpio chips of this pinctrl*/
 	unsigned            num_chips;      /*num gpio chips*/
 	unsigned            total_pins;     /*total pins of this pinctrl*/
