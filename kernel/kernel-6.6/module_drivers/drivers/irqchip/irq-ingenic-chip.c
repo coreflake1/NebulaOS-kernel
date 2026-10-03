@@ -342,8 +342,6 @@ static int __init ingenic_intc_of_init(struct device_node *node)
 	struct irq_domain *domain;
 	struct irq_chip_data *chip = &irq_chips->chip_data;
 	int irq;
-	struct property *prop;
-	const unsigned int *vp;
 	unsigned int pv;
 	int index = 0;
 
@@ -372,7 +370,7 @@ static int __init ingenic_intc_of_init(struct device_node *node)
 	 * positive on this board's correct 2-pair DT and is strictly safer for a
 	 * genuinely-oversized DT too - see ingenic_core_ost.c's ingenic_ost_init() for
 	 * the full analysis, identical reasoning applies here. */
-	of_property_for_each_u32(node, "cpu-intc-map", prop, vp, pv) {
+	of_property_for_each_u32(node, "cpu-intc-map", pv) {
 		if (index / 2 >= NR_CPUS) {
 			printk("parse cpu-intc-iomap, intc define in dt is too large!\n");
 			break;

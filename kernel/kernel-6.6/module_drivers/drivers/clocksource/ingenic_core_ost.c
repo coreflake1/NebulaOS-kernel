@@ -481,8 +481,6 @@ static int __init ingenic_ost_init(struct device_node *np)
 	void __iomem *g_iobase = NULL;
 	void __iomem *core_iobase = NULL;
 	int irq = -1;
-	struct property *prop;
-	const unsigned int *vp;
 	unsigned int pv;
 	int index = 0;
 
@@ -519,7 +517,7 @@ static int __init ingenic_ost_init(struct device_node *np)
 	 * old code could still perform one out-of-bounds write before its check
 	 * caught up (already past cpu_ost_map[NR_CPUS-1] by the time index exceeded
 	 * NR_CPUS * 2 - 1); this version never writes past a validated index. */
-	of_property_for_each_u32(np, "cpu-ost-map", prop, vp, pv) {
+	of_property_for_each_u32(np, "cpu-ost-map", pv) {
 		if (index / 2 >= NR_CPUS) {
 			printk("parse cpu-ost-iomap, ost number define in dt is too large!\n");
 			break;
