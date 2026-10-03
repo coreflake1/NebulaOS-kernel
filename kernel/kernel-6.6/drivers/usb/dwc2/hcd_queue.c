@@ -1358,7 +1358,11 @@ static int dwc2_schedule_periodic(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 		 * is still good.  Note: we could also try to use the similar
 		 * dwc2_next_periodic_start() but that schedules much more
 		 * tightly and we might need to hurry and queue things up.
+		 *
+		 * The cached frame_number is only refreshed by interrupts, which
+		 * may be filtered while the bus is idle (SOF filter); read it.
 		 */
+		hsotg->frame_number = dwc2_hcd_get_frame_number(hsotg);
 		if (dwc2_frame_num_le(qh->next_active_frame,
 				      hsotg->frame_number))
 			dwc2_pick_first_frame(hsotg, qh);
