@@ -554,26 +554,26 @@ static void dwc2_clear_force_mode(struct dwc2_hsotg *hsotg)
 void dwc2_force_dr_mode(struct dwc2_hsotg *hsotg)
 {
 	switch (hsotg->dr_mode) {
-		case USB_DR_MODE_HOST:
-			/*
-			 * NOTE: This is required for some rockchip soc based
-			 * platforms on their host-only dwc2.
-			 */
-			if (!dwc2_hw_is_otg(hsotg)) {
-				msleep(50);
-			}
+	case USB_DR_MODE_HOST:
+		dwc2_force_mode(hsotg, true);
+		/*
+		 * NOTE: This is required for some rockchip soc based
+		 * platforms on their host-only dwc2.
+		 */
+		if (!dwc2_hw_is_otg(hsotg))
+			msleep(50);
 
-			break;
-		case USB_DR_MODE_PERIPHERAL:
-			dwc2_force_mode(hsotg, false);
-			break;
-		case USB_DR_MODE_OTG:
-			dwc2_clear_force_mode(hsotg);
-			break;
-		default:
-			dev_warn(hsotg->dev, "%s() Invalid dr_mode=%d\n",
-			         __func__, hsotg->dr_mode);
-			break;
+		break;
+	case USB_DR_MODE_PERIPHERAL:
+		dwc2_force_mode(hsotg, false);
+		break;
+	case USB_DR_MODE_OTG:
+		dwc2_clear_force_mode(hsotg);
+		break;
+	default:
+		dev_warn(hsotg->dev, "%s() Invalid dr_mode=%d\n",
+			 __func__, hsotg->dr_mode);
+		break;
 	}
 }
 

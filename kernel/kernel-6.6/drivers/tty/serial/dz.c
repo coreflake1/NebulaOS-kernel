@@ -40,6 +40,7 @@
 #include <linux/kernel.h>
 #include <linux/major.h>
 #include <linux/module.h>
+#include <linux/platform_device.h>
 #include <linux/serial.h>
 #include <linux/serial_core.h>
 #include <linux/sysrq.h>
@@ -48,14 +49,6 @@
 
 #include <linux/atomic.h>
 #include <linux/io.h>
-#include <asm/bootinfo.h>
-
-#include <asm/dec/interrupts.h>
-#include <asm/dec/kn01.h>
-#include <asm/dec/kn02.h>
-#include <asm/dec/machtype.h>
-#include <asm/dec/prom.h>
-#include <asm/dec/system.h>
 
 #include "dz.h"
 
@@ -65,22 +58,25 @@ MODULE_LICENSE("GPL");
 
 
 static char dz_name[] __initdata = "DECstation DZ serial driver version ";
-static char dz_version[] __initdata = "1.04";
+static char dz_version[] __initdata = "1.05";
+
+#define DZ_IO_SIZE 0x20			/* IOMEM space size.  */
 
 struct dz_port {
-	struct dz_mux       *mux;
-	struct uart_port    port;
-	unsigned int        cflag;
+	struct dz_mux		*mux;
+	struct uart_port	port;
+	unsigned int		cflag;
 };
 
 struct dz_mux {
-	struct dz_port      dport[DZ_NB_PORT];
-	atomic_t        map_guard;
-	atomic_t        irq_guard;
-	int         initialised;
+	struct dz_port		dport[DZ_NB_PORT];
+	atomic_t		map_guard;
+	atomic_t		irq_guard;
+	int			initialised;
 };
 
 static struct dz_mux dz_mux;
+static struct uart_driver dz_reg;
 
 static inline struct dz_port *to_dport(struct uart_port *uport)
 {
@@ -125,8 +121,8 @@ static void dz_stop_tx(struct uart_port *uport)
 	struct dz_port *dport = to_dport(uport);
 	u16 tmp, mask = 1 << dport->port.line;
 
-	tmp = dz_in(dport, DZ_TCR); /* read the TX flag */
-	tmp &= ~mask;           /* clear the TX flag */
+	tmp = dz_in(dport, DZ_TCR);	/* read the TX flag */
+	tmp &= ~mask;			/* clear the TX flag */
 	dz_out(dport, DZ_TCR, tmp);
 }
 
@@ -135,8 +131,8 @@ static void dz_start_tx(struct uart_port *uport)
 	struct dz_port *dport = to_dport(uport);
 	u16 tmp, mask = 1 << dport->port.line;
 
-	tmp = dz_in(dport, DZ_TCR); /* read the TX flag */
-	tmp |= mask;            /* set the TX flag */
+	tmp = dz_in(dport, DZ_TCR);	/* read the TX flag */
+	tmp |= mask;			/* set the TX flag */
 	dz_out(dport, DZ_TCR, tmp);
 }
 
@@ -161,7 +157,7 @@ static void dz_stop_rx(struct uart_port *uport)
  * possible.  After you are done making modifications, it is not a bad
  * idea to do:
  *
- *  make drivers/serial/dz.s
+ *	make drivers/serial/dz.s
  *
  * and look at the resulting assemble code in dz.s.
  *
@@ -189,7 +185,7 @@ static inline void dz_receive_chars(struct dz_mux *mux)
 		dport = &mux->dport[LINE(status)];
 		uport = &dport->port;
 
-		ch = UCHAR(status);     /* grab the char */
+		ch = UCHAR(status);		/* grab the char */
 		flag = TTY_NORMAL;
 
 		icount = &uport->icount;
@@ -205,47 +201,41 @@ static inline void dz_receive_chars(struct dz_mux *mux)
 			 */
 			if (!ch) {
 				status |= (status & DZ_FERR) >>
-				          (ffs(DZ_FERR) - ffs(DZ_BREAK));
+					  (ffs(DZ_FERR) - ffs(DZ_BREAK));
 				status &= ~DZ_FERR;
 			}
 
 			/* Handle SysRq/SAK & keep track of the statistics. */
 			if (status & DZ_BREAK) {
 				icount->brk++;
-				if (uart_handle_break(uport)) {
+				if (uart_handle_break(uport))
 					continue;
-				}
-			} else if (status & DZ_FERR) {
+			} else if (status & DZ_FERR)
 				icount->frame++;
-			} else if (status & DZ_PERR) {
+			else if (status & DZ_PERR)
 				icount->parity++;
-			}
-			if (status & DZ_OERR) {
+			if (status & DZ_OERR)
 				icount->overrun++;
-			}
 
 			status &= uport->read_status_mask;
-			if (status & DZ_BREAK) {
+			if (status & DZ_BREAK)
 				flag = TTY_BREAK;
-			} else if (status & DZ_FERR) {
+			else if (status & DZ_FERR)
 				flag = TTY_FRAME;
-			} else if (status & DZ_PERR) {
+			else if (status & DZ_PERR)
 				flag = TTY_PARITY;
-			}
 
 		}
 
-		if (uart_handle_sysrq_char(uport, ch)) {
+		if (uart_handle_sysrq_char(uport, ch))
 			continue;
-		}
 
 		uart_insert_char(uport, status, DZ_OERR, ch, flag);
 		lines_rx[LINE(status)] = 1;
 	}
 	for (i = 0; i < DZ_NB_PORT; i++)
-		if (lines_rx[i]) {
+		if (lines_rx[i])
 			tty_flip_buffer_push(&mux->dport[i].port.state->port);
-		}
 }
 
 /*
@@ -266,7 +256,7 @@ static inline void dz_transmit_chars(struct dz_mux *mux)
 	dport = &mux->dport[LINE(status)];
 	xmit = &dport->port.state->xmit;
 
-	if (dport->port.x_char) {       /* XON/XOFF chars */
+	if (dport->port.x_char) {		/* XON/XOFF chars */
 		dz_out(dport, DZ_TDR, dport->port.x_char);
 		dport->port.icount.tx++;
 		dport->port.x_char = 0;
@@ -288,9 +278,8 @@ static inline void dz_transmit_chars(struct dz_mux *mux)
 	dz_out(dport, DZ_TDR, tmp);
 	uart_xmit_advance(&dport->port, 1);
 
-	if (uart_circ_chars_pending(xmit) < DZ_WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < DZ_WAKEUP_CHARS)
 		uart_write_wakeup(&dport->port);
-	}
 
 	/* Are we are done. */
 	if (uart_circ_empty(xmit)) {
@@ -318,16 +307,14 @@ static inline void check_modem_status(struct dz_port *dport)
 	u16 status;
 
 	/* If not the modem line just return.  */
-	if (dport->port.line != DZ_MODEM) {
+	if (dport->port.line != DZ_MODEM)
 		return;
-	}
 
 	status = dz_in(dport, DZ_MSR);
 
 	/* it's easy, since DSR2 is the only bit in the register */
-	if (status) {
+	if (status)
 		dport->port.icount.dsr++;
-	}
 }
 
 /*
@@ -347,13 +334,11 @@ static irqreturn_t dz_interrupt(int irq, void *dev_id)
 	/* get the reason why we just got an irq */
 	status = dz_in(dport, DZ_CSR);
 
-	if ((status & (DZ_RDONE | DZ_RIE)) == (DZ_RDONE | DZ_RIE)) {
+	if ((status & (DZ_RDONE | DZ_RIE)) == (DZ_RDONE | DZ_RIE))
 		dz_receive_chars(mux);
-	}
 
-	if ((status & (DZ_TRDY | DZ_TIE)) == (DZ_TRDY | DZ_TIE)) {
+	if ((status & (DZ_TRDY | DZ_TIE)) == (DZ_TRDY | DZ_TIE))
 		dz_transmit_chars(mux);
-	}
 
 	return IRQ_HANDLED;
 }
@@ -373,9 +358,8 @@ static unsigned int dz_get_mctrl(struct uart_port *uport)
 	unsigned int mctrl = TIOCM_CAR | TIOCM_DSR | TIOCM_CTS;
 
 	if (dport->port.line == DZ_MODEM) {
-		if (dz_in(dport, DZ_MSR) & DZ_MODEM_DSR) {
+		if (dz_in(dport, DZ_MSR) & DZ_MODEM_DSR)
 			mctrl &= ~TIOCM_DSR;
-		}
 	}
 
 	return mctrl;
@@ -391,11 +375,10 @@ static void dz_set_mctrl(struct uart_port *uport, unsigned int mctrl)
 
 	if (dport->port.line == DZ_MODEM) {
 		tmp = dz_in(dport, DZ_TCR);
-		if (mctrl & TIOCM_DTR) {
+		if (mctrl & TIOCM_DTR)
 			tmp &= ~DZ_MODEM_DTR;
-		} else {
+		else
 			tmp |= DZ_MODEM_DTR;
-		}
 		dz_out(dport, DZ_TCR, tmp);
 	}
 }
@@ -417,12 +400,11 @@ static int dz_startup(struct uart_port *uport)
 	u16 tmp;
 
 	irq_guard = atomic_add_return(1, &mux->irq_guard);
-	if (irq_guard != 1) {
+	if (irq_guard != 1)
 		return 0;
-	}
 
 	ret = request_irq(dport->port.irq, dz_interrupt,
-	                  IRQF_SHARED, "dz", mux);
+			  IRQF_SHARED, "dz", mux);
 	if (ret) {
 		atomic_add(-1, &mux->irq_guard);
 		printk(KERN_ERR "dz: Cannot get IRQ %d!\n", dport->port.irq);
@@ -507,11 +489,10 @@ static void dz_break_ctl(struct uart_port *uport, int break_state)
 
 	uart_port_lock_irqsave(uport, &flags);
 	tmp = dz_in(dport, DZ_TCR);
-	if (break_state) {
+	if (break_state)
 		tmp |= mask;
-	} else {
+	else
 		tmp &= ~mask;
-	}
 	dz_out(dport, DZ_TCR, tmp);
 	uart_port_unlock_irqrestore(uport, flags);
 }
@@ -519,38 +500,38 @@ static void dz_break_ctl(struct uart_port *uport, int break_state)
 static int dz_encode_baud_rate(unsigned int baud)
 {
 	switch (baud) {
-		case 50:
-			return DZ_B50;
-		case 75:
-			return DZ_B75;
-		case 110:
-			return DZ_B110;
-		case 134:
-			return DZ_B134;
-		case 150:
-			return DZ_B150;
-		case 300:
-			return DZ_B300;
-		case 600:
-			return DZ_B600;
-		case 1200:
-			return DZ_B1200;
-		case 1800:
-			return DZ_B1800;
-		case 2000:
-			return DZ_B2000;
-		case 2400:
-			return DZ_B2400;
-		case 3600:
-			return DZ_B3600;
-		case 4800:
-			return DZ_B4800;
-		case 7200:
-			return DZ_B7200;
-		case 9600:
-			return DZ_B9600;
-		default:
-			return -1;
+	case 50:
+		return DZ_B50;
+	case 75:
+		return DZ_B75;
+	case 110:
+		return DZ_B110;
+	case 134:
+		return DZ_B134;
+	case 150:
+		return DZ_B150;
+	case 300:
+		return DZ_B300;
+	case 600:
+		return DZ_B600;
+	case 1200:
+		return DZ_B1200;
+	case 1800:
+		return DZ_B1800;
+	case 2000:
+		return DZ_B2000;
+	case 2400:
+		return DZ_B2400;
+	case 3600:
+		return DZ_B3600;
+	case 4800:
+		return DZ_B4800;
+	case 7200:
+		return DZ_B7200;
+	case 9600:
+		return DZ_B9600;
+	default:
+		return -1;
 	}
 }
 
@@ -558,14 +539,46 @@ static int dz_encode_baud_rate(unsigned int baud)
 static void dz_reset(struct dz_port *dport)
 {
 	struct dz_mux *mux = dport->mux;
+	unsigned short tcr;
+	int loops = 10000;
 
-	if (mux->initialised) {
+	if (mux->initialised)
 		return;
+
+	tcr = dz_in(dport, DZ_TCR);
+
+	/* Do not disturb any ongoing transmissions.  */
+	if (dz_in(dport, DZ_CSR) & DZ_MSE) {
+		unsigned short csr, mask;
+
+		mask = tcr;
+		while ((mask & DZ_LNENB) && loops--) {
+			csr = dz_in(dport, DZ_CSR);
+			if (!(csr & DZ_TRDY))
+				continue;
+			mask &= ~(1 << ((csr & DZ_TLINE) >> 8));
+			dz_out(dport, DZ_TCR, mask);
+			iob();
+			udelay(2);		/* 1.4us TRDY recovery.  */
+		}
+		fsleep(1200);			/* Transmitter drain.  */
 	}
 
 	dz_out(dport, DZ_CSR, DZ_CLR);
 	while (dz_in(dport, DZ_CSR) & DZ_CLR);
 	iob();
+
+	/*
+	 * Set parameters across all lines such as not to interfere
+	 * with the initial PROM-based console.  Otherwise any output
+	 * produced before the console handover would cause the system
+	 * firmware to produce rubbish.
+	 */
+	for (int line = 0; line < DZ_NB_PORT; line++)
+		dz_out(dport, DZ_LPR, DZ_B9600 | DZ_CS8 | line);
+
+	/* Re-enable transmission for the initial PROM-based console.  */
+	dz_out(dport, DZ_TCR, tcr);
 
 	/* Enable scanning.  */
 	dz_out(dport, DZ_CSR, DZ_MSE);
@@ -574,7 +587,7 @@ static void dz_reset(struct dz_port *dport)
 }
 
 static void dz_set_termios(struct uart_port *uport, struct ktermios *termios,
-                           const struct ktermios *old_termios)
+			   const struct ktermios *old_termios)
 {
 	struct dz_port *dport = to_dport(uport);
 	unsigned long flags;
@@ -584,39 +597,36 @@ static void dz_set_termios(struct uart_port *uport, struct ktermios *termios,
 	cflag = dport->port.line;
 
 	switch (termios->c_cflag & CSIZE) {
-		case CS5:
-			cflag |= DZ_CS5;
-			break;
-		case CS6:
-			cflag |= DZ_CS6;
-			break;
-		case CS7:
-			cflag |= DZ_CS7;
-			break;
-		case CS8:
-		default:
-			cflag |= DZ_CS8;
+	case CS5:
+		cflag |= DZ_CS5;
+		break;
+	case CS6:
+		cflag |= DZ_CS6;
+		break;
+	case CS7:
+		cflag |= DZ_CS7;
+		break;
+	case CS8:
+	default:
+		cflag |= DZ_CS8;
 	}
 
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		cflag |= DZ_CSTOPB;
-	}
-	if (termios->c_cflag & PARENB) {
+	if (termios->c_cflag & PARENB)
 		cflag |= DZ_PARENB;
-	}
-	if (termios->c_cflag & PARODD) {
+	if (termios->c_cflag & PARODD)
 		cflag |= DZ_PARODD;
-	}
 
 	baud = uart_get_baud_rate(uport, termios, old_termios, 50, 9600);
 	bflag = dz_encode_baud_rate(baud);
-	if (bflag < 0)  {
+	if (bflag < 0)	{
 		if (old_termios) {
 			/* Keep unchanged. */
 			baud = tty_termios_baud_rate(old_termios);
 			bflag = dz_encode_baud_rate(baud);
 		}
-		if (bflag < 0)  {       /* Resort to 9600.  */
+		if (bflag < 0)	{		/* Resort to 9600.  */
 			baud = 9600;
 			bflag = DZ_B9600;
 		}
@@ -624,9 +634,8 @@ static void dz_set_termios(struct uart_port *uport, struct ktermios *termios,
 	}
 	cflag |= bflag;
 
-	if (termios->c_cflag & CREAD) {
+	if (termios->c_cflag & CREAD)
 		cflag |= DZ_RXENAB;
-	}
 
 	uart_port_lock_irqsave(&dport->port, &flags);
 
@@ -637,24 +646,19 @@ static void dz_set_termios(struct uart_port *uport, struct ktermios *termios,
 
 	/* setup accept flag */
 	dport->port.read_status_mask = DZ_OERR;
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		dport->port.read_status_mask |= DZ_FERR | DZ_PERR;
-	}
-	if (termios->c_iflag & (IGNBRK | BRKINT | PARMRK)) {
+	if (termios->c_iflag & (IGNBRK | BRKINT | PARMRK))
 		dport->port.read_status_mask |= DZ_BREAK;
-	}
 
 	/* characters to ignore */
 	uport->ignore_status_mask = 0;
-	if ((termios->c_iflag & (IGNPAR | IGNBRK)) == (IGNPAR | IGNBRK)) {
+	if ((termios->c_iflag & (IGNPAR | IGNBRK)) == (IGNPAR | IGNBRK))
 		dport->port.ignore_status_mask |= DZ_OERR;
-	}
-	if (termios->c_iflag & IGNPAR) {
+	if (termios->c_iflag & IGNPAR)
 		dport->port.ignore_status_mask |= DZ_FERR | DZ_PERR;
-	}
-	if (termios->c_iflag & IGNBRK) {
+	if (termios->c_iflag & IGNBRK)
 		dport->port.ignore_status_mask |= DZ_BREAK;
-	}
 
 	uart_port_unlock_irqrestore(&dport->port, flags);
 }
@@ -665,17 +669,16 @@ static void dz_set_termios(struct uart_port *uport, struct ktermios *termios,
  * works undisturbed in parallel with this one.
  */
 static void dz_pm(struct uart_port *uport, unsigned int state,
-                  unsigned int oldstate)
+		  unsigned int oldstate)
 {
 	struct dz_port *dport = to_dport(uport);
 	unsigned long flags;
 
 	uart_port_lock_irqsave(&dport->port, &flags);
-	if (state < 3) {
+	if (state < 3)
 		dz_start_tx(&dport->port);
-	} else {
+	else
 		dz_stop_tx(&dport->port);
-	}
 	uart_port_unlock_irqrestore(&dport->port, flags);
 }
 
@@ -694,16 +697,14 @@ static void dz_release_port(struct uart_port *uport)
 	uport->membase = NULL;
 
 	map_guard = atomic_add_return(-1, &mux->map_guard);
-	if (!map_guard) {
-		release_mem_region(uport->mapbase, dec_kn_slot_size);
-	}
+	if (!map_guard)
+		release_mem_region(uport->mapbase, DZ_IO_SIZE);
 }
 
 static int dz_map_port(struct uart_port *uport)
 {
 	if (!uport->membase)
-		uport->membase = ioremap(uport->mapbase,
-		                         dec_kn_slot_size);
+		uport->membase = ioremap(uport->mapbase, DZ_IO_SIZE);
 	if (!uport->membase) {
 		printk(KERN_ERR "dz: Cannot map MMIO\n");
 		return -ENOMEM;
@@ -719,8 +720,7 @@ static int dz_request_port(struct uart_port *uport)
 
 	map_guard = atomic_add_return(1, &mux->map_guard);
 	if (map_guard == 1) {
-		if (!request_mem_region(uport->mapbase, dec_kn_slot_size,
-		                        "dz")) {
+		if (!request_mem_region(uport->mapbase, DZ_IO_SIZE, "dz")) {
 			atomic_add(-1, &mux->map_guard);
 			printk(KERN_ERR
 			       "dz: Unable to reserve MMIO resource\n");
@@ -730,9 +730,8 @@ static int dz_request_port(struct uart_port *uport)
 	ret = dz_map_port(uport);
 	if (ret) {
 		map_guard = atomic_add_return(-1, &mux->map_guard);
-		if (!map_guard) {
-			release_mem_region(uport->mapbase, dec_kn_slot_size);
-		}
+		if (!map_guard)
+			release_mem_region(uport->mapbase, DZ_IO_SIZE);
 		return ret;
 	}
 	return 0;
@@ -743,9 +742,8 @@ static void dz_config_port(struct uart_port *uport, int flags)
 	struct dz_port *dport = to_dport(uport);
 
 	if (flags & UART_CONFIG_TYPE) {
-		if (dz_request_port(uport)) {
+		if (dz_request_port(uport))
 			return;
-		}
 
 		uport->type = PORT_DZ;
 
@@ -760,65 +758,74 @@ static int dz_verify_port(struct uart_port *uport, struct serial_struct *ser)
 {
 	int ret = 0;
 
-	if (ser->type != PORT_UNKNOWN && ser->type != PORT_DZ) {
+	if (ser->type != PORT_UNKNOWN && ser->type != PORT_DZ)
 		ret = -EINVAL;
-	}
-	if (ser->irq != uport->irq) {
+	if (ser->irq != uport->irq)
 		ret = -EINVAL;
-	}
 	return ret;
 }
 
 static const struct uart_ops dz_ops = {
-	.tx_empty   = dz_tx_empty,
-	.get_mctrl  = dz_get_mctrl,
-	.set_mctrl  = dz_set_mctrl,
-	.stop_tx    = dz_stop_tx,
-	.start_tx   = dz_start_tx,
-	.stop_rx    = dz_stop_rx,
-	.break_ctl  = dz_break_ctl,
-	.startup    = dz_startup,
-	.shutdown   = dz_shutdown,
-	.set_termios    = dz_set_termios,
-	.pm     = dz_pm,
-	.type       = dz_type,
-	.release_port   = dz_release_port,
-	.request_port   = dz_request_port,
-	.config_port    = dz_config_port,
-	.verify_port    = dz_verify_port,
+	.tx_empty	= dz_tx_empty,
+	.get_mctrl	= dz_get_mctrl,
+	.set_mctrl	= dz_set_mctrl,
+	.stop_tx	= dz_stop_tx,
+	.start_tx	= dz_start_tx,
+	.stop_rx	= dz_stop_rx,
+	.break_ctl	= dz_break_ctl,
+	.startup	= dz_startup,
+	.shutdown	= dz_shutdown,
+	.set_termios	= dz_set_termios,
+	.type		= dz_type,
+	.release_port	= dz_release_port,
+	.request_port	= dz_request_port,
+	.config_port	= dz_config_port,
+	.verify_port	= dz_verify_port,
 };
 
-static void __init dz_init_ports(void)
+static int __init dz_probe(struct platform_device *pdev)
 {
-	static int first = 1;
-	unsigned long base;
+	struct resource *mem_resource, *irq_resource;
 	int line;
 
-	if (!first) {
-		return;
-	}
-	first = 0;
-
-	if (mips_machtype == MACH_DS23100 || mips_machtype == MACH_DS5100) {
-		base = dec_kn_slot_base + KN01_DZ11;
-	} else {
-		base = dec_kn_slot_base + KN02_DZ11;
-	}
+	mem_resource = platform_get_resource(pdev, IORESOURCE_MEM, 0);
+	irq_resource = platform_get_resource(pdev, IORESOURCE_IRQ, 0);
+	if (!mem_resource || !irq_resource)
+		return -ENODEV;
 
 	for (line = 0; line < DZ_NB_PORT; line++) {
 		struct dz_port *dport = &dz_mux.dport[line];
 		struct uart_port *uport = &dport->port;
 
-		dport->mux  = &dz_mux;
+		dport->mux	= &dz_mux;
 
-		uport->irq  = dec_interrupt[DEC_IRQ_DZ11];
-		uport->fifosize = 1;
-		uport->iotype   = UPIO_MEM;
-		uport->flags    = UPF_BOOT_AUTOCONF;
-		uport->ops  = &dz_ops;
-		uport->line = line;
-		uport->mapbase  = base;
+		uport->dev	= &pdev->dev;
+		uport->irq	= irq_resource->start;
+		uport->fifosize	= 1;
+		uport->iotype	= UPIO_MEM;
+		uport->flags	= UPF_BOOT_AUTOCONF;
+		uport->ops	= &dz_ops;
+		uport->line	= line;
+		uport->mapbase	= mem_resource->start;
 		uport->has_sysrq = IS_ENABLED(CONFIG_SERIAL_DZ_CONSOLE);
+
+		if (uart_add_one_port(&dz_reg, uport))
+			uport->dev = NULL;
+	}
+
+	return 0;
+}
+
+static void __exit dz_remove(struct platform_device *pdev)
+{
+	int line;
+
+	for (line = DZ_NB_PORT - 1; line >= 0; line--) {
+		struct dz_port *dport = &dz_mux.dport[line];
+		struct uart_port *uport = &dport->port;
+
+		if (uport->dev)
+			uart_remove_one_port(&dz_reg, uport);
 	}
 }
 
@@ -856,22 +863,19 @@ static void dz_console_putchar(struct uart_port *uport, unsigned char ch)
 
 	do {
 		trdy = dz_in(dport, DZ_CSR);
-		if (!(trdy & DZ_TRDY)) {
+		if (!(trdy & DZ_TRDY))
 			continue;
-		}
 		trdy = (trdy & DZ_TLINE) >> 8;
-		if (trdy == dport->port.line) {
+		if (trdy == dport->port.line)
 			break;
-		}
 		mask &= ~(1 << trdy);
 		dz_out(dport, DZ_TCR, mask);
 		iob();
 		udelay(2);
 	} while (--loops);
 
-	if (loops) {            /* Cannot send otherwise. */
+	if (loops)				/* Cannot send otherwise. */
 		dz_out(dport, DZ_TDR, ch);
-	}
 
 	dz_out(dport, DZ_TCR, tcr);
 	dz_out(dport, DZ_CSR, csr);
@@ -886,8 +890,8 @@ static void dz_console_putchar(struct uart_port *uport, unsigned char ch)
  * -------------------------------------------------------------------
  */
 static void dz_console_print(struct console *co,
-                             const char *str,
-                             unsigned int count)
+			     const char *str,
+			     unsigned int count)
 {
 	struct dz_port *dport = &dz_mux.dport[co->index];
 #ifdef DEBUG_DZ
@@ -904,86 +908,65 @@ static int __init dz_console_setup(struct console *co, char *options)
 	int bits = 8;
 	int parity = 'n';
 	int flow = 'n';
-	int ret;
 
-	ret = dz_map_port(uport);
-	if (ret) {
-		return ret;
-	}
-
-	spin_lock_init(&dport->port.lock);  /* For dz_pm().  */
-
-	dz_reset(dport);
-	dz_pm(uport, 0, -1);
-
-	if (options) {
+	if (!dport->mux)
+		return -ENODEV;
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
-
-	return uart_set_options(&dport->port, co, baud, parity, bits, flow);
+	return uart_set_options(uport, co, baud, parity, bits, flow);
 }
 
-static struct uart_driver dz_reg;
 static struct console dz_console = {
-	.name   = "ttyS",
-	.write  = dz_console_print,
-	.device = uart_console_device,
-	.setup  = dz_console_setup,
-	.flags  = CON_PRINTBUFFER,
-	.index  = -1,
-	.data   = &dz_reg,
+	.name	= "ttyS",
+	.write	= dz_console_print,
+	.device	= uart_console_device,
+	.setup	= dz_console_setup,
+	.flags	= CON_PRINTBUFFER,
+	.index	= -1,
+	.data	= &dz_reg,
 };
 
-static int __init dz_serial_console_init(void)
-{
-	if (!IOASIC) {
-		dz_init_ports();
-		register_console(&dz_console);
-		return 0;
-	} else {
-		return -ENXIO;
-	}
-}
-
-console_initcall(dz_serial_console_init);
-
-#define SERIAL_DZ_CONSOLE   &dz_console
+#define SERIAL_DZ_CONSOLE	&dz_console
 #else
-#define SERIAL_DZ_CONSOLE   NULL
+#define SERIAL_DZ_CONSOLE	NULL
 #endif /* CONFIG_SERIAL_DZ_CONSOLE */
 
 static struct uart_driver dz_reg = {
-	.owner          = THIS_MODULE,
-	.driver_name        = "serial",
-	.dev_name       = "ttyS",
-	.major          = TTY_MAJOR,
-	.minor          = 64,
-	.nr         = DZ_NB_PORT,
-	.cons           = SERIAL_DZ_CONSOLE,
+	.owner			= THIS_MODULE,
+	.driver_name		= "serial",
+	.dev_name		= "ttyS",
+	.major			= TTY_MAJOR,
+	.minor			= 64,
+	.nr			= DZ_NB_PORT,
+	.cons			= SERIAL_DZ_CONSOLE,
+};
+
+static struct platform_driver dz_driver = {
+	.remove_new = __exit_p(dz_remove),
+	.driver = { .name = "dz" },
 };
 
 static int __init dz_init(void)
 {
-	int ret, i;
-
-	if (IOASIC) {
-		return -ENXIO;
-	}
+	int ret;
 
 	printk("%s%s\n", dz_name, dz_version);
 
-	dz_init_ports();
-
 	ret = uart_register_driver(&dz_reg);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
+	ret = platform_driver_probe(&dz_driver, dz_probe);
+	if (ret)
+		uart_unregister_driver(&dz_reg);
 
-	for (i = 0; i < DZ_NB_PORT; i++) {
-		uart_add_one_port(&dz_reg, &dz_mux.dport[i].port);
-	}
+	return ret;
+}
 
-	return 0;
+static void __exit dz_exit(void)
+{
+	platform_driver_unregister(&dz_driver);
+	uart_unregister_driver(&dz_reg);
 }
 
 module_init(dz_init);
+module_exit(dz_exit);

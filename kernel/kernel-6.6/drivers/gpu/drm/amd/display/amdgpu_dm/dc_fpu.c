@@ -27,14 +27,14 @@
 #include "dc_trace.h"
 
 #if defined(CONFIG_X86)
-	#include <asm/fpu/api.h>
+#include <asm/fpu/api.h>
 #elif defined(CONFIG_PPC64)
-	#include <asm/switch_to.h>
-	#include <asm/cputable.h>
+#include <asm/switch_to.h>
+#include <asm/cputable.h>
 #elif defined(CONFIG_ARM64)
-	#include <asm/neon.h>
+#include <asm/neon.h>
 #elif defined(CONFIG_LOONGARCH)
-	#include <asm/fpu.h>
+#include <asm/fpu.h>
 #endif
 
 /**
@@ -92,13 +92,12 @@ void dc_fpu_begin(const char *function_name, const int line)
 #if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
 		kernel_fpu_begin();
 #elif defined(CONFIG_PPC64)
-		if (cpu_has_feature(CPU_FTR_VSX_COMP)) {
+		if (cpu_has_feature(CPU_FTR_VSX_COMP))
 			enable_kernel_vsx();
-		} else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) {
+		else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP))
 			enable_kernel_altivec();
-		} else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) {
+		else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
 			enable_kernel_fp();
-		}
 #elif defined(CONFIG_ARM64)
 		kernel_neon_begin();
 #endif
@@ -126,13 +125,12 @@ void dc_fpu_end(const char *function_name, const int line)
 #if defined(CONFIG_X86) || defined(CONFIG_LOONGARCH)
 		kernel_fpu_end();
 #elif defined(CONFIG_PPC64)
-		if (cpu_has_feature(CPU_FTR_VSX_COMP)) {
+		if (cpu_has_feature(CPU_FTR_VSX_COMP))
 			disable_kernel_vsx();
-		} else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP)) {
+		else if (cpu_has_feature(CPU_FTR_ALTIVEC_COMP))
 			disable_kernel_altivec();
-		} else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE)) {
+		else if (!cpu_has_feature(CPU_FTR_FPU_UNAVAILABLE))
 			disable_kernel_fp();
-		}
 #elif defined(CONFIG_ARM64)
 		kernel_neon_end();
 #endif

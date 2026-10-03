@@ -13,18 +13,15 @@ static int xfer_to_guest_mode_work(struct kvm_vcpu *vcpu, unsigned long ti_work)
 			return -EINTR;
 		}
 
-		if (ti_work & (_TIF_NEED_RESCHED | TIF_NEED_RESCHED_LAZY)) {
+		if (ti_work & (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY))
 			schedule();
-		}
 
-		if (ti_work & _TIF_NOTIFY_RESUME) {
+		if (ti_work & _TIF_NOTIFY_RESUME)
 			resume_user_mode_work(NULL);
-		}
 
 		ret = arch_xfer_to_guest_mode_handle_work(vcpu, ti_work);
-		if (ret) {
+		if (ret)
 			return ret;
-		}
 
 		ti_work = read_thread_flags();
 	} while (ti_work & XFER_TO_GUEST_MODE_WORK || need_resched());
@@ -44,9 +41,8 @@ int xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu)
 	 * to disable interrupts here.
 	 */
 	ti_work = read_thread_flags();
-	if (!(ti_work & XFER_TO_GUEST_MODE_WORK)) {
+	if (!(ti_work & XFER_TO_GUEST_MODE_WORK))
 		return 0;
-	}
 
 	return xfer_to_guest_mode_work(vcpu, ti_work);
 }

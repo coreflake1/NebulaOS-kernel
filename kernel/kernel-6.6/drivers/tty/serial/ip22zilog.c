@@ -46,57 +46,57 @@
  * On IP22 we need to delay after register accesses but we do not need to
  * flush writes.
  */
-#define ZSDELAY()       udelay(5)
-#define ZSDELAY_LONG()      udelay(20)
-#define ZS_WSYNC(channel)   do { } while (0)
+#define ZSDELAY()		udelay(5)
+#define ZSDELAY_LONG()		udelay(20)
+#define ZS_WSYNC(channel)	do { } while (0)
 
-#define NUM_IP22ZILOG       1
-#define NUM_CHANNELS        (NUM_IP22ZILOG * 2)
+#define NUM_IP22ZILOG		1
+#define NUM_CHANNELS		(NUM_IP22ZILOG * 2)
 
-#define ZS_CLOCK        3672000 /* Zilog input clock rate. */
-#define ZS_CLOCK_DIVISOR    16      /* Divisor this driver uses. */
+#define ZS_CLOCK		3672000	/* Zilog input clock rate. */
+#define ZS_CLOCK_DIVISOR	16      /* Divisor this driver uses. */
 
 /*
  * We wrap our port structure around the generic uart_port.
  */
 struct uart_ip22zilog_port {
-	struct uart_port        port;
+	struct uart_port		port;
 
 	/* IRQ servicing chain.  */
-	struct uart_ip22zilog_port  *next;
+	struct uart_ip22zilog_port	*next;
 
 	/* Current values of Zilog write registers.  */
-	unsigned char           curregs[NUM_ZSREGS];
+	unsigned char			curregs[NUM_ZSREGS];
 
-	unsigned int            flags;
-#define IP22ZILOG_FLAG_IS_CONS      0x00000004
-#define IP22ZILOG_FLAG_IS_KGDB      0x00000008
-#define IP22ZILOG_FLAG_MODEM_STATUS 0x00000010
-#define IP22ZILOG_FLAG_IS_CHANNEL_A 0x00000020
-#define IP22ZILOG_FLAG_REGS_HELD    0x00000040
-#define IP22ZILOG_FLAG_TX_STOPPED   0x00000080
-#define IP22ZILOG_FLAG_TX_ACTIVE    0x00000100
-#define IP22ZILOG_FLAG_RESET_DONE   0x00000200
+	unsigned int			flags;
+#define IP22ZILOG_FLAG_IS_CONS		0x00000004
+#define IP22ZILOG_FLAG_IS_KGDB		0x00000008
+#define IP22ZILOG_FLAG_MODEM_STATUS	0x00000010
+#define IP22ZILOG_FLAG_IS_CHANNEL_A	0x00000020
+#define IP22ZILOG_FLAG_REGS_HELD	0x00000040
+#define IP22ZILOG_FLAG_TX_STOPPED	0x00000080
+#define IP22ZILOG_FLAG_TX_ACTIVE	0x00000100
+#define IP22ZILOG_FLAG_RESET_DONE	0x00000200
 
-	unsigned int            tty_break;
+	unsigned int			tty_break;
 
-	unsigned char           parity_mask;
-	unsigned char           prev_status;
+	unsigned char			parity_mask;
+	unsigned char			prev_status;
 };
 
-#define ZILOG_CHANNEL_FROM_PORT(PORT)   ((struct zilog_channel *)((PORT)->membase))
-#define UART_ZILOG(PORT)        ((struct uart_ip22zilog_port *)(PORT))
-#define IP22ZILOG_GET_CURR_REG(PORT, REGNUM)        \
+#define ZILOG_CHANNEL_FROM_PORT(PORT)	((struct zilog_channel *)((PORT)->membase))
+#define UART_ZILOG(PORT)		((struct uart_ip22zilog_port *)(PORT))
+#define IP22ZILOG_GET_CURR_REG(PORT, REGNUM)		\
 	(UART_ZILOG(PORT)->curregs[REGNUM])
-#define IP22ZILOG_SET_CURR_REG(PORT, REGNUM, REGVAL)    \
+#define IP22ZILOG_SET_CURR_REG(PORT, REGNUM, REGVAL)	\
 	((UART_ZILOG(PORT)->curregs[REGNUM]) = (REGVAL))
-#define ZS_IS_CONS(UP)  ((UP)->flags & IP22ZILOG_FLAG_IS_CONS)
-#define ZS_IS_KGDB(UP)  ((UP)->flags & IP22ZILOG_FLAG_IS_KGDB)
-#define ZS_WANTS_MODEM_STATUS(UP)   ((UP)->flags & IP22ZILOG_FLAG_MODEM_STATUS)
-#define ZS_IS_CHANNEL_A(UP) ((UP)->flags & IP22ZILOG_FLAG_IS_CHANNEL_A)
-#define ZS_REGS_HELD(UP)    ((UP)->flags & IP22ZILOG_FLAG_REGS_HELD)
-#define ZS_TX_STOPPED(UP)   ((UP)->flags & IP22ZILOG_FLAG_TX_STOPPED)
-#define ZS_TX_ACTIVE(UP)    ((UP)->flags & IP22ZILOG_FLAG_TX_ACTIVE)
+#define ZS_IS_CONS(UP)	((UP)->flags & IP22ZILOG_FLAG_IS_CONS)
+#define ZS_IS_KGDB(UP)	((UP)->flags & IP22ZILOG_FLAG_IS_KGDB)
+#define ZS_WANTS_MODEM_STATUS(UP)	((UP)->flags & IP22ZILOG_FLAG_MODEM_STATUS)
+#define ZS_IS_CHANNEL_A(UP)	((UP)->flags & IP22ZILOG_FLAG_IS_CHANNEL_A)
+#define ZS_REGS_HELD(UP)	((UP)->flags & IP22ZILOG_FLAG_REGS_HELD)
+#define ZS_TX_STOPPED(UP)	((UP)->flags & IP22ZILOG_FLAG_TX_STOPPED)
+#define ZS_TX_ACTIVE(UP)	((UP)->flags & IP22ZILOG_FLAG_TX_ACTIVE)
 
 /* Reading and writing Zilog8530 registers.  The delays are to make this
  * driver work on the IP22 which needs a settling delay after each chip
@@ -107,7 +107,7 @@ struct uart_ip22zilog_port {
  * when {read,write}_zsreg is invoked.
  */
 static unsigned char read_zsreg(struct zilog_channel *channel,
-                                unsigned char reg)
+				unsigned char reg)
 {
 	unsigned char retval;
 
@@ -120,7 +120,7 @@ static unsigned char read_zsreg(struct zilog_channel *channel,
 }
 
 static void write_zsreg(struct zilog_channel *channel,
-                        unsigned char reg, unsigned char value)
+			unsigned char reg, unsigned char value)
 {
 	writeb(reg, &channel->control);
 	ZSDELAY();
@@ -137,9 +137,8 @@ static void ip22zilog_clear_fifo(struct zilog_channel *channel)
 
 		regval = readb(&channel->control);
 		ZSDELAY();
-		if (regval & Rx_CH_AV) {
+		if (regval & Rx_CH_AV)
 			break;
-		}
 
 		regval = read_zsreg(channel, R1);
 		readb(&channel->data);
@@ -163,9 +162,8 @@ static void __load_zsregs(struct zilog_channel *channel, unsigned char *regs)
 	/* Let pending transmits finish.  */
 	for (i = 0; i < 1000; i++) {
 		unsigned char stat = read_zsreg(channel, R1);
-		if (stat & ALL_SNT) {
+		if (stat & ALL_SNT)
 			break;
-		}
 		udelay(100);
 	}
 
@@ -177,7 +175,7 @@ static void __load_zsregs(struct zilog_channel *channel, unsigned char *regs)
 
 	/* Disable all interrupts.  */
 	write_zsreg(channel, R1,
-	            regs[R1] & ~(RxINT_MASK | TxINT_ENAB | EXT_INT_ENAB));
+		    regs[R1] & ~(RxINT_MASK | TxINT_ENAB | EXT_INT_ENAB));
 
 	/* Set parity, sync config, stop bits, and clock divisor.  */
 	write_zsreg(channel, R4, regs[R4]);
@@ -233,7 +231,7 @@ static void __load_zsregs(struct zilog_channel *channel, unsigned char *regs)
  * The UART port lock must be held and local interrupts disabled.
  */
 static void ip22zilog_maybe_update_regs(struct uart_ip22zilog_port *up,
-                                        struct zilog_channel *channel)
+				       struct zilog_channel *channel)
 {
 	if (!ZS_REGS_HELD(up)) {
 		if (ZS_TX_ACTIVE(up)) {
@@ -248,7 +246,7 @@ static void ip22zilog_maybe_update_regs(struct uart_ip22zilog_port *up,
 #define Rx_SYS 0x0200                   /* SysRq event software flag.  */
 
 static bool ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
-                                    struct zilog_channel *channel)
+						  struct zilog_channel *channel)
 {
 	unsigned int r1;
 	u8 ch, flag;
@@ -257,9 +255,8 @@ static bool ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
 	for (;;) {
 		ch = readb(&channel->control);
 		ZSDELAY();
-		if (!(ch & Rx_CH_AV)) {
+		if (!(ch & Rx_CH_AV))
 			break;
-		}
 
 		r1 = read_zsreg(channel, R1);
 		if (r1 & (PAR_ERR | Rx_OVR | CRC_ERR)) {
@@ -274,9 +271,8 @@ static bool ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
 		ch &= up->parity_mask;
 
 		/* Handle the null char got when BREAK is removed.  */
-		if (!ch) {
+		if (!ch)
 			r1 |= up->tty_break;
-		}
 
 		/* A real serial line, record the character and status.  */
 		flag = TTY_NORMAL;
@@ -286,41 +282,36 @@ static bool ip22zilog_receive_chars(struct uart_ip22zilog_port *up,
 
 			if (r1 & (Rx_SYS | Rx_BRK)) {
 				up->port.icount.brk++;
-				if (r1 & Rx_SYS) {
+				if (r1 & Rx_SYS)
 					continue;
-				}
 				r1 &= ~(PAR_ERR | CRC_ERR);
-			} else if (r1 & PAR_ERR) {
+			}
+			else if (r1 & PAR_ERR)
 				up->port.icount.parity++;
-			} else if (r1 & CRC_ERR) {
+			else if (r1 & CRC_ERR)
 				up->port.icount.frame++;
-			}
-			if (r1 & Rx_OVR) {
+			if (r1 & Rx_OVR)
 				up->port.icount.overrun++;
-			}
 			r1 &= up->port.read_status_mask;
-			if (r1 & Rx_BRK) {
+			if (r1 & Rx_BRK)
 				flag = TTY_BREAK;
-			} else if (r1 & PAR_ERR) {
+			else if (r1 & PAR_ERR)
 				flag = TTY_PARITY;
-			} else if (r1 & CRC_ERR) {
+			else if (r1 & CRC_ERR)
 				flag = TTY_FRAME;
-			}
 		}
 
-		if (uart_handle_sysrq_char(&up->port, ch)) {
+		if (uart_handle_sysrq_char(&up->port, ch))
 			continue;
-		}
 
-		if (push) {
+		if (push)
 			uart_insert_char(&up->port, r1, Rx_OVR, ch, flag);
-		}
 	}
 	return push;
 }
 
 static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
-                                    struct zilog_channel *channel)
+				   struct zilog_channel *channel)
 {
 	unsigned char status;
 
@@ -333,18 +324,16 @@ static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
 
 	if (up->curregs[R15] & BRKIE) {
 		if ((status & BRK_ABRT) && !(up->prev_status & BRK_ABRT)) {
-			if (uart_handle_break(&up->port)) {
+			if (uart_handle_break(&up->port))
 				up->tty_break = Rx_SYS;
-			} else {
+			else
 				up->tty_break = Rx_BRK;
-			}
 		}
 	}
 
 	if (ZS_WANTS_MODEM_STATUS(up)) {
-		if (status & SYNC) {
+		if (status & SYNC)
 			up->port.icount.dsr++;
-		}
 
 		/* The Zilog just gives us an interrupt when DCD/CTS/etc. change.
 		 * But it does not tell us which bit has changed, we have to keep
@@ -352,10 +341,10 @@ static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
 		 */
 		if ((status ^ up->prev_status) ^ DCD)
 			uart_handle_dcd_change(&up->port,
-			                       (status & DCD));
+					       (status & DCD));
 		if ((status ^ up->prev_status) ^ CTS)
 			uart_handle_cts_change(&up->port,
-			                       (status & CTS));
+					       (status & CTS));
 
 		wake_up_interruptible(&up->port.state->port.delta_msr_wait);
 	}
@@ -364,7 +353,7 @@ static void ip22zilog_status_handle(struct uart_ip22zilog_port *up,
 }
 
 static void ip22zilog_transmit_chars(struct uart_ip22zilog_port *up,
-                                     struct zilog_channel *channel)
+				    struct zilog_channel *channel)
 {
 	struct circ_buf *xmit;
 
@@ -380,9 +369,8 @@ static void ip22zilog_transmit_chars(struct uart_ip22zilog_port *up,
 		 * easy because console writes cannot sleep.  One solution might be
 		 * to poll on enough port->xmit space becoming free.  -DaveM
 		 */
-		if (!(status & Tx_BUF_EMP)) {
+		if (!(status & Tx_BUF_EMP))
 			return;
-		}
 	}
 
 	up->flags &= ~IP22ZILOG_FLAG_TX_ACTIVE;
@@ -408,16 +396,13 @@ static void ip22zilog_transmit_chars(struct uart_ip22zilog_port *up,
 		return;
 	}
 
-	if (up->port.state == NULL) {
+	if (up->port.state == NULL)
 		goto ack_tx_int;
-	}
 	xmit = &up->port.state->xmit;
-	if (uart_circ_empty(xmit)) {
+	if (uart_circ_empty(xmit))
 		goto ack_tx_int;
-	}
-	if (uart_tx_stopped(&up->port)) {
+	if (uart_tx_stopped(&up->port))
 		goto ack_tx_int;
-	}
 
 	up->flags |= IP22ZILOG_FLAG_TX_ACTIVE;
 	writeb(xmit->buf[xmit->tail], &channel->data);
@@ -426,9 +411,8 @@ static void ip22zilog_transmit_chars(struct uart_ip22zilog_port *up,
 
 	uart_xmit_advance(&up->port, 1);
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(&up->port);
-	}
 
 	return;
 
@@ -444,7 +428,7 @@ static irqreturn_t ip22zilog_interrupt(int irq, void *dev_id)
 
 	while (up) {
 		struct zilog_channel *channel
-		    = ZILOG_CHANNEL_FROM_PORT(&up->port);
+			= ZILOG_CHANNEL_FROM_PORT(&up->port);
 		unsigned char r3;
 		bool push = false;
 
@@ -457,21 +441,17 @@ static irqreturn_t ip22zilog_interrupt(int irq, void *dev_id)
 			ZSDELAY();
 			ZS_WSYNC(channel);
 
-			if (r3 & CHARxIP) {
+			if (r3 & CHARxIP)
 				push = ip22zilog_receive_chars(up, channel);
-			}
-			if (r3 & CHAEXT) {
+			if (r3 & CHAEXT)
 				ip22zilog_status_handle(up, channel);
-			}
-			if (r3 & CHATxIP) {
+			if (r3 & CHATxIP)
 				ip22zilog_transmit_chars(up, channel);
-			}
 		}
 		uart_port_unlock(&up->port);
 
-		if (push) {
+		if (push)
 			tty_flip_buffer_push(&up->port.state->port);
-		}
 
 		/* Channel B */
 		up = up->next;
@@ -484,21 +464,17 @@ static irqreturn_t ip22zilog_interrupt(int irq, void *dev_id)
 			ZSDELAY();
 			ZS_WSYNC(channel);
 
-			if (r3 & CHBRxIP) {
+			if (r3 & CHBRxIP)
 				push = ip22zilog_receive_chars(up, channel);
-			}
-			if (r3 & CHBEXT) {
+			if (r3 & CHBEXT)
 				ip22zilog_status_handle(up, channel);
-			}
-			if (r3 & CHBTxIP) {
+			if (r3 & CHBTxIP)
 				ip22zilog_transmit_chars(up, channel);
-			}
 		}
 		uart_port_unlock(&up->port);
 
-		if (push) {
+		if (push)
 			tty_flip_buffer_push(&up->port.state->port);
-		}
 
 		up = up->next;
 	}
@@ -534,11 +510,10 @@ static unsigned int ip22zilog_tx_empty(struct uart_port *port)
 
 	uart_port_unlock_irqrestore(port, flags);
 
-	if (status & Tx_BUF_EMP) {
+	if (status & Tx_BUF_EMP)
 		ret = TIOCSER_TEMT;
-	} else {
+	else
 		ret = 0;
-	}
 
 	return ret;
 }
@@ -552,15 +527,12 @@ static unsigned int ip22zilog_get_mctrl(struct uart_port *port)
 	status = ip22zilog_read_channel_status(port);
 
 	ret = 0;
-	if (status & DCD) {
+	if (status & DCD)
 		ret |= TIOCM_CAR;
-	}
-	if (status & SYNC) {
+	if (status & SYNC)
 		ret |= TIOCM_DSR;
-	}
-	if (status & CTS) {
+	if (status & CTS)
 		ret |= TIOCM_CTS;
-	}
 
 	return ret;
 }
@@ -569,22 +541,20 @@ static unsigned int ip22zilog_get_mctrl(struct uart_port *port)
 static void ip22zilog_set_mctrl(struct uart_port *port, unsigned int mctrl)
 {
 	struct uart_ip22zilog_port *up =
-	    container_of(port, struct uart_ip22zilog_port, port);
+		container_of(port, struct uart_ip22zilog_port, port);
 	struct zilog_channel *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char set_bits, clear_bits;
 
 	set_bits = clear_bits = 0;
 
-	if (mctrl & TIOCM_RTS) {
+	if (mctrl & TIOCM_RTS)
 		set_bits |= RTS;
-	} else {
+	else
 		clear_bits |= RTS;
-	}
-	if (mctrl & TIOCM_DTR) {
+	if (mctrl & TIOCM_DTR)
 		set_bits |= DTR;
-	} else {
+	else
 		clear_bits |= DTR;
-	}
 
 	/* NOTE: Not subject to 'transmitter active' rule.  */
 	up->curregs[R5] |= set_bits;
@@ -596,7 +566,7 @@ static void ip22zilog_set_mctrl(struct uart_port *port, unsigned int mctrl)
 static void ip22zilog_stop_tx(struct uart_port *port)
 {
 	struct uart_ip22zilog_port *up =
-	    container_of(port, struct uart_ip22zilog_port, port);
+		container_of(port, struct uart_ip22zilog_port, port);
 
 	up->flags |= IP22ZILOG_FLAG_TX_STOPPED;
 }
@@ -605,7 +575,7 @@ static void ip22zilog_stop_tx(struct uart_port *port)
 static void ip22zilog_start_tx(struct uart_port *port)
 {
 	struct uart_ip22zilog_port *up =
-	    container_of(port, struct uart_ip22zilog_port, port);
+		container_of(port, struct uart_ip22zilog_port, port);
 	struct zilog_channel *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char status;
 
@@ -616,9 +586,8 @@ static void ip22zilog_start_tx(struct uart_port *port)
 	ZSDELAY();
 
 	/* TX busy?  Just wait for the TX done interrupt.  */
-	if (!(status & Tx_BUF_EMP)) {
+	if (!(status & Tx_BUF_EMP))
 		return;
-	}
 
 	/* Send the first character to jump-start the TX done
 	 * IRQ sending engine.
@@ -633,18 +602,16 @@ static void ip22zilog_start_tx(struct uart_port *port)
 	} else {
 		struct circ_buf *xmit = &port->state->xmit;
 
-		if (uart_circ_empty(xmit)) {
+		if (uart_circ_empty(xmit))
 			return;
-		}
 		writeb(xmit->buf[xmit->tail], &channel->data);
 		ZSDELAY();
 		ZS_WSYNC(channel);
 
 		uart_xmit_advance(port, 1);
 
-		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 			uart_write_wakeup(&up->port);
-		}
 	}
 }
 
@@ -654,9 +621,8 @@ static void ip22zilog_stop_rx(struct uart_port *port)
 	struct uart_ip22zilog_port *up = UART_ZILOG(port);
 	struct zilog_channel *channel;
 
-	if (ZS_IS_CONS(up)) {
+	if (ZS_IS_CONS(up))
 		return;
-	}
 
 	channel = ZILOG_CHANNEL_FROM_PORT(port);
 
@@ -669,7 +635,7 @@ static void ip22zilog_stop_rx(struct uart_port *port)
 static void ip22zilog_enable_ms(struct uart_port *port)
 {
 	struct uart_ip22zilog_port *up =
-	    container_of(port, struct uart_ip22zilog_port, port);
+		container_of(port, struct uart_ip22zilog_port, port);
 	struct zilog_channel *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char new_reg;
 
@@ -686,18 +652,17 @@ static void ip22zilog_enable_ms(struct uart_port *port)
 static void ip22zilog_break_ctl(struct uart_port *port, int break_state)
 {
 	struct uart_ip22zilog_port *up =
-	    container_of(port, struct uart_ip22zilog_port, port);
+		container_of(port, struct uart_ip22zilog_port, port);
 	struct zilog_channel *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char set_bits, clear_bits, new_reg;
 	unsigned long flags;
 
 	set_bits = clear_bits = 0;
 
-	if (break_state) {
+	if (break_state)
 		set_bits |= SND_BRK;
-	} else {
+	else
 		clear_bits |= SND_BRK;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
@@ -717,17 +682,15 @@ static void __ip22zilog_reset(struct uart_ip22zilog_port *up)
 	struct zilog_channel *channel;
 	int i;
 
-	if (up->flags & IP22ZILOG_FLAG_RESET_DONE) {
+	if (up->flags & IP22ZILOG_FLAG_RESET_DONE)
 		return;
-	}
 
 	/* Let pending transmits finish.  */
 	channel = ZILOG_CHANNEL_FROM_PORT(&up->port);
 	for (i = 0; i < 1000; i++) {
 		unsigned char stat = read_zsreg(channel, R1);
-		if (stat & ALL_SNT) {
+		if (stat & ALL_SNT)
 			break;
-		}
 		udelay(100);
 	}
 
@@ -769,9 +732,8 @@ static int ip22zilog_startup(struct uart_port *port)
 	struct uart_ip22zilog_port *up = UART_ZILOG(port);
 	unsigned long flags;
 
-	if (ZS_IS_CONS(up)) {
+	if (ZS_IS_CONS(up))
 		return 0;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 	__ip22zilog_startup(up);
@@ -810,9 +772,8 @@ static void ip22zilog_shutdown(struct uart_port *port)
 	struct zilog_channel *channel;
 	unsigned long flags;
 
-	if (ZS_IS_CONS(up)) {
+	if (ZS_IS_CONS(up))
 		return;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
@@ -835,7 +796,7 @@ static void ip22zilog_shutdown(struct uart_port *port)
  */
 static void
 ip22zilog_convert_to_zs(struct uart_ip22zilog_port *up, unsigned int cflag,
-                        unsigned int iflag, int brg)
+		       unsigned int iflag, int brg)
 {
 
 	up->curregs[R10] = NRZ;
@@ -852,76 +813,68 @@ ip22zilog_convert_to_zs(struct uart_ip22zilog_port *up, unsigned int cflag,
 	up->curregs[3] &= ~RxN_MASK;
 	up->curregs[5] &= ~TxN_MASK;
 	switch (cflag & CSIZE) {
-		case CS5:
-			up->curregs[3] |= Rx5;
-			up->curregs[5] |= Tx5;
-			up->parity_mask = 0x1f;
-			break;
-		case CS6:
-			up->curregs[3] |= Rx6;
-			up->curregs[5] |= Tx6;
-			up->parity_mask = 0x3f;
-			break;
-		case CS7:
-			up->curregs[3] |= Rx7;
-			up->curregs[5] |= Tx7;
-			up->parity_mask = 0x7f;
-			break;
-		case CS8:
-		default:
-			up->curregs[3] |= Rx8;
-			up->curregs[5] |= Tx8;
-			up->parity_mask = 0xff;
-			break;
+	case CS5:
+		up->curregs[3] |= Rx5;
+		up->curregs[5] |= Tx5;
+		up->parity_mask = 0x1f;
+		break;
+	case CS6:
+		up->curregs[3] |= Rx6;
+		up->curregs[5] |= Tx6;
+		up->parity_mask = 0x3f;
+		break;
+	case CS7:
+		up->curregs[3] |= Rx7;
+		up->curregs[5] |= Tx7;
+		up->parity_mask = 0x7f;
+		break;
+	case CS8:
+	default:
+		up->curregs[3] |= Rx8;
+		up->curregs[5] |= Tx8;
+		up->parity_mask = 0xff;
+		break;
 	}
 	up->curregs[4] &= ~0x0c;
-	if (cflag & CSTOPB) {
+	if (cflag & CSTOPB)
 		up->curregs[4] |= SB2;
-	} else {
+	else
 		up->curregs[4] |= SB1;
-	}
-	if (cflag & PARENB) {
+	if (cflag & PARENB)
 		up->curregs[4] |= PAR_ENAB;
-	} else {
+	else
 		up->curregs[4] &= ~PAR_ENAB;
-	}
-	if (!(cflag & PARODD)) {
+	if (!(cflag & PARODD))
 		up->curregs[4] |= PAR_EVEN;
-	} else {
+	else
 		up->curregs[4] &= ~PAR_EVEN;
-	}
 
 	up->port.read_status_mask = Rx_OVR;
-	if (iflag & INPCK) {
+	if (iflag & INPCK)
 		up->port.read_status_mask |= CRC_ERR | PAR_ERR;
-	}
-	if (iflag & (IGNBRK | BRKINT | PARMRK)) {
+	if (iflag & (IGNBRK | BRKINT | PARMRK))
 		up->port.read_status_mask |= BRK_ABRT;
-	}
 
 	up->port.ignore_status_mask = 0;
-	if (iflag & IGNPAR) {
+	if (iflag & IGNPAR)
 		up->port.ignore_status_mask |= CRC_ERR | PAR_ERR;
-	}
 	if (iflag & IGNBRK) {
 		up->port.ignore_status_mask |= BRK_ABRT;
-		if (iflag & IGNPAR) {
+		if (iflag & IGNPAR)
 			up->port.ignore_status_mask |= Rx_OVR;
-		}
 	}
 
-	if ((cflag & CREAD) == 0) {
+	if ((cflag & CREAD) == 0)
 		up->port.ignore_status_mask = 0xff;
-	}
 }
 
 /* The port lock is not held.  */
 static void
 ip22zilog_set_termios(struct uart_port *port, struct ktermios *termios,
-                      const struct ktermios *old)
+		      const struct ktermios *old)
 {
 	struct uart_ip22zilog_port *up =
-	    container_of(port, struct uart_ip22zilog_port, port);
+		container_of(port, struct uart_ip22zilog_port, port);
 	unsigned long flags;
 	int baud, brg;
 
@@ -933,11 +886,10 @@ ip22zilog_set_termios(struct uart_port *port, struct ktermios *termios,
 
 	ip22zilog_convert_to_zs(up, termios->c_cflag, termios->c_iflag, brg);
 
-	if (UART_ENABLE_MS(&up->port, termios->c_cflag)) {
+	if (UART_ENABLE_MS(&up->port, termios->c_cflag))
 		up->flags |= IP22ZILOG_FLAG_MODEM_STATUS;
-	} else {
+	else
 		up->flags &= ~IP22ZILOG_FLAG_MODEM_STATUS;
-	}
 
 	ip22zilog_maybe_update_regs(up, ZILOG_CHANNEL_FROM_PORT(port));
 	uart_update_timeout(port, termios->c_cflag, baud);
@@ -974,22 +926,22 @@ static int ip22zilog_verify_port(struct uart_port *port, struct serial_struct *s
 }
 
 static const struct uart_ops ip22zilog_pops = {
-	.tx_empty   =   ip22zilog_tx_empty,
-	.set_mctrl  =   ip22zilog_set_mctrl,
-	.get_mctrl  =   ip22zilog_get_mctrl,
-	.stop_tx    =   ip22zilog_stop_tx,
-	.start_tx   =   ip22zilog_start_tx,
-	.stop_rx    =   ip22zilog_stop_rx,
-	.enable_ms  =   ip22zilog_enable_ms,
-	.break_ctl  =   ip22zilog_break_ctl,
-	.startup    =   ip22zilog_startup,
-	.shutdown   =   ip22zilog_shutdown,
-	.set_termios    =   ip22zilog_set_termios,
-	.type       =   ip22zilog_type,
-	.release_port   =   ip22zilog_release_port,
-	.request_port   =   ip22zilog_request_port,
-	.config_port    =   ip22zilog_config_port,
-	.verify_port    =   ip22zilog_verify_port,
+	.tx_empty	=	ip22zilog_tx_empty,
+	.set_mctrl	=	ip22zilog_set_mctrl,
+	.get_mctrl	=	ip22zilog_get_mctrl,
+	.stop_tx	=	ip22zilog_stop_tx,
+	.start_tx	=	ip22zilog_start_tx,
+	.stop_rx	=	ip22zilog_stop_rx,
+	.enable_ms	=	ip22zilog_enable_ms,
+	.break_ctl	=	ip22zilog_break_ctl,
+	.startup	=	ip22zilog_startup,
+	.shutdown	=	ip22zilog_shutdown,
+	.set_termios	=	ip22zilog_set_termios,
+	.type		=	ip22zilog_type,
+	.release_port	=	ip22zilog_release_port,
+	.request_port	=	ip22zilog_request_port,
+	.config_port	=	ip22zilog_config_port,
+	.verify_port	=	ip22zilog_verify_port,
 };
 
 static struct uart_ip22zilog_port *ip22zilog_port_table;
@@ -998,7 +950,7 @@ static struct zilog_layout **ip22zilog_chip_regs;
 static struct uart_ip22zilog_port *ip22zilog_irq_chain;
 static int zilog_irq = -1;
 
-static void *__init alloc_one_table(unsigned long size)
+static void * __init alloc_one_table(unsigned long size)
 {
 	return kzalloc(size, GFP_KERNEL);
 }
@@ -1006,9 +958,9 @@ static void *__init alloc_one_table(unsigned long size)
 static void __init ip22zilog_alloc_tables(void)
 {
 	ip22zilog_port_table = (struct uart_ip22zilog_port *)
-	                       alloc_one_table(NUM_CHANNELS * sizeof(struct uart_ip22zilog_port));
+		alloc_one_table(NUM_CHANNELS * sizeof(struct uart_ip22zilog_port));
 	ip22zilog_chip_regs = (struct zilog_layout **)
-	                      alloc_one_table(NUM_IP22ZILOG * sizeof(struct zilog_layout *));
+		alloc_one_table(NUM_IP22ZILOG * sizeof(struct zilog_layout *));
 
 	if (ip22zilog_port_table == NULL || ip22zilog_chip_regs == NULL) {
 		panic("IP22-Zilog: Cannot allocate IP22-Zilog tables.");
@@ -1016,7 +968,7 @@ static void __init ip22zilog_alloc_tables(void)
 }
 
 /* Get the address of the registers for IP22-Zilog instance CHIP.  */
-static struct zilog_layout *__init get_zs(int chip)
+static struct zilog_layout * __init get_zs(int chip)
 {
 	unsigned long base;
 
@@ -1033,7 +985,7 @@ static struct zilog_layout *__init get_zs(int chip)
 	return (struct zilog_layout *) base;
 }
 
-#define ZS_PUT_CHAR_MAX_DELAY   2000    /* 10 ms */
+#define ZS_PUT_CHAR_MAX_DELAY	2000	/* 10 ms */
 
 #ifdef CONFIG_SERIAL_IP22_ZILOG_CONSOLE
 static void ip22zilog_put_char(struct uart_port *port, unsigned char ch)
@@ -1090,34 +1042,33 @@ static int __init ip22zilog_console_setup(struct console *con, char *options)
 
 	uart_port_unlock_irqrestore(&up->port, flags);
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 	return uart_set_options(&up->port, con, baud, parity, bits, flow);
 }
 
 static struct uart_driver ip22zilog_reg;
 
 static struct console ip22zilog_console = {
-	.name   =   "ttyS",
-	.write  =   ip22zilog_console_write,
-	.device =   uart_console_device,
-	.setup  =   ip22zilog_console_setup,
-	.flags  =   CON_PRINTBUFFER,
-	.index  =   -1,
-	.data   =   &ip22zilog_reg,
+	.name	=	"ttyS",
+	.write	=	ip22zilog_console_write,
+	.device	=	uart_console_device,
+	.setup	=	ip22zilog_console_setup,
+	.flags	=	CON_PRINTBUFFER,
+	.index	=	-1,
+	.data	=	&ip22zilog_reg,
 };
 #endif /* CONFIG_SERIAL_IP22_ZILOG_CONSOLE */
 
 static struct uart_driver ip22zilog_reg = {
-	.owner      = THIS_MODULE,
-	.driver_name    = "serial",
-	.dev_name   = "ttyS",
-	.major      = TTY_MAJOR,
-	.minor      = 64,
-	.nr     = NUM_CHANNELS,
+	.owner		= THIS_MODULE,
+	.driver_name	= "serial",
+	.dev_name	= "ttyS",
+	.major		= TTY_MAJOR,
+	.minor		= 64,
+	.nr		= NUM_CHANNELS,
 #ifdef CONFIG_SERIAL_IP22_ZILOG_CONSOLE
-	.cons       = &ip22zilog_console,
+	.cons		= &ip22zilog_console,
 #endif
 };
 
@@ -1131,15 +1082,13 @@ static void __init ip22zilog_prepare(void)
 	/*
 	 * Temporary fix.
 	 */
-	for (channel = 0; channel < NUM_CHANNELS; channel++) {
+	for (channel = 0; channel < NUM_CHANNELS; channel++)
 		spin_lock_init(&ip22zilog_port_table[channel].port.lock);
-	}
 
 	ip22zilog_irq_chain = &ip22zilog_port_table[NUM_CHANNELS - 1];
-	up = &ip22zilog_port_table[0];
-	for (channel = NUM_CHANNELS - 1 ; channel > 0; channel--) {
+        up = &ip22zilog_port_table[0];
+	for (channel = NUM_CHANNELS - 1 ; channel > 0; channel--)
 		up[channel].next = &up[channel - 1];
-	}
 	up[channel].next = NULL;
 
 	for (chip = 0; chip < NUM_IP22ZILOG; chip++) {
@@ -1151,9 +1100,9 @@ static void __init ip22zilog_prepare(void)
 
 			/* In theory mapbase is the physical address ...  */
 			up[(chip * 2) + 0].port.mapbase =
-			    (unsigned long) ioremap((unsigned long) &rp->channelB, 8);
+				(unsigned long) ioremap((unsigned long) &rp->channelB, 8);
 			up[(chip * 2) + 1].port.mapbase =
-			    (unsigned long) ioremap((unsigned long) &rp->channelA, 8);
+				(unsigned long) ioremap((unsigned long) &rp->channelA, 8);
 		}
 
 		/* Channel A */
@@ -1209,7 +1158,7 @@ static int __init ip22zilog_ports_init(void)
 	ip22zilog_prepare();
 
 	if (request_irq(zilog_irq, ip22zilog_interrupt, 0,
-	                "IP22-Zilog", ip22zilog_irq_chain)) {
+			"IP22-Zilog", ip22zilog_irq_chain)) {
 		panic("IP22-Zilog: Unable to register zs interrupt handler.\n");
 	}
 
@@ -1251,11 +1200,11 @@ static void __exit ip22zilog_exit(void)
 	up = &ip22zilog_port_table[0];
 	for (i = 0; i < NUM_IP22ZILOG; i++) {
 		if (up[(i * 2) + 0].port.mapbase) {
-			iounmap((void *)up[(i * 2) + 0].port.mapbase);
-			up[(i * 2) + 0].port.mapbase = 0;
+		   iounmap((void*)up[(i * 2) + 0].port.mapbase);
+		   up[(i * 2) + 0].port.mapbase = 0;
 		}
 		if (up[(i * 2) + 1].port.mapbase) {
-			iounmap((void *)up[(i * 2) + 1].port.mapbase);
+			iounmap((void*)up[(i * 2) + 1].port.mapbase);
 			up[(i * 2) + 1].port.mapbase = 0;
 		}
 	}

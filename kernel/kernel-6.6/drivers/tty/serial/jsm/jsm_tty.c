@@ -8,13 +8,13 @@
  * Scott H Kilau <Scott_Kilau@digi.com>
  * Ananda Venkatarman <mansarov@us.ibm.com>
  * Modifications:
- * 01/19/06:    changed jsm_input routine to use the dynamically allocated
- *      tty_buffer changes. Contributors: Scott Kilau and Ananda V.
+ * 01/19/06:	changed jsm_input routine to use the dynamically allocated
+ *		tty_buffer changes. Contributors: Scott Kilau and Ananda V.
  ***********************************************************************/
 #include <linux/tty.h>
 #include <linux/tty_flip.h>
 #include <linux/serial_reg.h>
-#include <linux/delay.h>    /* For udelay */
+#include <linux/delay.h>	/* For udelay */
 #include <linux/pci.h>
 #include <linux/slab.h>
 
@@ -35,24 +35,18 @@ static inline int jsm_get_mstat(struct jsm_channel *ch)
 
 	result = 0;
 
-	if (mstat & UART_MCR_DTR) {
+	if (mstat & UART_MCR_DTR)
 		result |= TIOCM_DTR;
-	}
-	if (mstat & UART_MCR_RTS) {
+	if (mstat & UART_MCR_RTS)
 		result |= TIOCM_RTS;
-	}
-	if (mstat & UART_MSR_CTS) {
+	if (mstat & UART_MSR_CTS)
 		result |= TIOCM_CTS;
-	}
-	if (mstat & UART_MSR_DSR) {
+	if (mstat & UART_MSR_DSR)
 		result |= TIOCM_DSR;
-	}
-	if (mstat & UART_MSR_RI) {
+	if (mstat & UART_MSR_RI)
 		result |= TIOCM_RI;
-	}
-	if (mstat & UART_MSR_DCD) {
+	if (mstat & UART_MSR_DCD)
 		result |= TIOCM_CD;
-	}
 
 	jsm_dbg(IOCTL, &ch->ch_bd->pci_dev, "finish\n");
 	return result;
@@ -70,15 +64,14 @@ static unsigned int jsm_tty_get_mctrl(struct uart_port *port)
 {
 	int result;
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	jsm_dbg(IOCTL, &channel->ch_bd->pci_dev, "start\n");
 
 	result = jsm_get_mstat(channel);
 
-	if (result < 0) {
+	if (result < 0)
 		return -ENXIO;
-	}
 
 	jsm_dbg(IOCTL, &channel->ch_bd->pci_dev, "finish\n");
 
@@ -93,21 +86,19 @@ static unsigned int jsm_tty_get_mctrl(struct uart_port *port)
 static void jsm_tty_set_mctrl(struct uart_port *port, unsigned int mctrl)
 {
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	jsm_dbg(IOCTL, &channel->ch_bd->pci_dev, "start\n");
 
-	if (mctrl & TIOCM_RTS) {
+	if (mctrl & TIOCM_RTS)
 		channel->ch_mostat |= UART_MCR_RTS;
-	} else {
+	else
 		channel->ch_mostat &= ~UART_MCR_RTS;
-	}
 
-	if (mctrl & TIOCM_DTR) {
+	if (mctrl & TIOCM_DTR)
 		channel->ch_mostat |= UART_MCR_DTR;
-	} else {
+	else
 		channel->ch_mostat &= ~UART_MCR_DTR;
-	}
 
 	channel->ch_bd->bd_ops->assert_modem_signals(channel);
 
@@ -132,7 +123,7 @@ static void jsm_tty_write(struct uart_port *port)
 static void jsm_tty_start_tx(struct uart_port *port)
 {
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	jsm_dbg(IOCTL, &channel->ch_bd->pci_dev, "start\n");
 
@@ -145,7 +136,7 @@ static void jsm_tty_start_tx(struct uart_port *port)
 static void jsm_tty_stop_tx(struct uart_port *port)
 {
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	jsm_dbg(IOCTL, &channel->ch_bd->pci_dev, "start\n");
 
@@ -158,25 +149,23 @@ static void jsm_tty_send_xchar(struct uart_port *port, char ch)
 {
 	unsigned long lock_flags;
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 	struct ktermios *termios;
 
 	uart_port_lock_irqsave(port, &lock_flags);
 	termios = &port->state->port.tty->termios;
-	if (ch == termios->c_cc[VSTART]) {
+	if (ch == termios->c_cc[VSTART])
 		channel->ch_bd->bd_ops->send_start_character(channel);
-	}
 
-	if (ch == termios->c_cc[VSTOP]) {
+	if (ch == termios->c_cc[VSTOP])
 		channel->ch_bd->bd_ops->send_stop_character(channel);
-	}
 	uart_port_unlock_irqrestore(port, lock_flags);
 }
 
 static void jsm_tty_stop_rx(struct uart_port *port)
 {
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	channel->ch_bd->bd_ops->disable_receiver(channel);
 }
@@ -185,14 +174,13 @@ static void jsm_tty_break(struct uart_port *port, int break_state)
 {
 	unsigned long lock_flags;
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	uart_port_lock_irqsave(port, &lock_flags);
-	if (break_state == -1) {
+	if (break_state == -1)
 		channel->ch_bd->bd_ops->send_break(channel);
-	} else {
+	else
 		channel->ch_bd->bd_ops->clear_break(channel);
-	}
 
 	uart_port_unlock_irqrestore(port, lock_flags);
 }
@@ -202,7 +190,7 @@ static int jsm_tty_open(struct uart_port *port)
 	unsigned long lock_flags;
 	struct jsm_board *brd;
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 	struct ktermios *termios;
 
 	/* Get board pointer from our array of majors we have allocated */
@@ -220,7 +208,7 @@ static int jsm_tty_open(struct uart_port *port)
 		channel->ch_rqueue = kzalloc(RQUEUESIZE, GFP_KERNEL);
 		if (!channel->ch_rqueue) {
 			jsm_dbg(INIT, &channel->ch_bd->pci_dev,
-			        "unable to allocate read queue buf\n");
+				"unable to allocate read queue buf\n");
 			return -ENOMEM;
 		}
 	}
@@ -228,7 +216,7 @@ static int jsm_tty_open(struct uart_port *port)
 		channel->ch_equeue = kzalloc(EQUEUESIZE, GFP_KERNEL);
 		if (!channel->ch_equeue) {
 			jsm_dbg(INIT, &channel->ch_bd->pci_dev,
-			        "unable to allocate error queue buf\n");
+				"unable to allocate error queue buf\n");
 			return -ENOMEM;
 		}
 	}
@@ -238,7 +226,7 @@ static int jsm_tty_open(struct uart_port *port)
 	 * Initialize if neither terminal is open.
 	 */
 	jsm_dbg(OPEN, &channel->ch_bd->pci_dev,
-	        "jsm_open: initializing channel in open...\n");
+		"jsm_open: initializing channel in open...\n");
 
 	/*
 	 * Flush input queues.
@@ -255,12 +243,12 @@ static int jsm_tty_open(struct uart_port *port)
 
 	uart_port_lock_irqsave(port, &lock_flags);
 	termios = &port->state->port.tty->termios;
-	channel->ch_c_cflag = termios->c_cflag;
-	channel->ch_c_iflag = termios->c_iflag;
-	channel->ch_c_oflag = termios->c_oflag;
-	channel->ch_c_lflag = termios->c_lflag;
-	channel->ch_startc  = termios->c_cc[VSTART];
-	channel->ch_stopc   = termios->c_cc[VSTOP];
+	channel->ch_c_cflag	= termios->c_cflag;
+	channel->ch_c_iflag	= termios->c_iflag;
+	channel->ch_c_oflag	= termios->c_oflag;
+	channel->ch_c_lflag	= termios->c_lflag;
+	channel->ch_startc	= termios->c_cc[VSTART];
+	channel->ch_stopc	= termios->c_cc[VSTOP];
 
 	/* Tell UART to init itself */
 	brd->bd_ops->uart_init(channel);
@@ -283,7 +271,7 @@ static void jsm_tty_close(struct uart_port *port)
 {
 	struct jsm_board *bd;
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	jsm_dbg(CLOSE, &channel->ch_bd->pci_dev, "start\n");
 
@@ -298,7 +286,7 @@ static void jsm_tty_close(struct uart_port *port)
 	 */
 	if (channel->ch_c_cflag & HUPCL) {
 		jsm_dbg(CLOSE, &channel->ch_bd->pci_dev,
-		        "Close. HUPCL set, dropping DTR/RTS\n");
+			"Close. HUPCL set, dropping DTR/RTS\n");
 
 		/* Drop RTS/DTR */
 		channel->ch_mostat &= ~(UART_MCR_DTR | UART_MCR_RTS);
@@ -312,20 +300,20 @@ static void jsm_tty_close(struct uart_port *port)
 }
 
 static void jsm_tty_set_termios(struct uart_port *port,
-                                struct ktermios *termios,
-                                const struct ktermios *old_termios)
+				struct ktermios *termios,
+				const struct ktermios *old_termios)
 {
 	unsigned long lock_flags;
 	struct jsm_channel *channel =
-	    container_of(port, struct jsm_channel, uart_port);
+		container_of(port, struct jsm_channel, uart_port);
 
 	uart_port_lock_irqsave(port, &lock_flags);
-	channel->ch_c_cflag = termios->c_cflag;
-	channel->ch_c_iflag = termios->c_iflag;
-	channel->ch_c_oflag = termios->c_oflag;
-	channel->ch_c_lflag = termios->c_lflag;
-	channel->ch_startc  = termios->c_cc[VSTART];
-	channel->ch_stopc   = termios->c_cc[VSTOP];
+	channel->ch_c_cflag	= termios->c_cflag;
+	channel->ch_c_iflag	= termios->c_iflag;
+	channel->ch_c_oflag	= termios->c_oflag;
+	channel->ch_c_lflag	= termios->c_lflag;
+	channel->ch_startc	= termios->c_cc[VSTART];
+	channel->ch_stopc	= termios->c_cc[VSTOP];
 
 	channel->ch_bd->bd_ops->param(channel);
 	jsm_carrier(channel);
@@ -352,21 +340,21 @@ static void jsm_config_port(struct uart_port *port, int flags)
 }
 
 static const struct uart_ops jsm_ops = {
-	.tx_empty   = jsm_tty_tx_empty,
-	.set_mctrl  = jsm_tty_set_mctrl,
-	.get_mctrl  = jsm_tty_get_mctrl,
-	.stop_tx    = jsm_tty_stop_tx,
-	.start_tx   = jsm_tty_start_tx,
-	.send_xchar = jsm_tty_send_xchar,
-	.stop_rx    = jsm_tty_stop_rx,
-	.break_ctl  = jsm_tty_break,
-	.startup    = jsm_tty_open,
-	.shutdown   = jsm_tty_close,
-	.set_termios    = jsm_tty_set_termios,
-	.type       = jsm_tty_type,
-	.release_port   = jsm_tty_release_port,
-	.request_port   = jsm_tty_request_port,
-	.config_port    = jsm_config_port,
+	.tx_empty	= jsm_tty_tx_empty,
+	.set_mctrl	= jsm_tty_set_mctrl,
+	.get_mctrl	= jsm_tty_get_mctrl,
+	.stop_tx	= jsm_tty_stop_tx,
+	.start_tx	= jsm_tty_start_tx,
+	.send_xchar	= jsm_tty_send_xchar,
+	.stop_rx	= jsm_tty_stop_rx,
+	.break_ctl	= jsm_tty_break,
+	.startup	= jsm_tty_open,
+	.shutdown	= jsm_tty_close,
+	.set_termios	= jsm_tty_set_termios,
+	.type		= jsm_tty_type,
+	.release_port	= jsm_tty_release_port,
+	.request_port	= jsm_tty_request_port,
+	.config_port	= jsm_config_port,
 };
 
 /*
@@ -381,9 +369,8 @@ int jsm_tty_init(struct jsm_board *brd)
 	void __iomem *vaddr;
 	struct jsm_channel *ch;
 
-	if (!brd) {
+	if (!brd)
 		return -ENXIO;
-	}
 
 	jsm_dbg(INIT, &brd->pci_dev, "start\n");
 
@@ -407,8 +394,8 @@ int jsm_tty_init(struct jsm_board *brd)
 			brd->channels[i] = kzalloc(sizeof(struct jsm_channel), GFP_KERNEL);
 			if (!brd->channels[i]) {
 				jsm_dbg(CORE, &brd->pci_dev,
-				        "%s:%d Unable to allocate memory for channel struct\n",
-				        __FILE__, __LINE__);
+					"%s:%d Unable to allocate memory for channel struct\n",
+					__FILE__, __LINE__);
 			}
 		}
 	}
@@ -419,17 +406,15 @@ int jsm_tty_init(struct jsm_board *brd)
 	/* Set up channel variables */
 	for (i = 0; i < brd->nasync; i++, ch = brd->channels[i]) {
 
-		if (!brd->channels[i]) {
+		if (!brd->channels[i])
 			continue;
-		}
 
 		spin_lock_init(&ch->ch_lock);
 
-		if (brd->bd_uart_offset == 0x200) {
+		if (brd->bd_uart_offset == 0x200)
 			ch->ch_neo_uart =  vaddr + (brd->bd_uart_offset * i);
-		} else {
+		else
 			ch->ch_cls_uart =  vaddr + (brd->bd_uart_offset * i);
-		}
 
 		ch->ch_bd = brd;
 		ch->ch_portnum = i;
@@ -449,9 +434,8 @@ int jsm_uart_port_init(struct jsm_board *brd)
 	int i, rc;
 	unsigned int line;
 
-	if (!brd) {
+	if (!brd)
 		return -ENXIO;
-	}
 
 	jsm_dbg(INIT, &brd->pci_dev, "start\n");
 
@@ -464,10 +448,10 @@ int jsm_uart_port_init(struct jsm_board *brd)
 	/* Set up channel variables */
 	for (i = 0; i < brd->nasync; i++) {
 
-		if (!brd->channels[i]) {
+		if (!brd->channels[i])
 			continue;
-		}
 
+		brd->channels[i]->uart_port.dev = &brd->pci_dev->dev;
 		brd->channels[i]->uart_port.irq = brd->irq;
 		brd->channels[i]->uart_port.uartclk = 14745600;
 		brd->channels[i]->uart_port.type = PORT_JSM;
@@ -479,17 +463,15 @@ int jsm_uart_port_init(struct jsm_board *brd)
 		if (line >= MAXLINES) {
 			printk(KERN_INFO "jsm: linemap is full, added device failed\n");
 			continue;
-		} else {
+		} else
 			set_bit(line, linemap);
-		}
 		brd->channels[i]->uart_port.line = line;
 		rc = uart_add_one_port(&jsm_uart_driver, &brd->channels[i]->uart_port);
 		if (rc) {
 			printk(KERN_INFO "jsm: Port %d failed. Aborting...\n", i);
 			return rc;
-		} else {
+		} else
 			printk(KERN_INFO "jsm: Port %d added\n", i);
-		}
 	}
 
 	jsm_dbg(INIT, &brd->pci_dev, "finish\n");
@@ -501,9 +483,8 @@ int jsm_remove_uart_port(struct jsm_board *brd)
 	int i;
 	struct jsm_channel *ch;
 
-	if (!brd) {
+	if (!brd)
 		return -ENXIO;
-	}
 
 	jsm_dbg(INIT, &brd->pci_dev, "start\n");
 
@@ -516,9 +497,8 @@ int jsm_remove_uart_port(struct jsm_board *brd)
 	/* Set up channel variables */
 	for (i = 0; i < brd->nasync; i++) {
 
-		if (!brd->channels[i]) {
+		if (!brd->channels[i])
 			continue;
-		}
 
 		ch = brd->channels[i];
 
@@ -550,9 +530,8 @@ void jsm_input(struct jsm_channel *ch)
 	tp = port->tty;
 
 	bd = ch->ch_bd;
-	if (!bd) {
+	if (!bd)
 		return;
-	}
 
 	spin_lock_irqsave(&ch->ch_lock, lock_flags);
 
@@ -581,8 +560,8 @@ void jsm_input(struct jsm_channel *ch)
 	if (!tp || !C_CREAD(tp)) {
 
 		jsm_dbg(READ, &ch->ch_bd->pci_dev,
-		        "input. dropping %d bytes on port %d...\n",
-		        data_len, ch->ch_portnum);
+			"input. dropping %d bytes on port %d...\n",
+			data_len, ch->ch_portnum);
 		ch->ch_r_head = tail;
 
 		/* Force queue flow control to be released, if needed */
@@ -598,8 +577,8 @@ void jsm_input(struct jsm_channel *ch)
 	if (ch->ch_flags & CH_STOPI) {
 		spin_unlock_irqrestore(&ch->ch_lock, lock_flags);
 		jsm_dbg(READ, &ch->ch_bd->pci_dev,
-		        "Port %d throttled, not reading any data. head: %x tail: %x\n",
-		        ch->ch_portnum, head, tail);
+			"Port %d throttled, not reading any data. head: %x tail: %x\n",
+			ch->ch_portnum, head, tail);
 		return;
 	}
 
@@ -616,16 +595,15 @@ void jsm_input(struct jsm_channel *ch)
 		s = ((head >= tail) ? head : RQUEUESIZE) - tail;
 		s = min(s, len);
 
-		if (s <= 0) {
+		if (s <= 0)
 			break;
-		}
 
-		/*
-		 * If conditions are such that ld needs to see all
-		 * UART errors, we will have to walk each character
-		 * and error byte and send them to the buffer one at
-		 * a time.
-		 */
+			/*
+			 * If conditions are such that ld needs to see all
+			 * UART errors, we will have to walk each character
+			 * and error byte and send them to the buffer one at
+			 * a time.
+			 */
 
 		if (I_PARMRK(tp) || I_BRKINT(tp) || I_INPCK(tp)) {
 			for (i = 0; i < s; i++) {
@@ -637,13 +615,12 @@ void jsm_input(struct jsm_channel *ch)
 				 * Give the Linux ld the flags in the format it
 				 * likes.
 				 */
-				if (error & UART_LSR_BI) {
+				if (error & UART_LSR_BI)
 					flag = TTY_BREAK;
-				} else if (error & UART_LSR_PE) {
+				else if (error & UART_LSR_PE)
 					flag = TTY_PARITY;
-				} else if (error & UART_LSR_FE) {
+				else if (error & UART_LSR_FE)
 					flag = TTY_FRAME;
-				}
 
 				tty_insert_flip_char(port, chr, flag);
 			}
@@ -677,22 +654,20 @@ static void jsm_carrier(struct jsm_channel *ch)
 	jsm_dbg(CARR, &ch->ch_bd->pci_dev, "start\n");
 
 	bd = ch->ch_bd;
-	if (!bd) {
+	if (!bd)
 		return;
-	}
 
 	if (ch->ch_mistat & UART_MSR_DCD) {
 		jsm_dbg(CARR, &ch->ch_bd->pci_dev, "mistat: %x D_CD: %x\n",
-		        ch->ch_mistat, ch->ch_mistat & UART_MSR_DCD);
+			ch->ch_mistat, ch->ch_mistat & UART_MSR_DCD);
 		phys_carrier = 1;
 	}
 
-	if (ch->ch_c_cflag & CLOCAL) {
+	if (ch->ch_c_cflag & CLOCAL)
 		virt_carrier = 1;
-	}
 
 	jsm_dbg(CARR, &ch->ch_bd->pci_dev, "DCD: physical: %d virt: %d\n",
-	        phys_carrier, virt_carrier);
+		phys_carrier, virt_carrier);
 
 	/*
 	 * Test for a VIRTUAL carrier transition to HIGH.
@@ -706,9 +681,8 @@ static void jsm_carrier(struct jsm_channel *ch)
 
 		jsm_dbg(CARR, &ch->ch_bd->pci_dev, "carrier: virt DCD rose\n");
 
-		if (waitqueue_active(&(ch->ch_flags_wait))) {
+		if (waitqueue_active(&(ch->ch_flags_wait)))
 			wake_up_interruptible(&ch->ch_flags_wait);
-		}
 	}
 
 	/*
@@ -722,11 +696,10 @@ static void jsm_carrier(struct jsm_channel *ch)
 		 */
 
 		jsm_dbg(CARR, &ch->ch_bd->pci_dev,
-		        "carrier: physical DCD rose\n");
+			"carrier: physical DCD rose\n");
 
-		if (waitqueue_active(&(ch->ch_flags_wait))) {
+		if (waitqueue_active(&(ch->ch_flags_wait)))
 			wake_up_interruptible(&ch->ch_flags_wait);
-		}
 	}
 
 	/*
@@ -739,38 +712,35 @@ static void jsm_carrier(struct jsm_channel *ch)
 	 *  "make pretend that carrier is there".
 	 */
 	if ((virt_carrier == 0) && ((ch->ch_flags & CH_CD) != 0)
-	    && (phys_carrier == 0)) {
+			&& (phys_carrier == 0)) {
 		/*
-		 *  When carrier drops:
+		 *	When carrier drops:
 		 *
-		 *  Drop carrier on all open units.
+		 *	Drop carrier on all open units.
 		 *
-		 *  Flush queues, waking up any task waiting in the
-		 *  line discipline.
+		 *	Flush queues, waking up any task waiting in the
+		 *	line discipline.
 		 *
-		 *  Send a hangup to the control terminal.
+		 *	Send a hangup to the control terminal.
 		 *
-		 *  Enable all select calls.
+		 *	Enable all select calls.
 		 */
-		if (waitqueue_active(&(ch->ch_flags_wait))) {
+		if (waitqueue_active(&(ch->ch_flags_wait)))
 			wake_up_interruptible(&ch->ch_flags_wait);
-		}
 	}
 
 	/*
 	 *  Make sure that our cached values reflect the current reality.
 	 */
-	if (virt_carrier == 1) {
+	if (virt_carrier == 1)
 		ch->ch_flags |= CH_FCAR;
-	} else {
+	else
 		ch->ch_flags &= ~CH_FCAR;
-	}
 
-	if (phys_carrier == 1) {
+	if (phys_carrier == 1)
 		ch->ch_flags |= CH_CD;
-	} else {
+	else
 		ch->ch_flags &= ~CH_CD;
-	}
 }
 
 
@@ -781,9 +751,8 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 
 	/* Store how much space we have left in the queue */
 	qleft = ch->ch_r_tail - ch->ch_r_head - 1;
-	if (qleft < 0) {
+	if (qleft < 0)
 		qleft += RQUEUEMASK + 1;
-	}
 
 	/*
 	 * Check to see if we should enforce flow control on our queue because
@@ -793,12 +762,12 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 	 * port is set for.
 	 *
 	 * 1) HWFLOW (RTS) - Turn off the UART's Receive interrupt.
-	 *  This will cause the UART's FIFO to back up, and force
-	 *  the RTS signal to be dropped.
+	 *	This will cause the UART's FIFO to back up, and force
+	 *	the RTS signal to be dropped.
 	 * 2) SWFLOW (IXOFF) - Keep trying to send a stop character to
-	 *  the other side, in hopes it will stop sending data to us.
+	 *	the other side, in hopes it will stop sending data to us.
 	 * 3) NONE - Nothing we can do.  We will simply drop any extra data
-	 *  that gets sent into us when the queue fills up.
+	 *	that gets sent into us when the queue fills up.
 	 */
 	if (qleft < 256) {
 		/* HWFLOW */
@@ -807,8 +776,8 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 				bd_ops->disable_receiver(ch);
 				ch->ch_flags |= (CH_RECEIVER_OFF);
 				jsm_dbg(READ, &ch->ch_bd->pci_dev,
-				        "Internal queue hit hilevel mark (%d)! Turning off interrupts\n",
-				        qleft);
+					"Internal queue hit hilevel mark (%d)! Turning off interrupts\n",
+					qleft);
 			}
 		}
 		/* SWFLOW */
@@ -817,8 +786,8 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 				bd_ops->send_stop_character(ch);
 				ch->ch_stops_sent++;
 				jsm_dbg(READ, &ch->ch_bd->pci_dev,
-				        "Sending stop char! Times sent: %x\n",
-				        ch->ch_stops_sent);
+					"Sending stop char! Times sent: %x\n",
+					ch->ch_stops_sent);
 			}
 		}
 	}
@@ -831,12 +800,12 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 	 * port is set for.
 	 *
 	 * 1) HWFLOW (RTS) - Turn back on the UART's Receive interrupt.
-	 *  This will cause the UART's FIFO to raise RTS back up,
-	 *  which will allow the other side to start sending data again.
+	 *	This will cause the UART's FIFO to raise RTS back up,
+	 *	which will allow the other side to start sending data again.
 	 * 2) SWFLOW (IXOFF) - Send a start character to
-	 *  the other side, so it will start sending data to us again.
+	 *	the other side, so it will start sending data to us again.
 	 * 3) NONE - Do nothing. Since we didn't do anything to turn off the
-	 *  other side, we don't need to do anything now.
+	 *	other side, we don't need to do anything now.
 	 */
 	if (qleft > (RQUEUESIZE / 2)) {
 		/* HWFLOW */
@@ -845,8 +814,8 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 				bd_ops->enable_receiver(ch);
 				ch->ch_flags &= ~(CH_RECEIVER_OFF);
 				jsm_dbg(READ, &ch->ch_bd->pci_dev,
-				        "Internal queue hit lowlevel mark (%d)! Turning on interrupts\n",
-				        qleft);
+					"Internal queue hit lowlevel mark (%d)! Turning on interrupts\n",
+					qleft);
 			}
 		}
 		/* SWFLOW */
@@ -854,7 +823,7 @@ void jsm_check_queue_flow_control(struct jsm_channel *ch)
 			ch->ch_stops_sent = 0;
 			bd_ops->send_start_character(ch);
 			jsm_dbg(READ, &ch->ch_bd->pci_dev,
-			        "Sending start char!\n");
+				"Sending start char!\n");
 		}
 	}
 }

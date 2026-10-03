@@ -46,7 +46,7 @@ static inline void syscall_enter_audit(struct pt_regs *regs, long syscall)
 }
 
 static long syscall_trace_enter(struct pt_regs *regs, long syscall,
-                                unsigned long work)
+				unsigned long work)
 {
 	long ret = 0;
 
@@ -56,25 +56,25 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 	 * other syscall_work features.
 	 */
 	if (work & SYSCALL_WORK_SYSCALL_USER_DISPATCH) {
-		if (syscall_user_dispatch(regs)) {
+		if (syscall_user_dispatch(regs))
 			return -1L;
-		}
 	}
 
 	/* Handle ptrace */
 	if (work & (SYSCALL_WORK_SYSCALL_TRACE | SYSCALL_WORK_SYSCALL_EMU)) {
 		ret = ptrace_report_syscall_entry(regs);
-		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU)) {
+		if (ret || (work & SYSCALL_WORK_SYSCALL_EMU))
 			return -1L;
-		}
+
+		/* ptrace might have changed work flags */
+		work = READ_ONCE(current_thread_info()->syscall_work);
 	}
 
 	/* Do seccomp after ptrace, to catch any tracer changes. */
 	if (work & SYSCALL_WORK_SECCOMP) {
 		ret = __secure_computing(NULL);
-		if (ret == -1L) {
+		if (ret == -1L)
 			return ret;
-		}
 	}
 
 	/* Either of the above might have changed the syscall number */
@@ -82,6 +82,11 @@ static long syscall_trace_enter(struct pt_regs *regs, long syscall,
 
 	if (unlikely(work & SYSCALL_WORK_SYSCALL_TRACEPOINT)) {
 		trace_sys_enter(regs, syscall);
+		/*
+		 * Probes or BPF hooks in the tracepoint may have changed the
+		 * system call number as well.
+		 */
+		syscall = syscall_get_nr(current, regs);
 	}
 
 	syscall_enter_audit(regs, syscall);
@@ -94,9 +99,8 @@ __syscall_enter_from_user_work(struct pt_regs *regs, long syscall)
 {
 	unsigned long work = READ_ONCE(current_thread_info()->syscall_work);
 
-	if (work & SYSCALL_WORK_ENTER) {
+	if (work & SYSCALL_WORK_ENTER)
 		syscall = syscall_trace_enter(regs, syscall, work);
-	}
 
 	return syscall;
 }
@@ -150,7 +154,7 @@ void noinstr exit_to_user_mode(void)
 void __weak arch_do_signal_or_restart(struct pt_regs *regs) { }
 
 static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
-        unsigned long ti_work)
+					    unsigned long ti_work)
 {
 	/*
 	 * Before returning to user space ensure that all pending work
@@ -160,25 +164,20 @@ static unsigned long exit_to_user_mode_loop(struct pt_regs *regs,
 
 		local_irq_enable_exit_to_user(ti_work);
 
-		if (ti_work & (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY)) {
+		if (ti_work & (_TIF_NEED_RESCHED | _TIF_NEED_RESCHED_LAZY))
 			schedule();
-		}
 
-		if (ti_work & _TIF_UPROBE) {
+		if (ti_work & _TIF_UPROBE)
 			uprobe_notify_resume(regs);
-		}
 
-		if (ti_work & _TIF_PATCH_PENDING) {
+		if (ti_work & _TIF_PATCH_PENDING)
 			klp_update_patch_state(current);
-		}
 
-		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL)) {
+		if (ti_work & (_TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL))
 			arch_do_signal_or_restart(regs);
-		}
 
-		if (ti_work & _TIF_NOTIFY_RESUME) {
+		if (ti_work & _TIF_NOTIFY_RESUME)
 			resume_user_mode_work(regs);
-		}
 
 		/* Architecture specific TIF work */
 		arch_exit_to_user_mode_work(regs, ti_work);
@@ -210,9 +209,8 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
 	tick_nohz_user_enter_prepare();
 
 	ti_work = read_thread_flags();
-	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK)) {
+	if (unlikely(ti_work & EXIT_TO_USER_MODE_WORK))
 		ti_work = exit_to_user_mode_loop(regs, ti_work);
-	}
 
 	arch_exit_to_user_mode_prepare(regs, ti_work);
 
@@ -229,9 +227,8 @@ static void exit_to_user_mode_prepare(struct pt_regs *regs)
  */
 static inline bool report_single_step(unsigned long work)
 {
-	if (work & SYSCALL_WORK_SYSCALL_EMU) {
+	if (work & SYSCALL_WORK_SYSCALL_EMU)
 		return false;
-	}
 
 	return work & SYSCALL_WORK_SYSCALL_EXIT_TRAP;
 }
@@ -255,14 +252,12 @@ static void syscall_exit_work(struct pt_regs *regs, unsigned long work)
 
 	audit_syscall_exit(regs);
 
-	if (work & SYSCALL_WORK_SYSCALL_TRACEPOINT) {
+	if (work & SYSCALL_WORK_SYSCALL_TRACEPOINT)
 		trace_sys_exit(regs, syscall_get_return_value(current, regs));
-	}
 
 	step = report_single_step(work);
-	if (step || work & SYSCALL_WORK_SYSCALL_TRACE) {
+	if (step || work & SYSCALL_WORK_SYSCALL_TRACE)
 		ptrace_report_syscall_exit(regs, step);
-	}
 }
 
 /*
@@ -277,9 +272,8 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 	CT_WARN_ON(ct_state() != CONTEXT_KERNEL);
 
 	if (IS_ENABLED(CONFIG_PROVE_LOCKING)) {
-		if (WARN(irqs_disabled(), "syscall %lu left IRQs disabled", nr)) {
+		if (WARN(irqs_disabled(), "syscall %lu left IRQs disabled", nr))
 			local_irq_enable();
-		}
 	}
 
 	rseq_syscall(regs);
@@ -289,9 +283,8 @@ static void syscall_exit_to_user_mode_prepare(struct pt_regs *regs)
 	 * enabled, we want to run them exactly once per syscall exit with
 	 * interrupts enabled.
 	 */
-	if (unlikely(work & SYSCALL_WORK_EXIT)) {
+	if (unlikely(work & SYSCALL_WORK_EXIT))
 		syscall_exit_work(regs, work);
-	}
 }
 
 static __always_inline void __syscall_exit_to_user_mode_work(struct pt_regs *regs)
@@ -399,12 +392,10 @@ void raw_irqentry_exit_cond_resched(void)
 	if (!preempt_count()) {
 		/* Sanity check RCU and thread stack */
 		rcu_irq_exit_check_preempt();
-		if (IS_ENABLED(CONFIG_DEBUG_ENTRY)) {
+		if (IS_ENABLED(CONFIG_DEBUG_ENTRY))
 			WARN_ON_ONCE(!on_thread_stack());
-		}
-		if (test_tsk_need_resched(current)) {
+		if (test_tsk_need_resched(current))
 			preempt_schedule_irq();
-		}
 	}
 }
 #ifdef CONFIG_PREEMPT_DYNAMIC
@@ -414,9 +405,8 @@ DEFINE_STATIC_CALL(irqentry_exit_cond_resched, raw_irqentry_exit_cond_resched);
 DEFINE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
 void dynamic_irqentry_exit_cond_resched(void)
 {
-	if (!static_branch_unlikely(&sk_dynamic_irqentry_exit_cond_resched)) {
+	if (!static_branch_unlikely(&sk_dynamic_irqentry_exit_cond_resched))
 		return;
-	}
 	raw_irqentry_exit_cond_resched();
 }
 #endif
@@ -447,9 +437,8 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 		}
 
 		instrumentation_begin();
-		if (IS_ENABLED(CONFIG_PREEMPTION)) {
+		if (IS_ENABLED(CONFIG_PREEMPTION))
 			irqentry_exit_cond_resched();
-		}
 
 		/* Covers both tracing and lockdep */
 		trace_hardirqs_on();
@@ -459,9 +448,8 @@ noinstr void irqentry_exit(struct pt_regs *regs, irqentry_state_t state)
 		 * IRQ flags state is correct already. Just tell RCU if it
 		 * was not watching on entry.
 		 */
-		if (state.exit_rcu) {
+		if (state.exit_rcu)
 			ct_irq_exit();
-		}
 	}
 }
 
@@ -497,8 +485,7 @@ void noinstr irqentry_nmi_exit(struct pt_regs *regs, irqentry_state_t irq_state)
 
 	ct_nmi_exit();
 	lockdep_hardirq_exit();
-	if (irq_state.lockdep) {
+	if (irq_state.lockdep)
 		lockdep_hardirqs_on(CALLER_ADDR0);
-	}
 	__nmi_exit();
 }

@@ -27,6 +27,13 @@
 
 #ifdef CONFIG_MMU
 
+bool copy_from_kernel_nofault_allowed(const void *unsafe_src, size_t size)
+{
+	unsigned long addr = (unsigned long)unsafe_src;
+
+	return addr >= TASK_SIZE && ULONG_MAX - addr >= size;
+}
+
 /*
  * This is useful to dump out the page tables associated with
  * 'addr' in mm 'mm'.
@@ -35,9 +42,8 @@ void show_pte(const char *lvl, struct mm_struct *mm, unsigned long addr)
 {
 	pgd_t *pgd;
 
-	if (!mm) {
+	if (!mm)
 		mm = &init_mm;
-	}
 
 	pgd = pgd_offset(mm, addr);
 	printk("%s[%08lx] *pgd=%08llx", lvl, addr, (long long)pgd_val(*pgd));
@@ -49,9 +55,8 @@ void show_pte(const char *lvl, struct mm_struct *mm, unsigned long addr)
 		pte_t *pte;
 
 		p4d = p4d_offset(pgd, addr);
-		if (p4d_none(*p4d)) {
+		if (p4d_none(*p4d))
 			break;
-		}
 
 		if (p4d_bad(*p4d)) {
 			pr_cont("(bad)");
@@ -59,13 +64,11 @@ void show_pte(const char *lvl, struct mm_struct *mm, unsigned long addr)
 		}
 
 		pud = pud_offset(p4d, addr);
-		if (PTRS_PER_PUD != 1) {
+		if (PTRS_PER_PUD != 1)
 			pr_cont(", *pud=%08llx", (long long)pud_val(*pud));
-		}
 
-		if (pud_none(*pud)) {
+		if (pud_none(*pud))
 			break;
-		}
 
 		if (pud_bad(*pud)) {
 			pr_cont("(bad)");
@@ -73,13 +76,11 @@ void show_pte(const char *lvl, struct mm_struct *mm, unsigned long addr)
 		}
 
 		pmd = pmd_offset(pud, addr);
-		if (PTRS_PER_PMD != 1) {
+		if (PTRS_PER_PMD != 1)
 			pr_cont(", *pmd=%08llx", (long long)pmd_val(*pmd));
-		}
 
-		if (pmd_none(*pmd)) {
+		if (pmd_none(*pmd))
 			break;
-		}
 
 		if (pmd_bad(*pmd)) {
 			pr_cont("(bad)");
@@ -87,29 +88,27 @@ void show_pte(const char *lvl, struct mm_struct *mm, unsigned long addr)
 		}
 
 		/* We must not map this if we have highmem enabled */
-		if (PageHighMem(pfn_to_page(pmd_val(*pmd) >> PAGE_SHIFT))) {
+		if (PageHighMem(pfn_to_page(pmd_val(*pmd) >> PAGE_SHIFT)))
 			break;
-		}
 
 		pte = pte_offset_map(pmd, addr);
-		if (!pte) {
+		if (!pte)
 			break;
-		}
 
 		pr_cont(", *pte=%08llx", (long long)pte_val(*pte));
 #ifndef CONFIG_ARM_LPAE
 		pr_cont(", *ppte=%08llx",
-		        (long long)pte_val(pte[PTE_HWTABLE_PTRS]));
+		       (long long)pte_val(pte[PTE_HWTABLE_PTRS]));
 #endif
 		pte_unmap(pte);
-	} while (0);
+	} while(0);
 
 	pr_cont("\n");
 }
-#else                   /* CONFIG_MMU */
+#else					/* CONFIG_MMU */
 void show_pte(const char *lvl, struct mm_struct *mm, unsigned long addr)
 { }
-#endif                  /* CONFIG_MMU */
+#endif					/* CONFIG_MMU */
 
 static inline bool is_write_fault(unsigned int fsr)
 {
@@ -120,26 +119,37 @@ static inline bool is_translation_fault(unsigned int fsr)
 {
 	int fs = fsr_fs(fsr);
 #ifdef CONFIG_ARM_LPAE
-	if ((fs & FS_MMU_NOLL_MASK) == FS_TRANS_NOLL) {
+	if ((fs & FS_MMU_NOLL_MASK) == FS_TRANS_NOLL)
 		return true;
-	}
 #else
-	if (fs == FS_L1_TRANS || fs == FS_L2_TRANS) {
+	if (fs == FS_L1_TRANS || fs == FS_L2_TRANS)
 		return true;
-	}
+#endif
+	return false;
+}
+
+static inline bool is_permission_fault(unsigned int fsr)
+{
+	int fs = fsr_fs(fsr);
+#ifdef CONFIG_ARM_LPAE
+	if ((fs & FS_MMU_NOLL_MASK) == FS_PERM_NOLL)
+		return true;
+#else
+	if (fs == FS_L1_PERM || fs == FS_L2_PERM)
+		return true;
 #endif
 	return false;
 }
 
 static void die_kernel_fault(const char *msg, struct mm_struct *mm,
-                             unsigned long addr, unsigned int fsr,
-                             struct pt_regs *regs)
+			     unsigned long addr, unsigned int fsr,
+			     struct pt_regs *regs)
 {
 	bust_spinlocks(1);
 	pr_alert("8<--- cut here ---\n");
 	pr_alert("Unable to handle kernel %s at virtual address %08lx when %s\n",
-	         msg, addr, fsr & FSR_LNX_PF ? "execute" :
-	         fsr & FSR_WRITE ? "write" : "read");
+		 msg, addr, fsr & FSR_LNX_PF ? "execute" :
+		 fsr & FSR_WRITE ? "write" : "read");
 
 	show_pte(KERN_ALERT, mm, addr);
 	die("Oops", regs, fsr);
@@ -152,26 +162,26 @@ static void die_kernel_fault(const char *msg, struct mm_struct *mm,
  */
 static void
 __do_kernel_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
-                  struct pt_regs *regs)
+		  struct pt_regs *regs)
 {
 	const char *msg;
 	/*
 	 * Are we prepared to handle this kernel fault?
 	 */
-	if (fixup_exception(regs)) {
+	if (fixup_exception(regs))
 		return;
-	}
 
 	/*
 	 * No handler, we'll have to terminate things with extreme prejudice.
 	 */
 	if (addr < PAGE_SIZE) {
 		msg = "NULL pointer dereference";
+	} else if (is_permission_fault(fsr) && fsr & FSR_LNX_PF) {
+		msg = "execution of memory";
 	} else {
 		if (is_translation_fault(fsr) &&
-		    kfence_handle_page_fault(addr, is_write_fault(fsr), regs)) {
+		    kfence_handle_page_fault(addr, is_write_fault(fsr), regs))
 			return;
-		}
 
 		msg = "paging request";
 	}
@@ -185,13 +195,9 @@ __do_kernel_fault(struct mm_struct *mm, unsigned long addr, unsigned int fsr,
  */
 static void
 __do_user_fault(unsigned long addr, unsigned int fsr, unsigned int sig,
-                int code, struct pt_regs *regs)
+		int code, struct pt_regs *regs)
 {
 	struct task_struct *tsk = current;
-
-	if (addr > TASK_SIZE) {
-		harden_branch_predictor();
-	}
 
 #ifdef CONFIG_DEBUG_USER
 	if (((user_debug & UDBG_SEGV) && (sig == SIGSEGV)) ||
@@ -199,15 +205,19 @@ __do_user_fault(unsigned long addr, unsigned int fsr, unsigned int sig,
 		pr_err("8<--- cut here ---\n");
 		pr_err("%s: unhandled page fault (%d) at 0x%08lx, code 0x%03x\n",
 		       tsk->comm, sig, addr, fsr);
-		show_pte(KERN_ERR, tsk->mm, addr);
+		if (likely(addr < TASK_SIZE)) {
+			mmap_write_lock(tsk->mm);
+			show_pte(KERN_ERR, tsk->mm, addr);
+			mmap_write_unlock(tsk->mm);
+		}
 		show_regs(regs);
 	}
 #endif
 #ifndef CONFIG_KUSER_HELPERS
 	if ((sig == SIGSEGV) && ((addr & PAGE_MASK) == 0xffff0000))
 		printk_ratelimited(KERN_DEBUG
-		                   "%s: CONFIG_KUSER_HELPERS disabled at 0x%08lx\n",
-		                   tsk->comm, addr);
+				   "%s: CONFIG_KUSER_HELPERS disabled at 0x%08lx\n",
+				   tsk->comm, addr);
 #endif
 
 	tsk->thread.address = addr;
@@ -225,30 +235,45 @@ void do_bad_area(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 	 * If we are in kernel mode at this point, we
 	 * have no context to handle this fault with.
 	 */
-	if (user_mode(regs)) {
+	if (user_mode(regs))
 		__do_user_fault(addr, fsr, SIGSEGV, SEGV_MAPERR, regs);
-	} else {
+	else
 		__do_kernel_fault(mm, addr, fsr, regs);
-	}
 }
 
 #ifdef CONFIG_MMU
-#define VM_FAULT_BADMAP     ((__force vm_fault_t)0x010000)
-#define VM_FAULT_BADACCESS  ((__force vm_fault_t)0x020000)
+#define VM_FAULT_BADMAP		((__force vm_fault_t)0x010000)
+#define VM_FAULT_BADACCESS	((__force vm_fault_t)0x020000)
 
-static inline bool is_permission_fault(unsigned int fsr)
+static int __kprobes
+do_kernel_address_page_fault(struct mm_struct *mm, unsigned long addr,
+			     unsigned int fsr, struct pt_regs *regs)
 {
-	int fs = fsr_fs(fsr);
-#ifdef CONFIG_ARM_LPAE
-	if ((fs & FS_MMU_NOLL_MASK) == FS_PERM_NOLL) {
-		return true;
+	if (user_mode(regs)) {
+		/*
+		 * Fault from user mode for a kernel space address. User mode
+		 * should not be faulting in kernel space, which includes the
+		 * vector/khelper page. Handle the branch predictor hardening
+		 * while interrupts are still disabled, then send a SIGSEGV.
+		 */
+		harden_branch_predictor();
+		__do_user_fault(addr, fsr, SIGSEGV, SEGV_MAPERR, regs);
+	} else {
+		/*
+		 * Fault from kernel mode. Enable interrupts if they were
+		 * enabled in the parent context. Section (upper page table)
+		 * translation faults are handled via do_translation_fault(),
+		 * so we will only get here for a non-present kernel space
+		 * PTE or PTE permission fault. This may happen in exceptional
+		 * circumstances and need the fixup tables to be walked.
+		 */
+		if (interrupts_enabled(regs))
+			local_irq_enable();
+
+		__do_kernel_fault(mm, addr, fsr, regs);
 	}
-#else
-	if (fs == FS_L1_PERM || fs == FS_L2_PERM) {
-		return true;
-	}
-#endif
-	return false;
+
+	return 0;
 }
 
 static int __kprobes
@@ -261,27 +286,29 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 	unsigned int flags = FAULT_FLAG_DEFAULT;
 	unsigned long vm_flags = VM_ACCESS_FLAGS;
 
-	if (kprobe_page_fault(regs, fsr)) {
+	if (kprobe_page_fault(regs, fsr))
 		return 0;
-	}
 
+	/*
+	 * Handle kernel addresses faults separately, which avoids touching
+	 * the mmap lock from contexts that are not able to sleep.
+	 */
+	if (addr >= TASK_SIZE)
+		return do_kernel_address_page_fault(mm, addr, fsr, regs);
 
 	/* Enable interrupts if they were enabled in the parent context. */
-	if (interrupts_enabled(regs)) {
+	if (interrupts_enabled(regs))
 		local_irq_enable();
-	}
 
 	/*
 	 * If we're in an interrupt or have no user
 	 * context, we must not take the fault..
 	 */
-	if (faulthandler_disabled() || !mm) {
+	if (faulthandler_disabled() || !mm)
 		goto no_context;
-	}
 
-	if (user_mode(regs)) {
+	if (user_mode(regs))
 		flags |= FAULT_FLAG_USER;
-	}
 
 	if (is_write_fault(fsr)) {
 		flags |= FAULT_FLAG_WRITE;
@@ -293,7 +320,7 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 
 		if (is_permission_fault(fsr) && !user_mode(regs))
 			die_kernel_fault("execution of memory",
-			                 mm, addr, fsr, regs);
+					 mm, addr, fsr, regs);
 	}
 
 	perf_sw_event(PERF_COUNT_SW_PAGE_FAULTS, 1, regs, addr);
@@ -309,27 +336,24 @@ retry:
 	 * ok, we have a good vm_area for this memory access, check the
 	 * permissions on the VMA allow for the fault which occurred.
 	 */
-	if (!(vma->vm_flags & vm_flags)) {
+	if (!(vma->vm_flags & vm_flags))
 		fault = VM_FAULT_BADACCESS;
-	} else {
+	else
 		fault = handle_mm_fault(vma, addr & PAGE_MASK, flags, regs);
-	}
 
 	/* If we need to retry but a fatal signal is pending, handle the
 	 * signal first. We do not need to release the mmap_lock because
 	 * it would already be released in __lock_page_or_retry in
 	 * mm/filemap.c. */
 	if (fault_signal_pending(fault, regs)) {
-		if (!user_mode(regs)) {
+		if (!user_mode(regs))
 			goto no_context;
-		}
 		return 0;
 	}
 
 	/* The fault is fully completed (including releasing mmap lock) */
-	if (fault & VM_FAULT_COMPLETED) {
+	if (fault & VM_FAULT_COMPLETED)
 		return 0;
-	}
 
 	if (!(fault & VM_FAULT_ERROR)) {
 		if (fault & VM_FAULT_RETRY) {
@@ -343,18 +367,16 @@ retry:
 	/*
 	 * Handle the "normal" case first - VM_FAULT_MAJOR
 	 */
-	if (likely(!(fault & (VM_FAULT_ERROR | VM_FAULT_BADMAP | VM_FAULT_BADACCESS)))) {
+	if (likely(!(fault & (VM_FAULT_ERROR | VM_FAULT_BADMAP | VM_FAULT_BADACCESS))))
 		return 0;
-	}
 
 bad_area:
 	/*
 	 * If we are in kernel mode at this point, we
 	 * have no context to handle this fault with.
 	 */
-	if (!user_mode(regs)) {
+	if (!user_mode(regs))
 		goto no_context;
-	}
 
 	if (fault & VM_FAULT_OOM) {
 		/*
@@ -380,7 +402,7 @@ bad_area:
 		 */
 		sig = SIGSEGV;
 		code = fault == VM_FAULT_BADACCESS ?
-		       SEGV_ACCERR : SEGV_MAPERR;
+			SEGV_ACCERR : SEGV_MAPERR;
 	}
 
 	__do_user_fault(addr, fsr, sig, code, regs);
@@ -390,13 +412,13 @@ no_context:
 	__do_kernel_fault(mm, addr, fsr, regs);
 	return 0;
 }
-#else                   /* CONFIG_MMU */
+#else					/* CONFIG_MMU */
 static int
 do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 {
 	return 0;
 }
-#endif                  /* CONFIG_MMU */
+#endif					/* CONFIG_MMU */
 
 /*
  * First Level Translation Fault Handler
@@ -404,21 +426,25 @@ do_page_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
  * We enter here because the first level page table doesn't contain
  * a valid entry for the address.
  *
- * If the address is in kernel space (>= TASK_SIZE), then we are
- * probably faulting in the vmalloc() area.
+ * If this is a user address (addr < TASK_SIZE), we handle this as a
+ * normal page fault. This leaves the remainder of the function to handle
+ * kernel address translation faults.
  *
- * If the init_task's first level page tables contains the relevant
- * entry, we copy the it to this task.  If not, we send the process
- * a signal, fixup the exception, or oops the kernel.
+ * Since user mode is not permitted to access kernel addresses, pass these
+ * directly to do_kernel_address_page_fault() to handle.
  *
- * NOTE! We MUST NOT take any locks for this case. We may be in an
- * interrupt or a critical region, and should only copy the information
- * from the master page table, nothing more.
+ * Otherwise, we're probably faulting in the vmalloc() area, so try to fix
+ * that up. Note that we must not take any locks or enable interrupts in
+ * this case.
+ *
+ * If vmalloc() fixup fails, that means the non-leaf page tables did not
+ * contain an entry for this address, so handle this via
+ * do_kernel_address_page_fault().
  */
 #ifdef CONFIG_MMU
 static int __kprobes
 do_translation_fault(unsigned long addr, unsigned int fsr,
-                     struct pt_regs *regs)
+		     struct pt_regs *regs)
 {
 	unsigned int index;
 	pgd_t *pgd, *pgd_k;
@@ -426,17 +452,14 @@ do_translation_fault(unsigned long addr, unsigned int fsr,
 	pud_t *pud, *pud_k;
 	pmd_t *pmd, *pmd_k;
 
-	if (addr < TASK_SIZE) {
+	if (addr < TASK_SIZE)
 		return do_page_fault(addr, fsr, regs);
-	}
 
-	if (interrupts_enabled(regs)) {
+	if (interrupts_enabled(regs))
 		local_irq_enable();
-	}
 
-	if (user_mode(regs)) {
+	if (user_mode(regs))
 		goto bad_area;
-	}
 
 	index = pgd_index(addr);
 
@@ -446,22 +469,18 @@ do_translation_fault(unsigned long addr, unsigned int fsr,
 	p4d = p4d_offset(pgd, addr);
 	p4d_k = p4d_offset(pgd_k, addr);
 
-	if (p4d_none(*p4d_k)) {
+	if (p4d_none(*p4d_k))
 		goto bad_area;
-	}
-	if (!p4d_present(*p4d)) {
+	if (!p4d_present(*p4d))
 		set_p4d(p4d, *p4d_k);
-	}
 
 	pud = pud_offset(p4d, addr);
 	pud_k = pud_offset(p4d_k, addr);
 
-	if (pud_none(*pud_k)) {
+	if (pud_none(*pud_k))
 		goto bad_area;
-	}
-	if (!pud_present(*pud)) {
+	if (!pud_present(*pud))
 		set_pud(pud, *pud_k);
-	}
 
 	pmd = pmd_offset(pud, addr);
 	pmd_k = pmd_offset(pud_k, addr);
@@ -482,25 +501,25 @@ do_translation_fault(unsigned long addr, unsigned int fsr,
 	 */
 	index = (addr >> SECTION_SHIFT) & 1;
 #endif
-	if (pmd_none(pmd_k[index])) {
+	if (pmd_none(pmd_k[index]))
 		goto bad_area;
-	}
 
 	copy_pmd(pmd, pmd_k);
 	return 0;
 
 bad_area:
-	do_bad_area(addr, fsr, regs);
+	do_kernel_address_page_fault(current->mm, addr, fsr, regs);
+
 	return 0;
 }
-#else                   /* CONFIG_MMU */
+#else					/* CONFIG_MMU */
 static int
 do_translation_fault(unsigned long addr, unsigned int fsr,
-                     struct pt_regs *regs)
+		     struct pt_regs *regs)
 {
 	return 0;
 }
-#endif                  /* CONFIG_MMU */
+#endif					/* CONFIG_MMU */
 
 /*
  * Some section permission faults need to be handled gracefully.
@@ -510,11 +529,18 @@ do_translation_fault(unsigned long addr, unsigned int fsr,
 static int
 do_sect_fault(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 {
-	if (interrupts_enabled(regs)) {
+	if (interrupts_enabled(regs))
 		local_irq_enable();
-	}
+	/*
+	 * If this is a kernel address, but from user mode, then userspace
+	 * is trying bad stuff. Invoke the branch predictor handling.
+	 * Interrupts are disabled here.
+	 */
+	if (addr >= TASK_SIZE && user_mode(regs))
+		harden_branch_predictor();
 
 	do_bad_area(addr, fsr, regs);
+
 	return 0;
 }
 #endif /* CONFIG_ARM_LPAE */
@@ -529,26 +555,25 @@ do_bad(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 }
 
 struct fsr_info {
-	int (*fn)(unsigned long addr, unsigned int fsr, struct pt_regs *regs);
-	int sig;
-	int code;
+	int	(*fn)(unsigned long addr, unsigned int fsr, struct pt_regs *regs);
+	int	sig;
+	int	code;
 	const char *name;
 };
 
 /* FSR definition */
 #ifdef CONFIG_ARM_LPAE
-	#include "fsr-3level.c"
+#include "fsr-3level.c"
 #else
-	#include "fsr-2level.c"
+#include "fsr-2level.c"
 #endif
 
 void __init
 hook_fault_code(int nr, int (*fn)(unsigned long, unsigned int, struct pt_regs *),
-                int sig, int code, const char *name)
+		int sig, int code, const char *name)
 {
-	if (nr < 0 || nr >= ARRAY_SIZE(fsr_info)) {
+	if (nr < 0 || nr >= ARRAY_SIZE(fsr_info))
 		BUG();
-	}
 
 	fsr_info[nr].fn   = fn;
 	fsr_info[nr].sig  = sig;
@@ -564,26 +589,32 @@ do_DataAbort(unsigned long addr, unsigned int fsr, struct pt_regs *regs)
 {
 	const struct fsr_info *inf = fsr_info + fsr_fs(fsr);
 
-	if (!inf->fn(addr, fsr & ~FSR_LNX_PF, regs)) {
+	if (!inf->fn(addr, fsr & ~FSR_LNX_PF, regs))
 		return;
-	}
 
 	pr_alert("8<--- cut here ---\n");
 	pr_alert("Unhandled fault: %s (0x%03x) at 0x%08lx\n",
-	         inf->name, fsr, addr);
-	show_pte(KERN_ALERT, current->mm, addr);
+		inf->name, fsr, addr);
+	if (likely(user_mode(regs))) {
+		if (addr < TASK_SIZE) {
+			mmap_write_lock(current->mm);
+			show_pte(KERN_ALERT, current->mm, addr);
+			mmap_write_unlock(current->mm);
+		}
+	} else {
+		show_pte(KERN_ALERT, current->mm, addr);
+	}
 
 	arm_notify_die("", regs, inf->sig, inf->code, (void __user *)addr,
-	               fsr, 0);
+		       fsr, 0);
 }
 
 void __init
 hook_ifault_code(int nr, int (*fn)(unsigned long, unsigned int, struct pt_regs *),
-                 int sig, int code, const char *name)
+		 int sig, int code, const char *name)
 {
-	if (nr < 0 || nr >= ARRAY_SIZE(ifsr_info)) {
+	if (nr < 0 || nr >= ARRAY_SIZE(ifsr_info))
 		BUG();
-	}
 
 	ifsr_info[nr].fn   = fn;
 	ifsr_info[nr].sig  = sig;
@@ -596,15 +627,15 @@ do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
 {
 	const struct fsr_info *inf = ifsr_info + fsr_fs(ifsr);
 
-	if (!inf->fn(addr, ifsr | FSR_LNX_PF, regs)) {
+	if (!inf->fn(addr, ifsr | FSR_LNX_PF, regs))
 		return;
-	}
 
+	pr_alert("8<--- cut here ---\n");
 	pr_alert("Unhandled prefetch abort: %s (0x%03x) at 0x%08lx\n",
-	         inf->name, ifsr, addr);
+		inf->name, ifsr, addr);
 
 	arm_notify_die("", regs, inf->sig, inf->code, (void __user *)addr,
-	               ifsr, 0);
+		       ifsr, 0);
 }
 
 /*
@@ -613,11 +644,11 @@ do_PrefetchAbort(unsigned long addr, unsigned int ifsr, struct pt_regs *regs)
  * firmware/bootloader left an imprecise abort pending for us to trip over.
  */
 static int __init early_abort_handler(unsigned long addr, unsigned int fsr,
-                                      struct pt_regs *regs)
+				      struct pt_regs *regs)
 {
 	pr_warn("Hit pending asynchronous external abort (FSR=0x%08x) during "
-	        "first unmask, this is most likely caused by a "
-	        "firmware/bootloader bug.\n", fsr);
+		"first unmask, this is most likely caused by a "
+		"firmware/bootloader bug.\n", fsr);
 
 	return 0;
 }
@@ -634,7 +665,7 @@ static int __init exceptions_init(void)
 {
 	if (cpu_architecture() >= CPU_ARCH_ARMv6) {
 		hook_fault_code(4, do_translation_fault, SIGSEGV, SEGV_MAPERR,
-		                "I-cache maintenance fault");
+				"I-cache maintenance fault");
 	}
 
 	if (cpu_architecture() >= CPU_ARCH_ARMv7) {
@@ -643,9 +674,9 @@ static int __init exceptions_init(void)
 		 * Runtime check for 'K' extension is needed
 		 */
 		hook_fault_code(3, do_bad, SIGSEGV, SEGV_MAPERR,
-		                "section access flag fault");
+				"section access flag fault");
 		hook_fault_code(6, do_bad, SIGSEGV, SEGV_MAPERR,
-		                "section access flag fault");
+				"section access flag fault");
 	}
 
 	return 0;

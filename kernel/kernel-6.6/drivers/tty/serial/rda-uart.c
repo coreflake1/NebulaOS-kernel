@@ -22,94 +22,94 @@
 #define RDA_UART_PORT_NUM 3
 #define RDA_UART_DEV_NAME "ttyRDA"
 
-#define RDA_UART_CTRL       0x00
-#define RDA_UART_STATUS     0x04
-#define RDA_UART_RXTX_BUFFER    0x08
-#define RDA_UART_IRQ_MASK   0x0c
-#define RDA_UART_IRQ_CAUSE  0x10
-#define RDA_UART_IRQ_TRIGGERS   0x14
-#define RDA_UART_CMD_SET    0x18
-#define RDA_UART_CMD_CLR    0x1c
+#define RDA_UART_CTRL		0x00
+#define RDA_UART_STATUS		0x04
+#define RDA_UART_RXTX_BUFFER	0x08
+#define RDA_UART_IRQ_MASK	0x0c
+#define RDA_UART_IRQ_CAUSE	0x10
+#define RDA_UART_IRQ_TRIGGERS	0x14
+#define RDA_UART_CMD_SET	0x18
+#define RDA_UART_CMD_CLR	0x1c
 
 /* UART_CTRL Bits */
-#define RDA_UART_ENABLE         BIT(0)
-#define RDA_UART_DBITS_8        BIT(1)
-#define RDA_UART_TX_SBITS_2     BIT(2)
-#define RDA_UART_PARITY_EN      BIT(3)
-#define RDA_UART_PARITY(x)      (((x) & 0x3) << 4)
-#define RDA_UART_PARITY_ODD     RDA_UART_PARITY(0)
-#define RDA_UART_PARITY_EVEN        RDA_UART_PARITY(1)
-#define RDA_UART_PARITY_SPACE       RDA_UART_PARITY(2)
-#define RDA_UART_PARITY_MARK        RDA_UART_PARITY(3)
-#define RDA_UART_DIV_MODE       BIT(20)
-#define RDA_UART_IRDA_EN        BIT(21)
-#define RDA_UART_DMA_EN         BIT(22)
-#define RDA_UART_FLOW_CNT_EN        BIT(23)
-#define RDA_UART_LOOP_BACK_EN       BIT(24)
-#define RDA_UART_RX_LOCK_ERR        BIT(25)
-#define RDA_UART_RX_BREAK_LEN(x)    (((x) & 0xf) << 28)
+#define RDA_UART_ENABLE			BIT(0)
+#define RDA_UART_DBITS_8		BIT(1)
+#define RDA_UART_TX_SBITS_2		BIT(2)
+#define RDA_UART_PARITY_EN		BIT(3)
+#define RDA_UART_PARITY(x)		(((x) & 0x3) << 4)
+#define RDA_UART_PARITY_ODD		RDA_UART_PARITY(0)
+#define RDA_UART_PARITY_EVEN		RDA_UART_PARITY(1)
+#define RDA_UART_PARITY_SPACE		RDA_UART_PARITY(2)
+#define RDA_UART_PARITY_MARK		RDA_UART_PARITY(3)
+#define RDA_UART_DIV_MODE		BIT(20)
+#define RDA_UART_IRDA_EN		BIT(21)
+#define RDA_UART_DMA_EN			BIT(22)
+#define RDA_UART_FLOW_CNT_EN		BIT(23)
+#define RDA_UART_LOOP_BACK_EN		BIT(24)
+#define RDA_UART_RX_LOCK_ERR		BIT(25)
+#define RDA_UART_RX_BREAK_LEN(x)	(((x) & 0xf) << 28)
 
 /* UART_STATUS Bits */
-#define RDA_UART_RX_FIFO(x)     (((x) & 0x7f) << 0)
-#define RDA_UART_RX_FIFO_MASK       (0x7f << 0)
-#define RDA_UART_TX_FIFO(x)     (((x) & 0x1f) << 8)
-#define RDA_UART_TX_FIFO_MASK       (0x1f << 8)
-#define RDA_UART_TX_ACTIVE      BIT(14)
-#define RDA_UART_RX_ACTIVE      BIT(15)
-#define RDA_UART_RX_OVERFLOW_ERR    BIT(16)
-#define RDA_UART_TX_OVERFLOW_ERR    BIT(17)
-#define RDA_UART_RX_PARITY_ERR      BIT(18)
-#define RDA_UART_RX_FRAMING_ERR     BIT(19)
-#define RDA_UART_RX_BREAK_INT       BIT(20)
-#define RDA_UART_DCTS           BIT(24)
-#define RDA_UART_CTS            BIT(25)
-#define RDA_UART_DTR            BIT(28)
-#define RDA_UART_CLK_ENABLED        BIT(31)
+#define RDA_UART_RX_FIFO(x)		(((x) & 0x7f) << 0)
+#define RDA_UART_RX_FIFO_MASK		(0x7f << 0)
+#define RDA_UART_TX_FIFO(x)		(((x) & 0x1f) << 8)
+#define RDA_UART_TX_FIFO_MASK		(0x1f << 8)
+#define RDA_UART_TX_ACTIVE		BIT(14)
+#define RDA_UART_RX_ACTIVE		BIT(15)
+#define RDA_UART_RX_OVERFLOW_ERR	BIT(16)
+#define RDA_UART_TX_OVERFLOW_ERR	BIT(17)
+#define RDA_UART_RX_PARITY_ERR		BIT(18)
+#define RDA_UART_RX_FRAMING_ERR		BIT(19)
+#define RDA_UART_RX_BREAK_INT		BIT(20)
+#define RDA_UART_DCTS			BIT(24)
+#define RDA_UART_CTS			BIT(25)
+#define RDA_UART_DTR			BIT(28)
+#define RDA_UART_CLK_ENABLED		BIT(31)
 
 /* UART_RXTX_BUFFER Bits */
-#define RDA_UART_RX_DATA(x)     (((x) & 0xff) << 0)
-#define RDA_UART_TX_DATA(x)     (((x) & 0xff) << 0)
+#define RDA_UART_RX_DATA(x)		(((x) & 0xff) << 0)
+#define RDA_UART_TX_DATA(x)		(((x) & 0xff) << 0)
 
 /* UART_IRQ_MASK Bits */
-#define RDA_UART_TX_MODEM_STATUS    BIT(0)
-#define RDA_UART_RX_DATA_AVAILABLE  BIT(1)
-#define RDA_UART_TX_DATA_NEEDED     BIT(2)
-#define RDA_UART_RX_TIMEOUT     BIT(3)
-#define RDA_UART_RX_LINE_ERR        BIT(4)
-#define RDA_UART_TX_DMA_DONE        BIT(5)
-#define RDA_UART_RX_DMA_DONE        BIT(6)
-#define RDA_UART_RX_DMA_TIMEOUT     BIT(7)
-#define RDA_UART_DTR_RISE       BIT(8)
-#define RDA_UART_DTR_FALL       BIT(9)
+#define RDA_UART_TX_MODEM_STATUS	BIT(0)
+#define RDA_UART_RX_DATA_AVAILABLE	BIT(1)
+#define RDA_UART_TX_DATA_NEEDED		BIT(2)
+#define RDA_UART_RX_TIMEOUT		BIT(3)
+#define RDA_UART_RX_LINE_ERR		BIT(4)
+#define RDA_UART_TX_DMA_DONE		BIT(5)
+#define RDA_UART_RX_DMA_DONE		BIT(6)
+#define RDA_UART_RX_DMA_TIMEOUT		BIT(7)
+#define RDA_UART_DTR_RISE		BIT(8)
+#define RDA_UART_DTR_FALL		BIT(9)
 
 /* UART_IRQ_CAUSE Bits */
-#define RDA_UART_TX_MODEM_STATUS_U  BIT(16)
-#define RDA_UART_RX_DATA_AVAILABLE_U    BIT(17)
-#define RDA_UART_TX_DATA_NEEDED_U   BIT(18)
-#define RDA_UART_RX_TIMEOUT_U       BIT(19)
-#define RDA_UART_RX_LINE_ERR_U      BIT(20)
-#define RDA_UART_TX_DMA_DONE_U      BIT(21)
-#define RDA_UART_RX_DMA_DONE_U      BIT(22)
-#define RDA_UART_RX_DMA_TIMEOUT_U   BIT(23)
-#define RDA_UART_DTR_RISE_U     BIT(24)
-#define RDA_UART_DTR_FALL_U     BIT(25)
+#define RDA_UART_TX_MODEM_STATUS_U	BIT(16)
+#define RDA_UART_RX_DATA_AVAILABLE_U	BIT(17)
+#define RDA_UART_TX_DATA_NEEDED_U	BIT(18)
+#define RDA_UART_RX_TIMEOUT_U		BIT(19)
+#define RDA_UART_RX_LINE_ERR_U		BIT(20)
+#define RDA_UART_TX_DMA_DONE_U		BIT(21)
+#define RDA_UART_RX_DMA_DONE_U		BIT(22)
+#define RDA_UART_RX_DMA_TIMEOUT_U	BIT(23)
+#define RDA_UART_DTR_RISE_U		BIT(24)
+#define RDA_UART_DTR_FALL_U		BIT(25)
 
 /* UART_TRIGGERS Bits */
-#define RDA_UART_RX_TRIGGER(x)      (((x) & 0x1f) << 0)
-#define RDA_UART_TX_TRIGGER(x)      (((x) & 0xf) << 8)
-#define RDA_UART_AFC_LEVEL(x)       (((x) & 0x1f) << 16)
+#define RDA_UART_RX_TRIGGER(x)		(((x) & 0x1f) << 0)
+#define RDA_UART_TX_TRIGGER(x)		(((x) & 0xf) << 8)
+#define RDA_UART_AFC_LEVEL(x)		(((x) & 0x1f) << 16)
 
 /* UART_CMD_SET Bits */
-#define RDA_UART_RI         BIT(0)
-#define RDA_UART_DCD            BIT(1)
-#define RDA_UART_DSR            BIT(2)
-#define RDA_UART_TX_BREAK_CONTROL   BIT(3)
-#define RDA_UART_TX_FINISH_N_WAIT   BIT(4)
-#define RDA_UART_RTS            BIT(5)
-#define RDA_UART_RX_FIFO_RESET      BIT(6)
-#define RDA_UART_TX_FIFO_RESET      BIT(7)
+#define RDA_UART_RI			BIT(0)
+#define RDA_UART_DCD			BIT(1)
+#define RDA_UART_DSR			BIT(2)
+#define RDA_UART_TX_BREAK_CONTROL	BIT(3)
+#define RDA_UART_TX_FINISH_N_WAIT	BIT(4)
+#define RDA_UART_RTS			BIT(5)
+#define RDA_UART_RX_FIFO_RESET		BIT(6)
+#define RDA_UART_TX_FIFO_RESET		BIT(7)
 
-#define RDA_UART_TX_FIFO_SIZE   16
+#define RDA_UART_TX_FIFO_SIZE	16
 
 static struct uart_driver rda_uart_driver;
 
@@ -123,7 +123,7 @@ struct rda_uart_port {
 static struct rda_uart_port *rda_uart_ports[RDA_UART_PORT_NUM];
 
 static inline void rda_uart_write(struct uart_port *port, u32 val,
-                                  unsigned int off)
+				  unsigned int off)
 {
 	writel(val, port->membase + off);
 }
@@ -156,12 +156,10 @@ static unsigned int rda_uart_get_mctrl(struct uart_port *port)
 
 	cmd_set = rda_uart_read(port, RDA_UART_CMD_SET);
 	status = rda_uart_read(port, RDA_UART_STATUS);
-	if (cmd_set & RDA_UART_RTS) {
+	if (cmd_set & RDA_UART_RTS)
 		mctrl |= TIOCM_RTS;
-	}
-	if (!(status & RDA_UART_CTS)) {
+	if (!(status & RDA_UART_CTS))
 		mctrl |= TIOCM_CTS;
-	}
 
 	return mctrl;
 }
@@ -181,11 +179,10 @@ static void rda_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
 
 	val = rda_uart_read(port, RDA_UART_CTRL);
 
-	if (mctrl & TIOCM_LOOP) {
+	if (mctrl & TIOCM_LOOP)
 		val |= RDA_UART_LOOP_BACK_EN;
-	} else {
+	else
 		val &= ~RDA_UART_LOOP_BACK_EN;
-	}
 
 	rda_uart_write(port, val, RDA_UART_CTRL);
 }
@@ -234,14 +231,14 @@ static void rda_uart_start_tx(struct uart_port *port)
 }
 
 static void rda_uart_change_baudrate(struct rda_uart_port *rda_port,
-                                     unsigned long baud)
+				     unsigned long baud)
 {
 	clk_set_rate(rda_port->clk, baud * 8);
 }
 
 static void rda_uart_set_termios(struct uart_port *port,
-                                 struct ktermios *termios,
-                                 const struct ktermios *old)
+				 struct ktermios *termios,
+				 const struct ktermios *old)
 {
 	struct rda_uart_port *rda_port = to_rda_uart_port(port);
 	unsigned long flags;
@@ -259,26 +256,25 @@ static void rda_uart_set_termios(struct uart_port *port,
 	cmd_clr = rda_uart_read(port, RDA_UART_CMD_CLR);
 
 	switch (termios->c_cflag & CSIZE) {
-		case CS5:
-		case CS6:
-			dev_warn(port->dev, "bit size not supported, using 7 bits\n");
-			fallthrough;
-		case CS7:
-			ctrl &= ~RDA_UART_DBITS_8;
-			termios->c_cflag &= ~CSIZE;
-			termios->c_cflag |= CS7;
-			break;
-		default:
-			ctrl |= RDA_UART_DBITS_8;
-			break;
+	case CS5:
+	case CS6:
+		dev_warn(port->dev, "bit size not supported, using 7 bits\n");
+		fallthrough;
+	case CS7:
+		ctrl &= ~RDA_UART_DBITS_8;
+		termios->c_cflag &= ~CSIZE;
+		termios->c_cflag |= CS7;
+		break;
+	default:
+		ctrl |= RDA_UART_DBITS_8;
+		break;
 	}
 
 	/* stop bits */
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		ctrl |= RDA_UART_TX_SBITS_2;
-	} else {
+	else
 		ctrl &= ~RDA_UART_TX_SBITS_2;
-	}
 
 	/* parity check */
 	if (termios->c_cflag & PARENB) {
@@ -286,11 +282,10 @@ static void rda_uart_set_termios(struct uart_port *port,
 
 		/* Mark or Space parity */
 		if (termios->c_cflag & CMSPAR) {
-			if (termios->c_cflag & PARODD) {
+			if (termios->c_cflag & PARODD)
 				ctrl |= RDA_UART_PARITY_MARK;
-			} else {
+			else
 				ctrl |= RDA_UART_PARITY_SPACE;
-			}
 		} else if (termios->c_cflag & PARODD) {
 			ctrl |= RDA_UART_PARITY_ODD;
 		} else {
@@ -324,9 +319,8 @@ static void rda_uart_set_termios(struct uart_port *port,
 	rda_uart_write(port, irq_mask, RDA_UART_IRQ_MASK);
 
 	/* Don't rewrite B0 */
-	if (tty_termios_baud_rate(termios)) {
+	if (tty_termios_baud_rate(termios))
 		tty_termios_encode_baud_rate(termios, baud, baud);
-	}
 
 	/* update the per-port timeout */
 	uart_update_timeout(port, termios->c_cflag, baud);
@@ -340,15 +334,13 @@ static void rda_uart_send_chars(struct uart_port *port)
 	unsigned int ch;
 	u32 val;
 
-	if (uart_tx_stopped(port)) {
+	if (uart_tx_stopped(port))
 		return;
-	}
 
 	if (port->x_char) {
 		while (!(rda_uart_read(port, RDA_UART_STATUS) &
-		         RDA_UART_TX_FIFO_MASK)) {
+			 RDA_UART_TX_FIFO_MASK))
 			cpu_relax();
-		}
 
 		rda_uart_write(port, port->x_char, RDA_UART_RXTX_BUFFER);
 		port->icount.tx++;
@@ -356,18 +348,16 @@ static void rda_uart_send_chars(struct uart_port *port)
 	}
 
 	while (rda_uart_read(port, RDA_UART_STATUS) & RDA_UART_TX_FIFO_MASK) {
-		if (uart_circ_empty(xmit)) {
+		if (uart_circ_empty(xmit))
 			break;
-		}
 
 		ch = xmit->buf[xmit->tail];
 		rda_uart_write(port, ch, RDA_UART_RXTX_BUFFER);
 		uart_xmit_advance(port, 1);
 	}
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
-	}
 
 	if (!uart_circ_empty(xmit)) {
 		/* Re-enable Tx FIFO interrupt */
@@ -424,9 +414,8 @@ static irqreturn_t rda_interrupt(int irq, void *dev_id)
 	val = rda_uart_read(port, RDA_UART_IRQ_CAUSE);
 	rda_uart_write(port, val, RDA_UART_IRQ_CAUSE);
 
-	if (val & (RDA_UART_RX_DATA_AVAILABLE | RDA_UART_RX_TIMEOUT)) {
+	if (val & (RDA_UART_RX_DATA_AVAILABLE | RDA_UART_RX_TIMEOUT))
 		rda_uart_receive_chars(port);
-	}
 
 	if (val & (RDA_UART_TX_DATA_NEEDED)) {
 		irq_mask = rda_uart_read(port, RDA_UART_IRQ_MASK);
@@ -452,10 +441,9 @@ static int rda_uart_startup(struct uart_port *port)
 	uart_port_unlock_irqrestore(port, flags);
 
 	ret = request_irq(port->irq, rda_interrupt, IRQF_NO_SUSPEND,
-	                  "rda-uart", port);
-	if (ret) {
+			  "rda-uart", port);
+	if (ret)
 		return ret;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
@@ -501,21 +489,18 @@ static int rda_uart_request_port(struct uart_port *port)
 	struct resource *res;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!res) {
+	if (!res)
 		return -ENXIO;
-	}
 
 	if (!devm_request_mem_region(port->dev, port->mapbase,
-	                             resource_size(res), dev_name(port->dev))) {
+				     resource_size(res), dev_name(port->dev)))
 		return -EBUSY;
-	}
 
 	if (port->flags & UPF_IOREMAP) {
 		port->membase = devm_ioremap(port->dev, port->mapbase,
-		                             resource_size(res));
-		if (!port->membase) {
+						     resource_size(res));
+		if (!port->membase)
 			return -EBUSY;
-		}
 	}
 
 	return 0;
@@ -547,28 +532,25 @@ static void rda_uart_release_port(struct uart_port *port)
 	struct resource *res;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!res) {
+	if (!res)
 		return;
-	}
 
 	if (port->flags & UPF_IOREMAP) {
 		devm_release_mem_region(port->dev, port->mapbase,
-		                        resource_size(res));
+					resource_size(res));
 		devm_iounmap(port->dev, port->membase);
 		port->membase = NULL;
 	}
 }
 
 static int rda_uart_verify_port(struct uart_port *port,
-                                struct serial_struct *ser)
+				struct serial_struct *ser)
 {
-	if (port->type != PORT_RDA) {
+	if (port->type != PORT_RDA)
 		return -EINVAL;
-	}
 
-	if (port->irq != ser->irq) {
+	if (port->irq != ser->irq)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -584,29 +566,27 @@ static const struct uart_ops rda_uart_ops = {
 	.shutdown       = rda_uart_shutdown,
 	.set_termios    = rda_uart_set_termios,
 	.type           = rda_uart_type,
-	.request_port   = rda_uart_request_port,
-	.release_port   = rda_uart_release_port,
-	.config_port    = rda_uart_config_port,
-	.verify_port    = rda_uart_verify_port,
+	.request_port	= rda_uart_request_port,
+	.release_port	= rda_uart_release_port,
+	.config_port	= rda_uart_config_port,
+	.verify_port	= rda_uart_verify_port,
 };
 
 #ifdef CONFIG_SERIAL_RDA_CONSOLE
 
 static void rda_console_putchar(struct uart_port *port, unsigned char ch)
 {
-	if (!port->membase) {
+	if (!port->membase)
 		return;
-	}
 
-	while (!(rda_uart_read(port, RDA_UART_STATUS) & RDA_UART_TX_FIFO_MASK)) {
+	while (!(rda_uart_read(port, RDA_UART_STATUS) & RDA_UART_TX_FIFO_MASK))
 		cpu_relax();
-	}
 
 	rda_uart_write(port, ch, RDA_UART_RXTX_BUFFER);
 }
 
 static void rda_uart_port_write(struct uart_port *port, const char *s,
-                                u_int count)
+				u_int count)
 {
 	u32 old_irq_mask;
 	unsigned long flags;
@@ -629,28 +609,25 @@ static void rda_uart_port_write(struct uart_port *port, const char *s,
 	uart_console_write(port, s, count, rda_console_putchar);
 
 	/* wait until all contents have been sent out */
-	while (!(rda_uart_read(port, RDA_UART_STATUS) & RDA_UART_TX_FIFO_MASK)) {
+	while (!(rda_uart_read(port, RDA_UART_STATUS) & RDA_UART_TX_FIFO_MASK))
 		cpu_relax();
-	}
 
 	rda_uart_write(port, old_irq_mask, RDA_UART_IRQ_MASK);
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock(port);
-	}
 
 	local_irq_restore(flags);
 }
 
 static void rda_uart_console_write(struct console *co, const char *s,
-                                   u_int count)
+				   u_int count)
 {
 	struct rda_uart_port *rda_port;
 
 	rda_port = rda_uart_ports[co->index];
-	if (!rda_port) {
+	if (!rda_port)
 		return;
-	}
 
 	rda_uart_port_write(&rda_port->port, s, count);
 }
@@ -663,18 +640,15 @@ static int rda_uart_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if (co->index < 0 || co->index >= RDA_UART_PORT_NUM) {
+	if (co->index < 0 || co->index >= RDA_UART_PORT_NUM)
 		return -EINVAL;
-	}
 
 	rda_port = rda_uart_ports[co->index];
-	if (!rda_port || !rda_port->port.membase) {
+	if (!rda_port || !rda_port->port.membase)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(&rda_port->port, co, baud, parity, bits, flow);
 }
@@ -698,8 +672,8 @@ static int __init rda_uart_console_init(void)
 console_initcall(rda_uart_console_init);
 
 static void rda_uart_early_console_write(struct console *co,
-        const char *s,
-        u_int count)
+					 const char *s,
+					 u_int count)
 {
 	struct earlycon_device *dev = co->data;
 
@@ -709,9 +683,8 @@ static void rda_uart_early_console_write(struct console *co,
 static int __init
 rda_uart_early_console_setup(struct earlycon_device *device, const char *opt)
 {
-	if (!device->port.membase) {
+	if (!device->port.membase)
 		return -ENODEV;
-	}
 
 	device->con->write = rda_uart_early_console_write;
 
@@ -719,7 +692,7 @@ rda_uart_early_console_setup(struct earlycon_device *device, const char *opt)
 }
 
 OF_EARLYCON_DECLARE(rda, "rda,8810pl-uart",
-                    rda_uart_early_console_setup);
+		    rda_uart_early_console_setup);
 
 #define RDA_UART_CONSOLE (&rda_uart_console)
 #else
@@ -746,9 +719,8 @@ static int rda_uart_probe(struct platform_device *pdev)
 	struct rda_uart_port *rda_port;
 	int ret, irq;
 
-	if (pdev->dev.of_node) {
+	if (pdev->dev.of_node)
 		pdev->id = of_alias_get_id(pdev->dev.of_node, "serial");
-	}
 
 	if (pdev->id < 0 || pdev->id >= RDA_UART_PORT_NUM) {
 		dev_err(&pdev->dev, "id %d out of range\n", pdev->id);
@@ -762,9 +734,8 @@ static int rda_uart_probe(struct platform_device *pdev)
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return irq;
-	}
 
 	if (rda_uart_ports[pdev->id]) {
 		dev_err(&pdev->dev, "port %d already allocated\n", pdev->id);
@@ -772,9 +743,8 @@ static int rda_uart_probe(struct platform_device *pdev)
 	}
 
 	rda_port = devm_kzalloc(&pdev->dev, sizeof(*rda_port), GFP_KERNEL);
-	if (!rda_port) {
+	if (!rda_port)
 		return -ENOMEM;
-	}
 
 	rda_port->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(rda_port->clk)) {
@@ -795,7 +765,7 @@ static int rda_uart_probe(struct platform_device *pdev)
 		return -EINVAL;
 	}
 	rda_port->port.flags = UPF_BOOT_AUTOCONF | UPF_IOREMAP |
-	                       UPF_LOW_LATENCY;
+			       UPF_LOW_LATENCY;
 	rda_port->port.x_char = 0;
 	rda_port->port.fifosize = RDA_UART_TX_FIFO_SIZE;
 	rda_port->port.ops = &rda_uart_ops;
@@ -804,9 +774,8 @@ static int rda_uart_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, rda_port);
 
 	ret = uart_add_one_port(&rda_uart_driver, &rda_port->port);
-	if (ret) {
+	if (ret)
 		rda_uart_ports[pdev->id] = NULL;
-	}
 
 	return ret;
 }
@@ -835,14 +804,12 @@ static int __init rda_uart_init(void)
 	int ret;
 
 	ret = uart_register_driver(&rda_uart_driver);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = platform_driver_register(&rda_uart_platform_driver);
-	if (ret) {
+	if (ret)
 		uart_unregister_driver(&rda_uart_driver);
-	}
 
 	return ret;
 }

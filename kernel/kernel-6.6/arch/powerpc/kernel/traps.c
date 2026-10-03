@@ -24,7 +24,7 @@
 #include <linux/interrupt.h>
 #include <linux/init.h>
 #include <linux/extable.h>
-#include <linux/module.h>   /* print_modules */
+#include <linux/module.h>	/* print_modules */
 #include <linux/prctl.h>
 #include <linux/delay.h>
 #include <linux/kprobes.h>
@@ -48,11 +48,11 @@
 #include <asm/pmc.h>
 #include <asm/reg.h>
 #ifdef CONFIG_PMAC_BACKLIGHT
-	#include <asm/backlight.h>
+#include <asm/backlight.h>
 #endif
 #ifdef CONFIG_PPC64
-	#include <asm/firmware.h>
-	#include <asm/processor.h>
+#include <asm/firmware.h>
+#include <asm/processor.h>
 #endif
 #include <asm/kexec.h>
 #include <asm/ppc-opcode.h>
@@ -71,38 +71,38 @@
 #include <asm/udbg.h>
 
 #if defined(CONFIG_DEBUGGER) || defined(CONFIG_KEXEC_CORE)
-	int (*__debugger)(struct pt_regs *regs) __read_mostly;
-	int (*__debugger_ipi)(struct pt_regs *regs) __read_mostly;
-	int (*__debugger_bpt)(struct pt_regs *regs) __read_mostly;
-	int (*__debugger_sstep)(struct pt_regs *regs) __read_mostly;
-	int (*__debugger_iabr_match)(struct pt_regs *regs) __read_mostly;
-	int (*__debugger_break_match)(struct pt_regs *regs) __read_mostly;
-	int (*__debugger_fault_handler)(struct pt_regs *regs) __read_mostly;
+int (*__debugger)(struct pt_regs *regs) __read_mostly;
+int (*__debugger_ipi)(struct pt_regs *regs) __read_mostly;
+int (*__debugger_bpt)(struct pt_regs *regs) __read_mostly;
+int (*__debugger_sstep)(struct pt_regs *regs) __read_mostly;
+int (*__debugger_iabr_match)(struct pt_regs *regs) __read_mostly;
+int (*__debugger_break_match)(struct pt_regs *regs) __read_mostly;
+int (*__debugger_fault_handler)(struct pt_regs *regs) __read_mostly;
 
-	EXPORT_SYMBOL(__debugger);
-	EXPORT_SYMBOL(__debugger_ipi);
-	EXPORT_SYMBOL(__debugger_bpt);
-	EXPORT_SYMBOL(__debugger_sstep);
-	EXPORT_SYMBOL(__debugger_iabr_match);
-	EXPORT_SYMBOL(__debugger_break_match);
-	EXPORT_SYMBOL(__debugger_fault_handler);
+EXPORT_SYMBOL(__debugger);
+EXPORT_SYMBOL(__debugger_ipi);
+EXPORT_SYMBOL(__debugger_bpt);
+EXPORT_SYMBOL(__debugger_sstep);
+EXPORT_SYMBOL(__debugger_iabr_match);
+EXPORT_SYMBOL(__debugger_break_match);
+EXPORT_SYMBOL(__debugger_fault_handler);
 #endif
 
 /* Transactional Memory trap debug */
 #ifdef TM_DEBUG_SW
-	#define TM_DEBUG(x...) printk(KERN_INFO x)
+#define TM_DEBUG(x...) printk(KERN_INFO x)
 #else
-	#define TM_DEBUG(x...) do { } while(0)
+#define TM_DEBUG(x...) do { } while(0)
 #endif
 
 static const char *signame(int signr)
 {
 	switch (signr) {
-		case SIGBUS:    return "bus error";
-		case SIGFPE:    return "floating point exception";
-		case SIGILL:    return "illegal instruction";
-		case SIGSEGV:   return "segfault";
-		case SIGTRAP:   return "unhandled trap";
+	case SIGBUS:	return "bus error";
+	case SIGFPE:	return "floating point exception";
+	case SIGILL:	return "illegal instruction";
+	case SIGSEGV:	return "segfault";
+	case SIGTRAP:	return "unhandled trap";
 	}
 
 	return "unknown signal";
@@ -141,16 +141,13 @@ static inline void pmac_backlight_unblank(void) { }
  */
 bool die_will_crash(void)
 {
-	if (should_fadump_crash()) {
+	if (should_fadump_crash())
 		return true;
-	}
-	if (kexec_should_crash(current)) {
+	if (kexec_should_crash(current))
 		return true;
-	}
 	if (in_interrupt() || panic_on_oops ||
-	    !current->pid || is_global_init(current)) {
+			!current->pid || is_global_init(current))
 		return true;
-	}
 
 	return false;
 }
@@ -194,23 +191,21 @@ static unsigned long oops_begin(struct pt_regs *regs)
 	if (!arch_spin_trylock(&die_lock)) {
 		if (cpu == die_owner)
 			/* nested oops. should stop eventually */;
-		else {
+		else
 			arch_spin_lock(&die_lock);
-		}
 	}
 	die_nest_count++;
 	die_owner = cpu;
 	console_verbose();
 	bust_spinlocks(1);
-	if (machine_is(powermac)) {
+	if (machine_is(powermac))
 		pmac_backlight_unblank();
-	}
 	return flags;
 }
 NOKPROBE_SYMBOL(oops_begin);
 
 static void oops_end(unsigned long flags, struct pt_regs *regs,
-                     int signr)
+			       int signr)
 {
 	bust_spinlocks(0);
 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
@@ -227,19 +222,16 @@ static void oops_end(unsigned long flags, struct pt_regs *regs,
 	/*
 	 * system_reset_excption handles debugger, crash dump, panic, for 0x100
 	 */
-	if (TRAP(regs) == INTERRUPT_SYSTEM_RESET) {
+	if (TRAP(regs) == INTERRUPT_SYSTEM_RESET)
 		return;
-	}
 
 	crash_fadump(regs, "die oops");
 
-	if (kexec_should_crash(current)) {
+	if (kexec_should_crash(current))
 		crash_kexec(regs);
-	}
 
-	if (!signr) {
+	if (!signr)
 		return;
-	}
 
 	/*
 	 * While our oops output is serialised by a spinlock, output
@@ -252,21 +244,18 @@ static void oops_end(unsigned long flags, struct pt_regs *regs,
 		mdelay(MSEC_PER_SEC);
 	}
 
-	if (panic_on_oops) {
+	if (panic_on_oops)
 		panic("Fatal exception");
-	}
 	make_task_dead(signr);
 }
 NOKPROBE_SYMBOL(oops_end);
 
 static char *get_mmu_str(void)
 {
-	if (early_radix_enabled()) {
+	if (early_radix_enabled())
 		return " MMU=Radix";
-	}
-	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE)) {
+	if (early_mmu_has_feature(MMU_FTR_HPTE_TABLE))
 		return " MMU=Hash";
-	}
 	return "";
 }
 
@@ -276,9 +265,8 @@ static int __die(const char *str, struct pt_regs *regs, long err)
 
 	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
 
-	if (IS_ENABLED(CONFIG_PREEMPTION)) {
+	if (IS_ENABLED(CONFIG_PREEMPTION))
 		pr = IS_ENABLED(CONFIG_PREEMPT_RT) ? " PREEMPT_RT" : " PREEMPT";
-	}
 
 	printk("%s PAGE_SIZE=%luK%s%s%s%s%s%s %s\n",
 	       IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN) ? "LE" : "BE",
@@ -290,9 +278,8 @@ static int __die(const char *str, struct pt_regs *regs, long err)
 	       IS_ENABLED(CONFIG_NUMA) ? " NUMA" : "",
 	       ppc_md.name ? ppc_md.name : "");
 
-	if (notify_die(DIE_OOPS, str, regs, err, 255, SIGSEGV) == NOTIFY_STOP) {
+	if (notify_die(DIE_OOPS, str, regs, err, 255, SIGSEGV) == NOTIFY_STOP)
 		return 1;
-	}
 
 	print_modules();
 	show_regs(regs);
@@ -309,15 +296,13 @@ void die(const char *str, struct pt_regs *regs, long err)
 	 * system_reset_excption handles debugger, crash dump, panic, for 0x100
 	 */
 	if (TRAP(regs) != INTERRUPT_SYSTEM_RESET) {
-		if (debugger(regs)) {
+		if (debugger(regs))
 			return;
-		}
 	}
 
 	flags = oops_begin(regs);
-	if (__die(str, regs, err)) {
+	if (__die(str, regs, err))
 		err = 0;
-	}
 	oops_end(flags, regs, err);
 }
 NOKPROBE_SYMBOL(die);
@@ -328,26 +313,23 @@ void user_single_step_report(struct pt_regs *regs)
 }
 
 static void show_signal_msg(int signr, struct pt_regs *regs, int code,
-                            unsigned long addr)
+			    unsigned long addr)
 {
 	static DEFINE_RATELIMIT_STATE(rs, DEFAULT_RATELIMIT_INTERVAL,
-	                              DEFAULT_RATELIMIT_BURST);
+				      DEFAULT_RATELIMIT_BURST);
 
-	if (!show_unhandled_signals) {
+	if (!show_unhandled_signals)
 		return;
-	}
 
-	if (!unhandled_signal(current, signr)) {
+	if (!unhandled_signal(current, signr))
 		return;
-	}
 
-	if (!__ratelimit(&rs)) {
+	if (!__ratelimit(&rs))
 		return;
-	}
 
 	pr_info("%s[%d]: %s (%d) at %lx nip %lx lr %lx code %x",
-	        current->comm, current->pid, signame(signr), signr,
-	        addr, regs->nip, regs->link, code);
+		current->comm, current->pid, signame(signr), signr,
+		addr, regs->nip, regs->link, code);
 
 	print_vma_addr(KERN_CONT " in ", regs->nip);
 
@@ -357,7 +339,7 @@ static void show_signal_msg(int signr, struct pt_regs *regs, int code,
 }
 
 static bool exception_common(int signr, struct pt_regs *regs, int code,
-                             unsigned long addr)
+			      unsigned long addr)
 {
 	if (!user_mode(regs)) {
 		die("Exception in kernel mode", regs, signr);
@@ -382,18 +364,16 @@ static bool exception_common(int signr, struct pt_regs *regs, int code,
 
 void _exception_pkey(struct pt_regs *regs, unsigned long addr, int key)
 {
-	if (!exception_common(SIGSEGV, regs, SEGV_PKUERR, addr)) {
+	if (!exception_common(SIGSEGV, regs, SEGV_PKUERR, addr))
 		return;
-	}
 
 	force_sig_pkuerr((void __user *) addr, key);
 }
 
 void _exception(int signr, struct pt_regs *regs, int code, unsigned long addr)
 {
-	if (!exception_common(signr, regs, code, addr)) {
+	if (!exception_common(signr, regs, code, addr))
 		return;
-	}
 
 	force_sig_fault(signr, code, (void __user *)addr);
 }
@@ -425,15 +405,12 @@ noinstr void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
 	unsigned long kbase = (unsigned long)_stext;
 	unsigned long nip = regs->nip;
 
-	if (!(regs->msr & MSR_RI)) {
+	if (!(regs->msr & MSR_RI))
 		return;
-	}
-	if (!(regs->msr & MSR_HV)) {
+	if (!(regs->msr & MSR_HV))
 		return;
-	}
-	if (regs->msr & MSR_PR) {
+	if (regs->msr & MSR_PR)
 		return;
-	}
 
 	/*
 	 * Now test if the interrupt has hit a range that may be using
@@ -443,28 +420,22 @@ noinstr void hv_nmi_check_nonrecoverable(struct pt_regs *regs)
 	 * entry points still have the +0x4000 offset).
 	 */
 	nip &= ~0xc000000000000000ULL;
-	if ((nip >= 0x500 && nip < 0x600) || (nip >= 0x4500 && nip < 0x4600)) {
+	if ((nip >= 0x500 && nip < 0x600) || (nip >= 0x4500 && nip < 0x4600))
 		goto nonrecoverable;
-	}
-	if ((nip >= 0x980 && nip < 0xa00) || (nip >= 0x4980 && nip < 0x4a00)) {
+	if ((nip >= 0x980 && nip < 0xa00) || (nip >= 0x4980 && nip < 0x4a00))
 		goto nonrecoverable;
-	}
-	if ((nip >= 0xe00 && nip < 0xec0) || (nip >= 0x4e00 && nip < 0x4ec0)) {
+	if ((nip >= 0xe00 && nip < 0xec0) || (nip >= 0x4e00 && nip < 0x4ec0))
 		goto nonrecoverable;
-	}
-	if ((nip >= 0xf80 && nip < 0xfa0) || (nip >= 0x4f80 && nip < 0x4fa0)) {
+	if ((nip >= 0xf80 && nip < 0xfa0) || (nip >= 0x4f80 && nip < 0x4fa0))
 		goto nonrecoverable;
-	}
 
 	/* Trampoline code runs un-relocated so subtract kbase. */
 	if (nip >= (unsigned long)(start_real_trampolines - kbase) &&
-	    nip < (unsigned long)(end_real_trampolines - kbase)) {
+			nip < (unsigned long)(end_real_trampolines - kbase))
 		goto nonrecoverable;
-	}
 	if (nip >= (unsigned long)(start_virt_trampolines - kbase) &&
-	    nip < (unsigned long)(end_virt_trampolines - kbase)) {
+			nip < (unsigned long)(end_virt_trampolines - kbase))
 		goto nonrecoverable;
-	}
 	return;
 
 nonrecoverable:
@@ -499,14 +470,12 @@ DEFINE_INTERRUPT_HANDLER_NMI(system_reset_exception)
 
 	/* See if any machine dependent calls */
 	if (ppc_md.system_reset_exception) {
-		if (ppc_md.system_reset_exception(regs)) {
+		if (ppc_md.system_reset_exception(regs))
 			goto out;
-		}
 	}
 
-	if (debugger(regs)) {
+	if (debugger(regs))
 		goto out;
-	}
 
 	kmsg_dump(KMSG_DUMP_OOPS);
 	/*
@@ -531,16 +500,15 @@ DEFINE_INTERRUPT_HANDLER_NMI(system_reset_exception)
 	 */
 	die("System Reset", regs, SIGABRT);
 
-	mdelay(2 * MSEC_PER_SEC); /* Wait a little while for others to print */
+	mdelay(2*MSEC_PER_SEC); /* Wait a little while for others to print */
 	add_taint(TAINT_DIE, LOCKDEP_NOW_UNRELIABLE);
 	nmi_panic(regs, "System Reset");
 
 out:
 #ifdef CONFIG_PPC_BOOK3S_64
 	BUG_ON(get_paca()->in_nmi == 0);
-	if (get_paca()->in_nmi > 1) {
+	if (get_paca()->in_nmi > 1)
 		die("Unrecoverable nested System Reset", regs, SIGABRT);
-	}
 #endif
 	/* Must die if the interrupt is not recoverable */
 	if (regs_is_unrecoverable(regs)) {
@@ -583,18 +551,17 @@ static inline int check_io_access(struct pt_regs *regs)
 		 * For the debug message, we look at the preceding
 		 * load or store.
 		 */
-		if (*nip == PPC_RAW_NOP()) {
+		if (*nip == PPC_RAW_NOP())
 			nip -= 2;
-		} else if (*nip == PPC_RAW_ISYNC()) {
+		else if (*nip == PPC_RAW_ISYNC())
 			--nip;
-		}
 		if (*nip == PPC_RAW_SYNC() || get_op(*nip) == OP_TRAP) {
 			unsigned int rb;
 
 			--nip;
 			rb = (*nip >> 11) & 0x1f;
 			printk(KERN_DEBUG "%s bad port %lx at %p\n",
-			       (*nip & 0x100) ? "OUT to" : "IN from",
+			       (*nip & 0x100)? "OUT to": "IN from",
 			       regs->gpr[rb] - _IO_BASE, nip);
 			regs_set_recoverable(regs);
 			regs_set_return_ip(regs, extable_fixup(entry));
@@ -606,38 +573,38 @@ static inline int check_io_access(struct pt_regs *regs)
 }
 
 #ifdef CONFIG_PPC_ADV_DEBUG_REGS
-	/* On 4xx, the reason for the machine check or program exception
-	is in the ESR. */
-	#define get_reason(regs)    ((regs)->esr)
-	#define REASON_FP       ESR_FP
-	#define REASON_ILLEGAL      (ESR_PIL | ESR_PUO)
-	#define REASON_PRIVILEGED   ESR_PPR
-	#define REASON_TRAP     ESR_PTR
-	#define REASON_PREFIXED     0
-	#define REASON_BOUNDARY     0
+/* On 4xx, the reason for the machine check or program exception
+   is in the ESR. */
+#define get_reason(regs)	((regs)->esr)
+#define REASON_FP		ESR_FP
+#define REASON_ILLEGAL		(ESR_PIL | ESR_PUO)
+#define REASON_PRIVILEGED	ESR_PPR
+#define REASON_TRAP		ESR_PTR
+#define REASON_PREFIXED		0
+#define REASON_BOUNDARY		0
 
-	/* single-step stuff */
-	#define single_stepping(regs)   (current->thread.debug.dbcr0 & DBCR0_IC)
-	#define clear_single_step(regs) (current->thread.debug.dbcr0 &= ~DBCR0_IC)
-	#define clear_br_trace(regs)    do {} while(0)
+/* single-step stuff */
+#define single_stepping(regs)	(current->thread.debug.dbcr0 & DBCR0_IC)
+#define clear_single_step(regs)	(current->thread.debug.dbcr0 &= ~DBCR0_IC)
+#define clear_br_trace(regs)	do {} while(0)
 #else
-	/* On non-4xx, the reason for the machine check or program
-	exception is in the MSR. */
-	#define get_reason(regs)    ((regs)->msr)
-	#define REASON_TM       SRR1_PROGTM
-	#define REASON_FP       SRR1_PROGFPE
-	#define REASON_ILLEGAL      SRR1_PROGILL
-	#define REASON_PRIVILEGED   SRR1_PROGPRIV
-	#define REASON_TRAP     SRR1_PROGTRAP
-	#define REASON_PREFIXED     SRR1_PREFIXED
-	#define REASON_BOUNDARY     SRR1_BOUNDARY
+/* On non-4xx, the reason for the machine check or program
+   exception is in the MSR. */
+#define get_reason(regs)	((regs)->msr)
+#define REASON_TM		SRR1_PROGTM
+#define REASON_FP		SRR1_PROGFPE
+#define REASON_ILLEGAL		SRR1_PROGILL
+#define REASON_PRIVILEGED	SRR1_PROGPRIV
+#define REASON_TRAP		SRR1_PROGTRAP
+#define REASON_PREFIXED		SRR1_PREFIXED
+#define REASON_BOUNDARY		SRR1_BOUNDARY
 
-	#define single_stepping(regs)   ((regs)->msr & MSR_SE)
-	#define clear_single_step(regs) (regs_set_return_msr((regs), (regs)->msr & ~MSR_SE))
-	#define clear_br_trace(regs)    (regs_set_return_msr((regs), (regs)->msr & ~MSR_BE))
+#define single_stepping(regs)	((regs)->msr & MSR_SE)
+#define clear_single_step(regs)	(regs_set_return_msr((regs), (regs)->msr & ~MSR_SE))
+#define clear_br_trace(regs)	(regs_set_return_msr((regs), (regs)->msr & ~MSR_BE))
 #endif
 
-#define inst_length(reason) (((reason) & REASON_PREFIXED) ? 8 : 4)
+#define inst_length(reason)	(((reason) & REASON_PREFIXED) ? 8 : 4)
 
 #if defined(CONFIG_PPC_E500)
 int machine_check_e500mc(struct pt_regs *regs)
@@ -649,17 +616,15 @@ int machine_check_e500mc(struct pt_regs *regs)
 
 	if (reason & MCSR_LD) {
 		recoverable = fsl_rio_mcheck_exception(regs);
-		if (recoverable == 1) {
+		if (recoverable == 1)
 			goto silent_out;
-		}
 	}
 
 	printk("Machine check in kernel mode.\n");
 	printk("Caused by (from MCSR=%lx): ", reason);
 
-	if (reason & MCSR_MCP) {
+	if (reason & MCSR_MCP)
 		pr_cont("Machine Check Signal\n");
-	}
 
 	if (reason & MCSR_ICPERR) {
 		pr_cont("Instruction Cache Parity Error\n");
@@ -693,9 +658,8 @@ int machine_check_e500mc(struct pt_regs *regs)
 		 * automatically invalidate the L1 Data Cache.
 		 */
 		if (PVR_VER(pvr) != PVR_VER_E6500) {
-			if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS)) {
+			if (!(mfspr(SPRN_L1CSR2) & L1CSR2_DCWS))
 				recoverable = 0;
-			}
 		}
 	}
 
@@ -704,9 +668,8 @@ int machine_check_e500mc(struct pt_regs *regs)
 		recoverable = 0;
 	}
 
-	if (reason & MCSR_NMI) {
+	if (reason & MCSR_NMI)
 		pr_cont("Non-maskable interrupt\n");
-	}
 
 	if (reason & MCSR_IF) {
 		pr_cont("Instruction Fetch Error Report\n");
@@ -728,9 +691,8 @@ int machine_check_e500mc(struct pt_regs *regs)
 		recoverable = 0;
 	}
 
-	if (reason & MCSR_TLBSYNC) {
+	if (reason & MCSR_TLBSYNC)
 		pr_cont("Simultaneous tlbsync operations\n");
-	}
 
 	if (reason & MCSR_BSL2_ERR) {
 		pr_cont("Level 2 Cache Error\n");
@@ -744,7 +706,7 @@ int machine_check_e500mc(struct pt_regs *regs)
 		addr |= (u64)mfspr(SPRN_MCARU) << 32;
 
 		pr_cont("Machine Check %s Address: %#llx\n",
-		        reason & MCSR_MEA ? "Effective" : "Physical", addr);
+		       reason & MCSR_MEA ? "Effective" : "Physical", addr);
 	}
 
 silent_out:
@@ -757,53 +719,39 @@ int machine_check_e500(struct pt_regs *regs)
 	unsigned long reason = mfspr(SPRN_MCSR);
 
 	if (reason & MCSR_BUS_RBERR) {
-		if (fsl_rio_mcheck_exception(regs)) {
+		if (fsl_rio_mcheck_exception(regs))
 			return 1;
-		}
-		if (fsl_pci_mcheck_exception(regs)) {
+		if (fsl_pci_mcheck_exception(regs))
 			return 1;
-		}
 	}
 
 	printk("Machine check in kernel mode.\n");
 	printk("Caused by (from MCSR=%lx): ", reason);
 
-	if (reason & MCSR_MCP) {
+	if (reason & MCSR_MCP)
 		pr_cont("Machine Check Signal\n");
-	}
-	if (reason & MCSR_ICPERR) {
+	if (reason & MCSR_ICPERR)
 		pr_cont("Instruction Cache Parity Error\n");
-	}
-	if (reason & MCSR_DCP_PERR) {
+	if (reason & MCSR_DCP_PERR)
 		pr_cont("Data Cache Push Parity Error\n");
-	}
-	if (reason & MCSR_DCPERR) {
+	if (reason & MCSR_DCPERR)
 		pr_cont("Data Cache Parity Error\n");
-	}
-	if (reason & MCSR_BUS_IAERR) {
+	if (reason & MCSR_BUS_IAERR)
 		pr_cont("Bus - Instruction Address Error\n");
-	}
-	if (reason & MCSR_BUS_RAERR) {
+	if (reason & MCSR_BUS_RAERR)
 		pr_cont("Bus - Read Address Error\n");
-	}
-	if (reason & MCSR_BUS_WAERR) {
+	if (reason & MCSR_BUS_WAERR)
 		pr_cont("Bus - Write Address Error\n");
-	}
-	if (reason & MCSR_BUS_IBERR) {
+	if (reason & MCSR_BUS_IBERR)
 		pr_cont("Bus - Instruction Data Error\n");
-	}
-	if (reason & MCSR_BUS_RBERR) {
+	if (reason & MCSR_BUS_RBERR)
 		pr_cont("Bus - Read Data Bus Error\n");
-	}
-	if (reason & MCSR_BUS_WBERR) {
+	if (reason & MCSR_BUS_WBERR)
 		pr_cont("Bus - Write Data Bus Error\n");
-	}
-	if (reason & MCSR_BUS_IPERR) {
+	if (reason & MCSR_BUS_IPERR)
 		pr_cont("Bus - Instruction Parity Error\n");
-	}
-	if (reason & MCSR_BUS_RPERR) {
+	if (reason & MCSR_BUS_RPERR)
 		pr_cont("Bus - Read Parity Error\n");
-	}
 
 	return 0;
 }
@@ -820,30 +768,30 @@ int machine_check_generic(struct pt_regs *regs)
 	printk("Machine check in kernel mode.\n");
 	printk("Caused by (from SRR1=%lx): ", reason);
 	switch (reason & 0x601F0000) {
-		case 0x80000:
-			pr_cont("Machine check signal\n");
-			break;
-		case 0x40000:
-		case 0x140000:  /* 7450 MSS error and TEA */
-			pr_cont("Transfer error ack signal\n");
-			break;
-		case 0x20000:
-			pr_cont("Data parity error signal\n");
-			break;
-		case 0x10000:
-			pr_cont("Address parity error signal\n");
-			break;
-		case 0x20000000:
-			pr_cont("L1 Data Cache error\n");
-			break;
-		case 0x40000000:
-			pr_cont("L1 Instruction Cache error\n");
-			break;
-		case 0x00100000:
-			pr_cont("L2 data cache parity error\n");
-			break;
-		default:
-			pr_cont("Unknown values in msr\n");
+	case 0x80000:
+		pr_cont("Machine check signal\n");
+		break;
+	case 0x40000:
+	case 0x140000:	/* 7450 MSS error and TEA */
+		pr_cont("Transfer error ack signal\n");
+		break;
+	case 0x20000:
+		pr_cont("Data parity error signal\n");
+		break;
+	case 0x10000:
+		pr_cont("Address parity error signal\n");
+		break;
+	case 0x20000000:
+		pr_cont("L1 Data Cache error\n");
+		break;
+	case 0x40000000:
+		pr_cont("L1 Instruction Cache error\n");
+		break;
+	case 0x00100000:
+		pr_cont("L2 data cache parity error\n");
+		break;
+	default:
+		pr_cont("Unknown values in msr\n");
 	}
 	return 0;
 }
@@ -856,11 +804,10 @@ void die_mce(const char *str, struct pt_regs *regs, long err)
 	 * but make_task_dead() checks for in_interrupt() and panics
 	 * in that case, so exit the irq/nmi before calling die.
 	 */
-	if (in_nmi()) {
+	if (in_nmi())
 		nmi_exit();
-	} else {
+	else
 		irq_exit();
-	}
 	die(str, regs, err);
 }
 
@@ -886,31 +833,26 @@ static void __machine_check_exception(struct pt_regs *regs)
 	 * that assumes the board gets a first chance, so let's keep it
 	 * that way for now and fix things later. --BenH.
 	 */
-	if (ppc_md.machine_check_exception) {
+	if (ppc_md.machine_check_exception)
 		recover = ppc_md.machine_check_exception(regs);
-	} else if (cur_cpu_spec->machine_check) {
+	else if (cur_cpu_spec->machine_check)
 		recover = cur_cpu_spec->machine_check(regs);
-	}
 
-	if (recover > 0) {
+	if (recover > 0)
 		goto bail;
-	}
 
-	if (debugger_fault_handler(regs)) {
+	if (debugger_fault_handler(regs))
 		goto bail;
-	}
 
-	if (check_io_access(regs)) {
+	if (check_io_access(regs))
 		goto bail;
-	}
 
 	die_mce("Machine check", regs, SIGBUS);
 
 bail:
 	/* Must die if the interrupt is not recoverable */
-	if (regs_is_unrecoverable(regs)) {
+	if (regs_is_unrecoverable(regs))
 		die_mce("Unrecoverable Machine check", regs, SIGBUS);
-	}
 }
 
 #ifdef CONFIG_PPC_BOOK3S_64
@@ -953,21 +895,20 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
 	unsigned long ea, msr, msr_mask;
 	bool swap;
 
-	if (__get_user(instr, (unsigned int __user *)regs->nip)) {
+	if (__get_user(instr, (unsigned int __user *)regs->nip))
 		return;
-	}
 
 	/*
-	 * lxvb16x  opcode: 0x7c0006d8
-	 * lxvd2x   opcode: 0x7c000698
-	 * lxvh8x   opcode: 0x7c000658
-	 * lxvw4x   opcode: 0x7c000618
+	 * lxvb16x	opcode: 0x7c0006d8
+	 * lxvd2x	opcode: 0x7c000698
+	 * lxvh8x	opcode: 0x7c000658
+	 * lxvw4x	opcode: 0x7c000618
 	 */
 	if ((instr & 0xfc00073e) != 0x7c000618) {
 		pr_devel("HMI vec emu: not vector CI %i:%s[%d] nip=%016lx"
-		         " instr=%08x\n",
-		         smp_processor_id(), current->comm, current->pid,
-		         regs->nip, instr);
+			 " instr=%08x\n",
+			 smp_processor_id(), current->comm, current->pid,
+			 regs->nip, instr);
 		return;
 	}
 
@@ -986,25 +927,23 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
 	ra = (instr >> 16) & 0x1f;
 	rb = (instr >> 11) & 0x1f;
 	t = (instr >> 21) & 0x1f;
-	if (instr & 1) {
+	if (instr & 1)
 		vdst = (u8 *)&current->thread.vr_state.vr[t];
-	} else {
+	else
 		vdst = (u8 *)&current->thread.fp_state.fpr[t][0];
-	}
 
 	/* Grab the vector address */
 	ea = regs->gpr[rb] + (ra ? regs->gpr[ra] : 0);
-	if (is_32bit_task()) {
+	if (is_32bit_task())
 		ea &= 0xfffffffful;
-	}
 	addr = (__force const void __user *)ea;
 
 	/* Check it */
 	if (!access_ok(addr, 16)) {
 		pr_devel("HMI vec emu: bad access %i:%s[%d] nip=%016lx"
-		         " instr=%08x addr=%016lx\n",
-		         smp_processor_id(), current->comm, current->pid,
-		         regs->nip, instr, (unsigned long)addr);
+			 " instr=%08x addr=%016lx\n",
+			 smp_processor_id(), current->comm, current->pid,
+			 regs->nip, instr, (unsigned long)addr);
 		return;
 	}
 
@@ -1012,23 +951,21 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
 	rc = 0;
 	if ((unsigned long)addr & 0xfUL)
 		/* unaligned case */
-	{
 		rc = __copy_from_user_inatomic(vbuf, addr, 16);
-	} else {
+	else
 		__get_user_atomic_128_aligned(vbuf, addr, rc);
-	}
 	if (rc) {
 		pr_devel("HMI vec emu: page fault %i:%s[%d] nip=%016lx"
-		         " instr=%08x addr=%016lx\n",
-		         smp_processor_id(), current->comm, current->pid,
-		         regs->nip, instr, (unsigned long)addr);
+			 " instr=%08x addr=%016lx\n",
+			 smp_processor_id(), current->comm, current->pid,
+			 regs->nip, instr, (unsigned long)addr);
 		return;
 	}
 
 	pr_devel("HMI vec emu: emulated vector CI %i:%s[%d] nip=%016lx"
-	         " instr=%08x addr=%016lx\n",
-	         smp_processor_id(), current->comm, current->pid, regs->nip,
-	         instr, (unsigned long) addr);
+		 " instr=%08x addr=%016lx\n",
+		 smp_processor_id(), current->comm, current->pid, regs->nip,
+		 instr, (unsigned long) addr);
 
 	/* Grab instruction "selector" */
 	sel = (instr >> 6) & 3;
@@ -1041,31 +978,30 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
 	 * lxvh8x/lxvb16x check MSR VSX or VEC depending on VSR used sel = 1,3
 	 */
 	msr_mask = MSR_VSX;
-	if ((sel & 1) && (instr & 1)) { /* lxvh8x & lxvb16x + VSR >= 32 */
+	if ((sel & 1) && (instr & 1)) /* lxvh8x & lxvb16x + VSR >= 32 */
 		msr_mask = MSR_VEC;
-	}
 	if (!(msr & msr_mask)) {
 		pr_devel("HMI vec emu: MSR fac clear %i:%s[%d] nip=%016lx"
-		         " instr=%08x msr:%016lx\n",
-		         smp_processor_id(), current->comm, current->pid,
-		         regs->nip, instr, msr);
+			 " instr=%08x msr:%016lx\n",
+			 smp_processor_id(), current->comm, current->pid,
+			 regs->nip, instr, msr);
 		return;
 	}
 
 	/* Do logging here before we modify sel based on endian */
 	switch (sel) {
-		case 0: /* lxvw4x */
-			PPC_WARN_EMULATED(lxvw4x, regs);
-			break;
-		case 1: /* lxvh8x */
-			PPC_WARN_EMULATED(lxvh8x, regs);
-			break;
-		case 2: /* lxvd2x */
-			PPC_WARN_EMULATED(lxvd2x, regs);
-			break;
-		case 3: /* lxvb16x */
-			PPC_WARN_EMULATED(lxvb16x, regs);
-			break;
+	case 0:	/* lxvw4x */
+		PPC_WARN_EMULATED(lxvw4x, regs);
+		break;
+	case 1: /* lxvh8x */
+		PPC_WARN_EMULATED(lxvh8x, regs);
+		break;
+	case 2: /* lxvd2x */
+		PPC_WARN_EMULATED(lxvd2x, regs);
+		break;
+	case 3: /* lxvb16x */
+		PPC_WARN_EMULATED(lxvb16x, regs);
+		break;
 	}
 
 #ifdef __LITTLE_ENDIAN__
@@ -1080,58 +1016,49 @@ static void p9_hmi_special_emu(struct pt_regs *regs)
 	 * of a simple memcpy, so forcing the emulation to look like
 	 * a lxvb16x should do the trick.
 	 */
-	if (swap) {
+	if (swap)
 		sel = 3;
-	}
 
 	switch (sel) {
-		case 0: /* lxvw4x */
-			for (i = 0; i < 4; i++) {
-				((u32 *)vdst)[i] = ((u32 *)vbuf)[3 - i];
-			}
-			break;
-		case 1: /* lxvh8x */
-			for (i = 0; i < 8; i++) {
-				((u16 *)vdst)[i] = ((u16 *)vbuf)[7 - i];
-			}
-			break;
-		case 2: /* lxvd2x */
-			for (i = 0; i < 2; i++) {
-				((u64 *)vdst)[i] = ((u64 *)vbuf)[1 - i];
-			}
-			break;
-		case 3: /* lxvb16x */
-			for (i = 0; i < 16; i++) {
-				vdst[i] = vbuf[15 - i];
-			}
-			break;
+	case 0:	/* lxvw4x */
+		for (i = 0; i < 4; i++)
+			((u32 *)vdst)[i] = ((u32 *)vbuf)[3-i];
+		break;
+	case 1: /* lxvh8x */
+		for (i = 0; i < 8; i++)
+			((u16 *)vdst)[i] = ((u16 *)vbuf)[7-i];
+		break;
+	case 2: /* lxvd2x */
+		for (i = 0; i < 2; i++)
+			((u64 *)vdst)[i] = ((u64 *)vbuf)[1-i];
+		break;
+	case 3: /* lxvb16x */
+		for (i = 0; i < 16; i++)
+			vdst[i] = vbuf[15-i];
+		break;
 	}
 #else /* __LITTLE_ENDIAN__ */
 	/* On a big endian kernel, a BE userspace only needs a memcpy */
-	if (!swap) {
+	if (!swap)
 		sel = 3;
-	}
 
 	/* Otherwise, we need to swap the content of the components */
 	switch (sel) {
-		case 0: /* lxvw4x */
-			for (i = 0; i < 4; i++) {
-				((u32 *)vdst)[i] = cpu_to_le32(((u32 *)vbuf)[i]);
-			}
-			break;
-		case 1: /* lxvh8x */
-			for (i = 0; i < 8; i++) {
-				((u16 *)vdst)[i] = cpu_to_le16(((u16 *)vbuf)[i]);
-			}
-			break;
-		case 2: /* lxvd2x */
-			for (i = 0; i < 2; i++) {
-				((u64 *)vdst)[i] = cpu_to_le64(((u64 *)vbuf)[i]);
-			}
-			break;
-		case 3: /* lxvb16x */
-			memcpy(vdst, vbuf, 16);
-			break;
+	case 0:	/* lxvw4x */
+		for (i = 0; i < 4; i++)
+			((u32 *)vdst)[i] = cpu_to_le32(((u32 *)vbuf)[i]);
+		break;
+	case 1: /* lxvh8x */
+		for (i = 0; i < 8; i++)
+			((u16 *)vdst)[i] = cpu_to_le16(((u16 *)vbuf)[i]);
+		break;
+	case 2: /* lxvd2x */
+		for (i = 0; i < 2; i++)
+			((u64 *)vdst)[i] = cpu_to_le64(((u64 *)vbuf)[i]);
+		break;
+	case 3: /* lxvb16x */
+		memcpy(vdst, vbuf, 16);
+		break;
 	}
 #endif /* !__LITTLE_ENDIAN__ */
 
@@ -1161,9 +1088,8 @@ DEFINE_INTERRUPT_HANDLER_ASYNC(handle_hmi_exception)
 	}
 #endif /* CONFIG_VSX */
 
-	if (ppc_md.handle_hmi_exception) {
+	if (ppc_md.handle_hmi_exception)
 		ppc_md.handle_hmi_exception(regs);
-	}
 
 	set_irq_regs(old_regs);
 }
@@ -1197,12 +1123,10 @@ DEFINE_INTERRUPT_HANDLER_NMI(unknown_nmi_exception)
 DEFINE_INTERRUPT_HANDLER(instruction_breakpoint_exception)
 {
 	if (notify_die(DIE_IABR_MATCH, "iabr_match", regs, 5,
-	               5, SIGTRAP) == NOTIFY_STOP) {
+					5, SIGTRAP) == NOTIFY_STOP)
 		return;
-	}
-	if (debugger_iabr_match(regs)) {
+	if (debugger_iabr_match(regs))
 		return;
-	}
 	_exception(SIGTRAP, regs, TRAP_BRKPT, regs->nip);
 }
 
@@ -1216,17 +1140,14 @@ static void __single_step_exception(struct pt_regs *regs)
 	clear_single_step(regs);
 	clear_br_trace(regs);
 
-	if (kprobe_post_handler(regs)) {
+	if (kprobe_post_handler(regs))
 		return;
-	}
 
 	if (notify_die(DIE_SSTEP, "single_step", regs, 5,
-	               5, SIGTRAP) == NOTIFY_STOP) {
+					5, SIGTRAP) == NOTIFY_STOP)
 		return;
-	}
-	if (debugger_sstep(regs)) {
+	if (debugger_sstep(regs))
 		return;
-	}
 
 	_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
 }
@@ -1244,9 +1165,8 @@ DEFINE_INTERRUPT_HANDLER(single_step_exception)
  */
 void emulate_single_step(struct pt_regs *regs)
 {
-	if (single_stepping(regs)) {
+	if (single_stepping(regs))
 		__single_step_exception(regs);
-	}
 }
 
 #ifdef CONFIG_PPC_FPU_REGS
@@ -1255,29 +1175,24 @@ static inline int __parse_fpscr(unsigned long fpscr)
 	int ret = FPE_FLTUNK;
 
 	/* Invalid operation */
-	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX)) {
+	if ((fpscr & FPSCR_VE) && (fpscr & FPSCR_VX))
 		ret = FPE_FLTINV;
-	}
 
 	/* Overflow */
-	else if ((fpscr & FPSCR_OE) && (fpscr & FPSCR_OX)) {
+	else if ((fpscr & FPSCR_OE) && (fpscr & FPSCR_OX))
 		ret = FPE_FLTOVF;
-	}
 
 	/* Underflow */
-	else if ((fpscr & FPSCR_UE) && (fpscr & FPSCR_UX)) {
+	else if ((fpscr & FPSCR_UE) && (fpscr & FPSCR_UX))
 		ret = FPE_FLTUND;
-	}
 
 	/* Divide by zero */
-	else if ((fpscr & FPSCR_ZE) && (fpscr & FPSCR_ZX)) {
+	else if ((fpscr & FPSCR_ZE) && (fpscr & FPSCR_ZX))
 		ret = FPE_FLTDIV;
-	}
 
 	/* Inexact result */
-	else if ((fpscr & FPSCR_XE) && (fpscr & FPSCR_XX)) {
+	else if ((fpscr & FPSCR_XE) && (fpscr & FPSCR_XX))
 		ret = FPE_FLTRES;
-	}
 
 	return ret;
 }
@@ -1318,9 +1233,8 @@ static int emulate_string_inst(struct pt_regs *regs, u32 instword)
 
 	/* Early out if we are an invalid form of lswx */
 	if ((instword & PPC_INST_STRING_MASK) == PPC_INST_LSWX)
-		if ((rT == rA) || (rT == NB_RB)) {
+		if ((rT == rA) || (rT == NB_RB))
 			return -EINVAL;
-		}
 
 	EA = (rA == 0) ? 0 : regs->gpr[rA];
 
@@ -1338,34 +1252,31 @@ static int emulate_string_inst(struct pt_regs *regs, u32 instword)
 			return -EINVAL;
 	}
 
-	while (num_bytes != 0) {
+	while (num_bytes != 0)
+	{
 		u8 val;
 		u32 shift = 8 * (3 - (pos & 0x3));
 
 		/* if process is 32-bit, clear upper 32 bits of EA */
-		if ((regs->msr & MSR_64BIT) == 0) {
+		if ((regs->msr & MSR_64BIT) == 0)
 			EA &= 0xFFFFFFFF;
-		}
 
 		switch ((instword & PPC_INST_STRING_MASK)) {
 			case PPC_INST_LSWX:
 			case PPC_INST_LSWI:
-				if (get_user(val, (u8 __user *)EA)) {
+				if (get_user(val, (u8 __user *)EA))
 					return -EFAULT;
-				}
 				/* first time updating this reg,
 				 * zero it out */
-				if (pos == 0) {
+				if (pos == 0)
 					regs->gpr[rT] = 0;
-				}
 				regs->gpr[rT] |= val << shift;
 				break;
 			case PPC_INST_STSWI:
 			case PPC_INST_STSWX:
 				val = regs->gpr[rT] >> shift;
-				if (put_user(val, (u8 __user *)EA)) {
+				if (put_user(val, (u8 __user *)EA))
 					return -EFAULT;
-				}
 				break;
 		}
 		/* move EA to next address */
@@ -1375,9 +1286,8 @@ static int emulate_string_inst(struct pt_regs *regs, u32 instword)
 		/* manage our position within the register */
 		if (++pos == 4) {
 			pos = 0;
-			if (++rT == 32) {
+			if (++rT == 32)
 				rT = 0;
-			}
 		}
 	}
 
@@ -1386,7 +1296,7 @@ static int emulate_string_inst(struct pt_regs *regs, u32 instword)
 
 static int emulate_popcntb_inst(struct pt_regs *regs, u32 instword)
 {
-	u32 ra, rs;
+	u32 ra,rs;
 	unsigned long tmp;
 
 	ra = (instword >> 16) & 0x1f;
@@ -1421,11 +1331,11 @@ static int emulate_isel(struct pt_regs *regs, u32 instword)
 #ifdef CONFIG_PPC_TRANSACTIONAL_MEM
 static inline bool tm_abort_check(struct pt_regs *regs, int cause)
 {
-	/* If we're emulating a load/store in an active transaction, we cannot
-	 * emulate it as the kernel operates in transaction suspended context.
-	 * We need to abort the transaction.  This creates a persistent TM
-	 * abort so tell the user what caused it with a new code.
-	*/
+        /* If we're emulating a load/store in an active transaction, we cannot
+         * emulate it as the kernel operates in transaction suspended context.
+         * We need to abort the transaction.  This creates a persistent TM
+         * abort so tell the user what caused it with a new code.
+	 */
 	if (MSR_TM_TRANSACTIONAL(regs->msr)) {
 		tm_enable();
 		tm_abort(cause);
@@ -1445,13 +1355,11 @@ static int emulate_instruction(struct pt_regs *regs)
 	u32 instword;
 	u32 rd;
 
-	if (!user_mode(regs)) {
+	if (!user_mode(regs))
 		return -EINVAL;
-	}
 
-	if (get_user(instword, (u32 __user *)(regs->nip))) {
+	if (get_user(instword, (u32 __user *)(regs->nip)))
 		return -EFAULT;
-	}
 
 	/* Emulate the mfspr rD, PVR. */
 	if ((instword & PPC_INST_MFSPR_PVR_MASK) == PPC_INST_MFSPR_PVR) {
@@ -1481,9 +1389,8 @@ static int emulate_instruction(struct pt_regs *regs)
 	/* Emulate load/store string insn. */
 	if ((instword & PPC_INST_STRING_GEN_MASK) == PPC_INST_STRING) {
 		if (tm_abort_check(regs,
-		                   TM_CAUSE_EMULATE | TM_CAUSE_PERSISTENT)) {
+				   TM_CAUSE_EMULATE | TM_CAUSE_PERSISTENT))
 			return -EINVAL;
-		}
 		PPC_WARN_EMULATED(string, regs);
 		return emulate_string_inst(regs, instword);
 	}
@@ -1510,10 +1417,10 @@ static int emulate_instruction(struct pt_regs *regs)
 #ifdef CONFIG_PPC64
 	/* Emulate the mfspr rD, DSCR. */
 	if ((((instword & PPC_INST_MFSPR_DSCR_USER_MASK) ==
-	      PPC_INST_MFSPR_DSCR_USER) ||
+		PPC_INST_MFSPR_DSCR_USER) ||
 	     ((instword & PPC_INST_MFSPR_DSCR_MASK) ==
-	      PPC_INST_MFSPR_DSCR)) &&
-	    cpu_has_feature(CPU_FTR_DSCR)) {
+		PPC_INST_MFSPR_DSCR)) &&
+			cpu_has_feature(CPU_FTR_DSCR)) {
 		PPC_WARN_EMULATED(mfdscr, regs);
 		rd = (instword >> 21) & 0x1f;
 		regs->gpr[rd] = mfspr(SPRN_DSCR);
@@ -1521,10 +1428,10 @@ static int emulate_instruction(struct pt_regs *regs)
 	}
 	/* Emulate the mtspr DSCR, rD. */
 	if ((((instword & PPC_INST_MTSPR_DSCR_USER_MASK) ==
-	      PPC_INST_MTSPR_DSCR_USER) ||
+		PPC_INST_MTSPR_DSCR_USER) ||
 	     ((instword & PPC_INST_MTSPR_DSCR_MASK) ==
-	      PPC_INST_MTSPR_DSCR)) &&
-	    cpu_has_feature(CPU_FTR_DSCR)) {
+		PPC_INST_MTSPR_DSCR)) &&
+			cpu_has_feature(CPU_FTR_DSCR)) {
 		PPC_WARN_EMULATED(mtdscr, regs);
 		rd = (instword >> 21) & 0x1f;
 		current->thread.dscr = regs->gpr[rd];
@@ -1550,32 +1457,28 @@ static int emulate_math(struct pt_regs *regs)
 	int ret;
 
 	ret = do_mathemu(regs);
-	if (ret >= 0) {
+	if (ret >= 0)
 		PPC_WARN_EMULATED(math, regs);
-	}
 
 	switch (ret) {
-		case 0:
-			emulate_single_step(regs);
-			return 0;
-		case 1: {
+	case 0:
+		emulate_single_step(regs);
+		return 0;
+	case 1: {
 			int code = 0;
 			code = __parse_fpscr(current->thread.fp_state.fpscr);
 			_exception(SIGFPE, regs, code, regs->nip);
 			return 0;
 		}
-		case -EFAULT:
-			_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-			return 0;
+	case -EFAULT:
+		_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
+		return 0;
 	}
 
 	return -1;
 }
 #else
-static inline int emulate_math(struct pt_regs *regs)
-{
-	return -1;
-}
+static inline int emulate_math(struct pt_regs *regs) { return -1; }
 #endif
 
 static void do_program_check(struct pt_regs *regs)
@@ -1594,27 +1497,23 @@ static void do_program_check(struct pt_regs *regs)
 		unsigned long bugaddr;
 		/* Debugger is first in line to stop recursive faults in
 		 * rcu_lock, notify_die, or atomic_notifier_call_chain */
-		if (debugger_bpt(regs)) {
+		if (debugger_bpt(regs))
 			return;
-		}
 
-		if (kprobe_handler(regs)) {
+		if (kprobe_handler(regs))
 			return;
-		}
 
 		/* trap exception */
 		if (notify_die(DIE_BPT, "breakpoint", regs, 5, 5, SIGTRAP)
-		    == NOTIFY_STOP) {
+				== NOTIFY_STOP)
 			return;
-		}
 
 		bugaddr = regs->nip;
 		/*
 		 * Fixup bugaddr for BUG_ON() in real mode
 		 */
-		if (!is_kernel_addr(bugaddr) && !(regs->msr & MSR_IR)) {
+		if (!is_kernel_addr(bugaddr) && !(regs->msr & MSR_IR))
 			bugaddr += PAGE_OFFSET;
-		}
 
 		if (!(regs->msr & MSR_PR) &&  /* not user-mode */
 		    report_bug(bugaddr, regs) == BUG_TRAP_TYPE_WARN) {
@@ -1665,9 +1564,8 @@ static void do_program_check(struct pt_regs *regs)
 	 * might lead to further faults, and loose the context of the original
 	 * exception.
 	 */
-	if (!user_mode(regs)) {
+	if (!user_mode(regs))
 		goto sigill;
-	}
 
 	interrupt_cond_local_irq_enable(regs);
 
@@ -1706,29 +1604,27 @@ static void do_program_check(struct pt_regs *regs)
 	 * instruction or only on FP instructions, whether there is a
 	 * pattern to occurrences etc. -dgibson 31/Mar/2003
 	 */
-	if (!emulate_math(regs)) {
+	if (!emulate_math(regs))
 		return;
-	}
 
 	/* Try to emulate it if we should. */
 	if (reason & (REASON_ILLEGAL | REASON_PRIVILEGED)) {
 		switch (emulate_instruction(regs)) {
-			case 0:
-				regs_add_return_ip(regs, 4);
-				emulate_single_step(regs);
-				return;
-			case -EFAULT:
-				_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
-				return;
+		case 0:
+			regs_add_return_ip(regs, 4);
+			emulate_single_step(regs);
+			return;
+		case -EFAULT:
+			_exception(SIGSEGV, regs, SEGV_MAPERR, regs->nip);
+			return;
 		}
 	}
 
 sigill:
-	if (reason & REASON_PRIVILEGED) {
+	if (reason & REASON_PRIVILEGED)
 		_exception(SIGILL, regs, ILL_PRVOPC, regs->nip);
-	} else {
+	else
 		_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
-	}
 
 }
 
@@ -1761,14 +1657,12 @@ DEFINE_INTERRUPT_HANDLER(alignment_exception)
 		goto bad;
 	}
 
-	if (tm_abort_check(regs, TM_CAUSE_ALIGNMENT | TM_CAUSE_PERSISTENT)) {
+	if (tm_abort_check(regs, TM_CAUSE_ALIGNMENT | TM_CAUSE_PERSISTENT))
 		return;
-	}
 
 	/* we don't implement logging of alignment exceptions */
-	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS)) {
+	if (!(current->thread.align_ctl & PR_UNALIGN_SIGBUS))
 		fixed = fix_alignment(regs);
-	}
 
 	if (fixed == 1) {
 		/* skip over emulated instruction */
@@ -1786,11 +1680,10 @@ DEFINE_INTERRUPT_HANDLER(alignment_exception)
 		code = BUS_ADRALN;
 	}
 bad:
-	if (user_mode(regs)) {
+	if (user_mode(regs))
 		_exception(sig, regs, code, regs->dar);
-	} else {
+	else
 		bad_page_fault(regs, sig);
-	}
 }
 
 DEFINE_INTERRUPT_HANDLER(stack_overflow_exception)
@@ -1801,7 +1694,7 @@ DEFINE_INTERRUPT_HANDLER(stack_overflow_exception)
 DEFINE_INTERRUPT_HANDLER(kernel_fp_unavailable_exception)
 {
 	printk(KERN_EMERG "Unrecoverable FP Unavailable Exception "
-	       "%lx at %lx\n", regs->trap, regs->nip);
+			  "%lx at %lx\n", regs->trap, regs->nip);
 	die("Unrecoverable FP Unavailable Exception", regs, SIGABRT);
 }
 
@@ -1815,7 +1708,7 @@ DEFINE_INTERRUPT_HANDLER(altivec_unavailable_exception)
 	}
 
 	printk(KERN_EMERG "Unrecoverable VMX/Altivec Unavailable Exception "
-	       "%lx at %lx\n", regs->trap, regs->nip);
+			"%lx at %lx\n", regs->trap, regs->nip);
 	die("Unrecoverable VMX/Altivec Unavailable Exception", regs, SIGABRT);
 }
 
@@ -1829,7 +1722,7 @@ DEFINE_INTERRUPT_HANDLER(vsx_unavailable_exception)
 	}
 
 	printk(KERN_EMERG "Unrecoverable VSX Unavailable Exception "
-	       "%lx at %lx\n", regs->trap, regs->nip);
+			"%lx at %lx\n", regs->trap, regs->nip);
 	die("Unrecoverable VSX Unavailable Exception", regs, SIGABRT);
 }
 
@@ -1846,7 +1739,7 @@ static void tm_unavailable(struct pt_regs *regs)
 	}
 #endif
 	pr_emerg("Unrecoverable TM Unavailable Exception "
-	         "%lx at %lx\n", regs->trap, regs->nip);
+			"%lx at %lx\n", regs->trap, regs->nip);
 	die("Unrecoverable TM Unavailable Exception", regs, SIGABRT);
 }
 
@@ -1872,23 +1765,21 @@ DEFINE_INTERRUPT_HANDLER(facility_unavailable_exception)
 	bool hv;
 
 	hv = (TRAP(regs) == INTERRUPT_H_FAC_UNAVAIL);
-	if (hv) {
+	if (hv)
 		value = mfspr(SPRN_HFSCR);
-	} else {
+	else
 		value = mfspr(SPRN_FSCR);
-	}
 
 	status = value >> 56;
 	if ((hv || status >= 2) &&
 	    (status < ARRAY_SIZE(facility_strings)) &&
-	    facility_strings[status]) {
+	    facility_strings[status])
 		facility = facility_strings[status];
-	}
 
 	/* We should not have taken this interrupt in kernel */
 	if (!user_mode(regs)) {
 		pr_emerg("Facility '%s' unavailable (%d) exception in kernel mode at %lx\n",
-		         facility, status, regs->nip);
+			 facility, status, regs->nip);
 		die("Unexpected facility unavailable exception", regs, SIGABRT);
 	}
 
@@ -1918,7 +1809,7 @@ DEFINE_INTERRUPT_HANDLER(facility_unavailable_exception)
 
 		/* Write into DSCR (mtspr 0x03, RS) */
 		if ((instword & PPC_INST_MTSPR_DSCR_USER_MASK)
-		    == PPC_INST_MTSPR_DSCR_USER) {
+				== PPC_INST_MTSPR_DSCR_USER) {
 			rd = (instword >> 21) & 0x1f;
 			current->thread.dscr = regs->gpr[rd];
 			current->thread.dscr_inherit = 1;
@@ -1928,7 +1819,7 @@ DEFINE_INTERRUPT_HANDLER(facility_unavailable_exception)
 
 		/* Read from DSCR (mfspr RT, 0x03) */
 		if ((instword & PPC_INST_MFSPR_DSCR_USER_MASK)
-		    == PPC_INST_MFSPR_DSCR_USER) {
+				== PPC_INST_MFSPR_DSCR_USER) {
 			if (emulate_instruction(regs)) {
 				pr_err("DSCR based mfspr emulation failed\n");
 				return;
@@ -1953,16 +1844,15 @@ DEFINE_INTERRUPT_HANDLER(facility_unavailable_exception)
 		 * doing tbegin (or any TM instruction). So in that case just
 		 * send the process a SIGILL immediately.
 		 */
-		if (!cpu_has_feature(CPU_FTR_TM)) {
+		if (!cpu_has_feature(CPU_FTR_TM))
 			goto out;
-		}
 
 		tm_unavailable(regs);
 		return;
 	}
 
 	pr_err_ratelimited("%sFacility '%s' unavailable (%d), exception at 0x%lx, MSR=%lx\n",
-	                   hv ? "Hypervisor " : "", facility, status, regs->nip, regs->msr);
+		hv ? "Hypervisor " : "", facility, status, regs->nip, regs->msr);
 
 out:
 	_exception(SIGILL, regs, ILL_ILLOPC, regs->nip);
@@ -1976,15 +1866,15 @@ DEFINE_INTERRUPT_HANDLER(fp_unavailable_tm)
 	/* Note:  This does not handle any kind of FP laziness. */
 
 	TM_DEBUG("FP Unavailable trap whilst transactional at 0x%lx, MSR=%lx\n",
-	         regs->nip, regs->msr);
+		 regs->nip, regs->msr);
 
-	/* We can only have got here if the task started using FP after
-	 * beginning the transaction.  So, the transactional regs are just a
-	 * copy of the checkpointed ones.  But, we still need to recheckpoint
-	 * as we're enabling FP for the process; it will return, abort the
-	 * transaction, and probably retry but now with FP enabled.  So the
-	 * checkpointed FP registers need to be loaded.
-	*/
+        /* We can only have got here if the task started using FP after
+         * beginning the transaction.  So, the transactional regs are just a
+         * copy of the checkpointed ones.  But, we still need to recheckpoint
+         * as we're enabling FP for the process; it will return, abort the
+         * transaction, and probably retry but now with FP enabled.  So the
+         * checkpointed FP registers need to be loaded.
+	 */
 	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
 
 	/*
@@ -2011,8 +1901,8 @@ DEFINE_INTERRUPT_HANDLER(altivec_unavailable_tm)
 	 */
 
 	TM_DEBUG("Vector Unavailable trap whilst transactional at 0x%lx,"
-	         "MSR=%lx\n",
-	         regs->nip, regs->msr);
+		 "MSR=%lx\n",
+		 regs->nip, regs->msr);
 	tm_reclaim_current(TM_CAUSE_FAC_UNAV);
 	current->thread.load_vec = 1;
 	tm_recheckpoint(&current->thread);
@@ -2029,8 +1919,8 @@ DEFINE_INTERRUPT_HANDLER(vsx_unavailable_tm)
 	 */
 
 	TM_DEBUG("VSX Unavailable trap whilst transactional at 0x%lx,"
-	         "MSR=%lx\n",
-	         regs->nip, regs->msr);
+		 "MSR=%lx\n",
+		 regs->nip, regs->msr);
 
 	current->thread.used_vsr = 1;
 
@@ -2072,11 +1962,10 @@ DEFINE_INTERRUPT_HANDLER_RAW(performance_monitor_exception)
 	 * prevent hash faults on user addresses when reading callchains (and
 	 * looks better from an irq tracing perspective).
 	 */
-	if (IS_ENABLED(CONFIG_PPC64) && unlikely(arch_irq_disabled_regs(regs))) {
+	if (IS_ENABLED(CONFIG_PPC64) && unlikely(arch_irq_disabled_regs(regs)))
 		performance_monitor_exception_nmi(regs);
-	} else {
+	else
 		performance_monitor_exception_async(regs);
-	}
 
 	return 0;
 }
@@ -2095,34 +1984,34 @@ static void handle_debug(struct pt_regs *regs, unsigned long debug_status)
 		current->thread.debug.dbcr2 &= ~DBCR2_DAC12MODE;
 #endif
 		do_send_trap(regs, mfspr(SPRN_DAC1), debug_status,
-		             5);
+			     5);
 		changed |= 0x01;
 	}  else if (debug_status & (DBSR_DAC2R | DBSR_DAC2W)) {
 		dbcr_dac(current) &= ~(DBCR_DAC2R | DBCR_DAC2W);
 		do_send_trap(regs, mfspr(SPRN_DAC2), debug_status,
-		             6);
+			     6);
 		changed |= 0x01;
 	}  else if (debug_status & DBSR_IAC1) {
 		current->thread.debug.dbcr0 &= ~DBCR0_IAC1;
 		dbcr_iac_range(current) &= ~DBCR_IAC12MODE;
 		do_send_trap(regs, mfspr(SPRN_IAC1), debug_status,
-		             1);
+			     1);
 		changed |= 0x01;
 	}  else if (debug_status & DBSR_IAC2) {
 		current->thread.debug.dbcr0 &= ~DBCR0_IAC2;
 		do_send_trap(regs, mfspr(SPRN_IAC2), debug_status,
-		             2);
+			     2);
 		changed |= 0x01;
 	}  else if (debug_status & DBSR_IAC3) {
 		current->thread.debug.dbcr0 &= ~DBCR0_IAC3;
 		dbcr_iac_range(current) &= ~DBCR_IAC34MODE;
 		do_send_trap(regs, mfspr(SPRN_IAC3), debug_status,
-		             3);
+			     3);
 		changed |= 0x01;
 	}  else if (debug_status & DBSR_IAC4) {
 		current->thread.debug.dbcr0 &= ~DBCR0_IAC4;
 		do_send_trap(regs, mfspr(SPRN_IAC4), debug_status,
-		             4);
+			     4);
 		changed |= 0x01;
 	}
 	/*
@@ -2131,17 +2020,14 @@ static void handle_debug(struct pt_regs *regs, unsigned long debug_status)
 	 * back on or not.
 	 */
 	if (DBCR_ACTIVE_EVENTS(current->thread.debug.dbcr0,
-	                       current->thread.debug.dbcr1)) {
+			       current->thread.debug.dbcr1))
 		regs_set_return_msr(regs, regs->msr | MSR_DE);
-	} else
+	else
 		/* Make sure the IDM flag is off */
-	{
 		current->thread.debug.dbcr0 &= ~DBCR0_IDM;
-	}
 
-	if (changed & 0x01) {
+	if (changed & 0x01)
 		mtspr(SPRN_DBCR0, current->thread.debug.dbcr0);
-	}
 }
 
 DEFINE_INTERRUPT_HANDLER(DebugException)
@@ -2171,18 +2057,16 @@ DEFINE_INTERRUPT_HANDLER(DebugException)
 			return;
 		}
 
-		if (kprobe_post_handler(regs)) {
+		if (kprobe_post_handler(regs))
 			return;
-		}
 
 		if (notify_die(DIE_SSTEP, "block_step", regs, 5,
-		               5, SIGTRAP) == NOTIFY_STOP) {
+			       5, SIGTRAP) == NOTIFY_STOP) {
 			return;
 		}
-		if (debugger_sstep(regs)) {
+		if (debugger_sstep(regs))
 			return;
-		}
-	} else if (debug_status & DBSR_IC) {    /* Instruction complete */
+	} else if (debug_status & DBSR_IC) { 	/* Instruction complete */
 		regs_set_return_msr(regs, regs->msr & ~MSR_DE);
 
 		/* Disable instruction completion */
@@ -2190,35 +2074,30 @@ DEFINE_INTERRUPT_HANDLER(DebugException)
 		/* Clear the instruction completion event */
 		mtspr(SPRN_DBSR, DBSR_IC);
 
-		if (kprobe_post_handler(regs)) {
+		if (kprobe_post_handler(regs))
 			return;
-		}
 
 		if (notify_die(DIE_SSTEP, "single_step", regs, 5,
-		               5, SIGTRAP) == NOTIFY_STOP) {
+			       5, SIGTRAP) == NOTIFY_STOP) {
 			return;
 		}
 
-		if (debugger_sstep(regs)) {
+		if (debugger_sstep(regs))
 			return;
-		}
 
 		if (user_mode(regs)) {
 			current->thread.debug.dbcr0 &= ~DBCR0_IC;
 			if (DBCR_ACTIVE_EVENTS(current->thread.debug.dbcr0,
-			                       current->thread.debug.dbcr1)) {
+					       current->thread.debug.dbcr1))
 				regs_set_return_msr(regs, regs->msr | MSR_DE);
-			} else
+			else
 				/* Make sure the IDM bit is off */
-			{
 				current->thread.debug.dbcr0 &= ~DBCR0_IDM;
-			}
 		}
 
 		_exception(SIGTRAP, regs, TRAP_TRACE, regs->nip);
-	} else {
+	} else
 		handle_debug(regs, debug_status);
-	}
 }
 #endif /* CONFIG_PPC_ADV_DEBUG_REGS */
 
@@ -2250,7 +2129,7 @@ DEFINE_INTERRUPT_HANDLER(altivec_assist_exception)
 		/* didn't recognize the instruction */
 		/* XXX quick hack for now: set the non-Java bit in the VSCR */
 		printk_ratelimited(KERN_ERR "Unrecognized altivec instruction "
-		                   "in %s at %lx\n", current->comm, regs->nip);
+				   "in %s at %lx\n", current->comm, regs->nip);
 		current->thread.vr_state.vscr.u[3] |= 0x10000;
 	}
 }
@@ -2265,9 +2144,8 @@ DEFINE_INTERRUPT_HANDLER(CacheLockingException)
 	 * as priv ops, in the future we could try to do
 	 * something smarter
 	 */
-	if (error_code & (ESR_DLK | ESR_ILK)) {
+	if (error_code & (ESR_DLK|ESR_ILK))
 		_exception(SIGILL, regs, ILL_PRVOPC, regs->nip);
-	}
 	return;
 }
 #endif /* CONFIG_PPC_85xx */
@@ -2289,15 +2167,17 @@ DEFINE_INTERRUPT_HANDLER(SPEFloatingPointException)
 
 	if ((spefscr & SPEFSCR_FOVF) && (fpexc_mode & PR_FP_EXC_OVF)) {
 		code = FPE_FLTOVF;
-	} else if ((spefscr & SPEFSCR_FUNF) && (fpexc_mode & PR_FP_EXC_UND)) {
-		code = FPE_FLTUND;
-	} else if ((spefscr & SPEFSCR_FDBZ) && (fpexc_mode & PR_FP_EXC_DIV)) {
-		code = FPE_FLTDIV;
-	} else if ((spefscr & SPEFSCR_FINV) && (fpexc_mode & PR_FP_EXC_INV)) {
-		code = FPE_FLTINV;
-	} else if ((spefscr & (SPEFSCR_FG | SPEFSCR_FX)) && (fpexc_mode & PR_FP_EXC_RES)) {
-		code = FPE_FLTRES;
 	}
+	else if ((spefscr & SPEFSCR_FUNF) && (fpexc_mode & PR_FP_EXC_UND)) {
+		code = FPE_FLTUND;
+	}
+	else if ((spefscr & SPEFSCR_FDBZ) && (fpexc_mode & PR_FP_EXC_DIV))
+		code = FPE_FLTDIV;
+	else if ((spefscr & SPEFSCR_FINV) && (fpexc_mode & PR_FP_EXC_INV)) {
+		code = FPE_FLTINV;
+	}
+	else if ((spefscr & (SPEFSCR_FG | SPEFSCR_FX)) && (fpexc_mode & PR_FP_EXC_RES))
+		code = FPE_FLTRES;
 
 	err = do_spe_mathemu(regs);
 	if (err == 0) {
@@ -2327,9 +2207,8 @@ DEFINE_INTERRUPT_HANDLER(SPEFloatingPointRoundException)
 	interrupt_cond_local_irq_enable(regs);
 
 	preempt_disable();
-	if (regs->msr & MSR_SPE) {
+	if (regs->msr & MSR_SPE)
 		giveup_spe(current);
-	}
 	preempt_enable();
 
 	regs_add_return_ip(regs, -4);
@@ -2363,7 +2242,7 @@ DEFINE_INTERRUPT_HANDLER(SPEFloatingPointRoundException)
 void __noreturn unrecoverable_exception(struct pt_regs *regs)
 {
 	pr_emerg("Unrecoverable exception %lx at %lx (msr=%lx)\n",
-	         regs->trap, regs->nip, regs->msr);
+		 regs->trap, regs->nip, regs->msr);
 	die("Unrecoverable exception", regs, SIGABRT);
 	/* die() should not return */
 	for (;;)
@@ -2373,7 +2252,7 @@ void __noreturn unrecoverable_exception(struct pt_regs *regs)
 #if defined(CONFIG_BOOKE_WDT) || defined(CONFIG_40x)
 DEFINE_INTERRUPT_HANDLER_NMI(WatchdogException)
 {
-	printk(KERN_EMERG "PowerPC Book-E Watchdog Exception\n");
+	printk (KERN_EMERG "PowerPC Book-E Watchdog Exception\n");
 	mtspr(SPRN_TCR, mfspr(SPRN_TCR) & ~TCR_WIE);
 	return 0;
 }
@@ -2392,7 +2271,7 @@ DEFINE_INTERRUPT_HANDLER(kernel_bad_stack)
 
 #ifdef CONFIG_PPC_EMULATED_STATS
 
-#define WARN_EMULATED_SETUP(type)   .type = { .name = #type }
+#define WARN_EMULATED_SETUP(type)	.type = { .name = #type }
 
 struct ppc_emulated ppc_emulated = {
 #ifdef CONFIG_ALTIVEC
@@ -2432,7 +2311,7 @@ u32 ppc_warn_emulated;
 void ppc_warn_emulated_print(const char *type)
 {
 	pr_warn_ratelimited("%s used emulated %s instruction\n", current->comm,
-	                    type);
+			    type);
 }
 
 static int __init ppc_warn_emulated_init(void)
@@ -2442,13 +2321,13 @@ static int __init ppc_warn_emulated_init(void)
 	struct ppc_emulated_entry *entries = (void *)&ppc_emulated;
 
 	dir = debugfs_create_dir("emulated_instructions",
-	                         arch_debugfs_dir);
+				 arch_debugfs_dir);
 
 	debugfs_create_u32("do_warn", 0644, dir, &ppc_warn_emulated);
 
-	for (i = 0; i < sizeof(ppc_emulated) / sizeof(*entries); i++)
+	for (i = 0; i < sizeof(ppc_emulated)/sizeof(*entries); i++)
 		debugfs_create_u32(entries[i].name, 0644, dir,
-		                   (u32 *)&entries[i].val.counter);
+				   (u32 *)&entries[i].val.counter);
 
 	return 0;
 }

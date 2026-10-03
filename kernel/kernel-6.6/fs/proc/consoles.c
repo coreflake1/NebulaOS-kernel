@@ -18,13 +18,13 @@ static int show_console_dev(struct seq_file *m, void *v)
 		short flag;
 		char name;
 	} con_flags[] = {
-		{ CON_ENABLED,      'E' },
-		{ CON_CONSDEV,      'C' },
-		{ CON_BOOT,     'B' },
-		{ CON_NBCON,        'N' },
-		{ CON_PRINTBUFFER,  'p' },
-		{ CON_BRL,      'b' },
-		{ CON_ANYTIME,      'a' },
+		{ CON_ENABLED,		'E' },
+		{ CON_CONSDEV,		'C' },
+		{ CON_BOOT,		'B' },
+		{ CON_NBCON,		'N' },
+		{ CON_PRINTBUFFER,	'p' },
+		{ CON_BRL,		'b' },
+		{ CON_ANYTIME,		'a' },
 	};
 	char flags[ARRAY_SIZE(con_flags) + 1];
 	struct console *con = v;
@@ -53,26 +53,23 @@ static int show_console_dev(struct seq_file *m, void *v)
 
 	for (a = 0; a < ARRAY_SIZE(con_flags); a++)
 		flags[a] = (con->flags & con_flags[a].flag) ?
-		           con_flags[a].name : ' ';
+			con_flags[a].name : ' ';
 	flags[a] = 0;
 
 	seq_setwidth(m, 21 - 1);
 	seq_printf(m, "%s%d", con->name, con->index);
 	seq_pad(m, ' ');
 	if (con->flags & CON_NBCON) {
-		if (con->write_atomic || con->write_thread) {
+		if (con->write_atomic || con->write_thread)
 			con_write = 'W';
-		}
 	} else {
-		if (con->write) {
+		if (con->write)
 			con_write = 'W';
-		}
 	}
 	seq_printf(m, "%c%c%c (%s)", con->read ? 'R' : '-', con_write,
-	           con->unblank ? 'U' : '-', flags);
-	if (dev) {
+		   con->unblank ? 'U' : '-', flags);
+	if (dev)
 		seq_printf(m, " %4d:%d", MAJOR(dev), MINOR(dev));
-	}
 
 	seq_putc(m, '\n');
 	return 0;
@@ -90,9 +87,8 @@ static void *c_start(struct seq_file *m, loff_t *pos)
 	 */
 	console_list_lock();
 	for_each_console(con)
-	if (off++ == *pos) {
-		break;
-	}
+		if (off++ == *pos)
+			break;
 
 	return con;
 }
@@ -111,10 +107,10 @@ static void c_stop(struct seq_file *m, void *v)
 }
 
 static const struct seq_operations consoles_op = {
-	.start  = c_start,
-	.next   = c_next,
-	.stop   = c_stop,
-	.show   = show_console_dev
+	.start	= c_start,
+	.next	= c_next,
+	.stop	= c_stop,
+	.show	= show_console_dev
 };
 
 static int __init proc_consoles_init(void)

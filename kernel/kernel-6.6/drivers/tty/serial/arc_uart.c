@@ -42,27 +42,27 @@
  * UART Register set (this is not a Standards Compliant IP)
  * Also each reg is Word aligned, but only 8 bits wide
  */
-#define R_ID0   0
-#define R_ID1   4
-#define R_ID2   8
-#define R_ID3   12
-#define R_DATA  16
-#define R_STS   20
-#define R_BAUDL 24
-#define R_BAUDH 28
+#define R_ID0	0
+#define R_ID1	4
+#define R_ID2	8
+#define R_ID3	12
+#define R_DATA	16
+#define R_STS	20
+#define R_BAUDL	24
+#define R_BAUDH	28
 
 /* Bits for UART Status Reg (R/W) */
-#define RXIENB  0x04    /* Receive Interrupt Enable */
-#define TXIENB  0x40    /* Transmit Interrupt Enable */
+#define RXIENB  0x04	/* Receive Interrupt Enable */
+#define TXIENB  0x40	/* Transmit Interrupt Enable */
 
-#define RXEMPTY 0x20    /* Receive FIFO Empty: No char receivede */
-#define TXEMPTY 0x80    /* Transmit FIFO Empty, thus char can be written into */
+#define RXEMPTY 0x20	/* Receive FIFO Empty: No char receivede */
+#define TXEMPTY 0x80	/* Transmit FIFO Empty, thus char can be written into */
 
-#define RXFULL  0x08    /* Receive FIFO full */
-#define RXFULL1 0x10    /* Receive FIFO has space for 1 char (tot space=4) */
+#define RXFULL  0x08	/* Receive FIFO full */
+#define RXFULL1 0x10	/* Receive FIFO has space for 1 char (tot space=4) */
 
-#define RXFERR  0x01    /* Frame Error: Stop Bit not detected */
-#define RXOERR  0x02    /* OverFlow Err: Char recv but RXFULL still set */
+#define RXFERR  0x01	/* Frame Error: Stop Bit not detected */
+#define RXOERR  0x02	/* OverFlow Err: Char recv but RXFULL still set */
 
 /* Uart bit fiddling helpers: lowest level */
 #define RBASE(port, reg)      (port->membase + reg)
@@ -90,7 +90,7 @@
 #define UART_RX_IRQ_ENABLE(uart)   UART_REG_OR(uart, R_STS, RXIENB)
 #define UART_TX_IRQ_ENABLE(uart)   UART_REG_OR(uart, R_STS, TXIENB)
 
-#define ARC_SERIAL_DEV_NAME "ttyARC"
+#define ARC_SERIAL_DEV_NAME	"ttyARC"
 
 struct arc_uart_port {
 	struct uart_port port;
@@ -102,20 +102,20 @@ struct arc_uart_port {
 static struct arc_uart_port arc_uart_ports[CONFIG_SERIAL_ARC_NR_PORTS];
 
 #ifdef CONFIG_SERIAL_ARC_CONSOLE
-	static struct console arc_console;
+static struct console arc_console;
 #endif
 
-#define DRIVER_NAME "arc-uart"
+#define DRIVER_NAME	"arc-uart"
 
 static struct uart_driver arc_uart_driver = {
-	.owner      = THIS_MODULE,
-	.driver_name    = DRIVER_NAME,
-	.dev_name   = ARC_SERIAL_DEV_NAME,
-	.major      = 0,
-	.minor      = 0,
-	.nr     = CONFIG_SERIAL_ARC_NR_PORTS,
+	.owner		= THIS_MODULE,
+	.driver_name	= DRIVER_NAME,
+	.dev_name	= ARC_SERIAL_DEV_NAME,
+	.major		= 0,
+	.minor		= 0,
+	.nr		= CONFIG_SERIAL_ARC_NR_PORTS,
 #ifdef CONFIG_SERIAL_ARC_CONSOLE
-	.cons       = &arc_console,
+	.cons		= &arc_console,
 #endif
 };
 
@@ -126,9 +126,8 @@ static void arc_serial_stop_rx(struct uart_port *port)
 
 static void arc_serial_stop_tx(struct uart_port *port)
 {
-	while (!(UART_GET_STATUS(port) & TXEMPTY)) {
+	while (!(UART_GET_STATUS(port) & TXEMPTY))
 		cpu_relax();
-	}
 
 	UART_TX_IRQ_DISABLE(port);
 }
@@ -141,9 +140,8 @@ static unsigned int arc_serial_tx_empty(struct uart_port *port)
 	unsigned int stat;
 
 	stat = UART_GET_STATUS(port);
-	if (stat & TXEMPTY) {
+	if (stat & TXEMPTY)
 		return TIOCSER_TEMT;
-	}
 
 	return 0;
 }
@@ -169,9 +167,8 @@ static void arc_serial_tx_chars(struct uart_port *port)
 	} else if (!uart_circ_empty(xmit)) {
 		ch = xmit->buf[xmit->tail];
 		uart_xmit_advance(port, 1);
-		while (!(UART_GET_STATUS(port) & TXEMPTY)) {
+		while (!(UART_GET_STATUS(port) & TXEMPTY))
 			cpu_relax();
-		}
 		UART_SET_DATA(port, ch);
 		sent = 1;
 	}
@@ -180,13 +177,11 @@ static void arc_serial_tx_chars(struct uart_port *port)
 	 * If num chars in xmit buffer are too few, ask tty layer for more.
 	 * By Hard ISR to schedule processing in software interrupt part
 	 */
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
-	}
 
-	if (sent) {
+	if (sent)
 		UART_TX_IRQ_ENABLE(port);
-	}
 }
 
 /*
@@ -228,16 +223,14 @@ static void arc_serial_rx_chars(struct uart_port *port, unsigned int status)
 			UART_CLR_STATUS(port, RXFERR);
 		}
 
-		if (status & RXEMPTY) {
+		if (status & RXEMPTY)
 			continue;
-		}
 
 		ch = UART_GET_DATA(port);
 		port->icount.rx++;
 
-		if (!(uart_handle_sysrq_char(port, ch))) {
+		if (!(uart_handle_sysrq_char(port, ch)))
 			uart_insert_char(port, status, RXOERR, ch, flg);
-		}
 
 		tty_flip_buffer_push(&port->state->port);
 	} while (!((status = UART_GET_STATUS(port)) & RXEMPTY));
@@ -300,9 +293,8 @@ static irqreturn_t arc_serial_isr(int irq, void *dev_id)
 
 		uart_port_lock(port);
 
-		if (!uart_tx_stopped(port)) {
+		if (!uart_tx_stopped(port))
 			arc_serial_tx_chars(port);
-		}
 
 		uart_port_unlock(port);
 	}
@@ -355,7 +347,7 @@ static void arc_serial_shutdown(struct uart_port *port)
 
 static void
 arc_serial_set_termios(struct uart_port *port, struct ktermios *new,
-                       const struct ktermios *old)
+		       const struct ktermios *old)
 {
 	struct arc_uart_port *uart = to_arc_port(port);
 	unsigned int baud, uartl, uarth, hw_val;
@@ -387,17 +379,15 @@ arc_serial_set_termios(struct uart_port *port, struct ktermios *new,
 	 * UART doesn't support Parity/Hardware Flow Control;
 	 * Only supports 8N1 character size
 	 */
-	new->c_cflag &= ~(CMSPAR | CRTSCTS | CSIZE);
+	new->c_cflag &= ~(CMSPAR|CRTSCTS|CSIZE);
 	new->c_cflag |= CS8;
 
-	if (old) {
+	if (old)
 		tty_termios_copy_hw(new, old);
-	}
 
 	/* Don't rewrite B0 */
-	if (tty_termios_baud_rate(new)) {
+	if (tty_termios_baud_rate(new))
 		tty_termios_encode_baud_rate(new, baud, baud);
-	}
 
 	uart_update_timeout(port, new->c_cflag, baud);
 
@@ -424,9 +414,8 @@ static int arc_serial_request_port(struct uart_port *port)
 static int
 arc_serial_verify_port(struct uart_port *port, struct serial_struct *ser)
 {
-	if (port->type != PORT_UNKNOWN && ser->type != PORT_ARC) {
+	if (port->type != PORT_UNKNOWN && ser->type != PORT_ARC)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -436,18 +425,16 @@ arc_serial_verify_port(struct uart_port *port, struct serial_struct *ser)
  */
 static void arc_serial_config_port(struct uart_port *port, int flags)
 {
-	if (flags & UART_CONFIG_TYPE) {
+	if (flags & UART_CONFIG_TYPE)
 		port->type = PORT_ARC;
-	}
 }
 
 #ifdef CONFIG_CONSOLE_POLL
 
 static void arc_serial_poll_putchar(struct uart_port *port, unsigned char chr)
 {
-	while (!(UART_GET_STATUS(port) & TXEMPTY)) {
+	while (!(UART_GET_STATUS(port) & TXEMPTY))
 		cpu_relax();
-	}
 
 	UART_SET_DATA(port, chr);
 }
@@ -456,9 +443,8 @@ static int arc_serial_poll_getchar(struct uart_port *port)
 {
 	unsigned char chr;
 
-	while (!(UART_GET_STATUS(port) & RXEMPTY)) {
+	while (!(UART_GET_STATUS(port) & RXEMPTY))
 		cpu_relax();
-	}
 
 	chr = UART_GET_DATA(port);
 	return chr;
@@ -466,21 +452,21 @@ static int arc_serial_poll_getchar(struct uart_port *port)
 #endif
 
 static const struct uart_ops arc_serial_pops = {
-	.tx_empty   = arc_serial_tx_empty,
-	.set_mctrl  = arc_serial_set_mctrl,
-	.get_mctrl  = arc_serial_get_mctrl,
-	.stop_tx    = arc_serial_stop_tx,
-	.start_tx   = arc_serial_start_tx,
-	.stop_rx    = arc_serial_stop_rx,
-	.break_ctl  = arc_serial_break_ctl,
-	.startup    = arc_serial_startup,
-	.shutdown   = arc_serial_shutdown,
-	.set_termios    = arc_serial_set_termios,
-	.type       = arc_serial_type,
-	.release_port   = arc_serial_release_port,
-	.request_port   = arc_serial_request_port,
-	.config_port    = arc_serial_config_port,
-	.verify_port    = arc_serial_verify_port,
+	.tx_empty	= arc_serial_tx_empty,
+	.set_mctrl	= arc_serial_set_mctrl,
+	.get_mctrl	= arc_serial_get_mctrl,
+	.stop_tx	= arc_serial_stop_tx,
+	.start_tx	= arc_serial_start_tx,
+	.stop_rx	= arc_serial_stop_rx,
+	.break_ctl	= arc_serial_break_ctl,
+	.startup	= arc_serial_startup,
+	.shutdown	= arc_serial_shutdown,
+	.set_termios	= arc_serial_set_termios,
+	.type		= arc_serial_type,
+	.release_port	= arc_serial_release_port,
+	.request_port	= arc_serial_request_port,
+	.config_port	= arc_serial_config_port,
+	.verify_port	= arc_serial_verify_port,
 #ifdef CONFIG_CONSOLE_POLL
 	.poll_put_char = arc_serial_poll_putchar,
 	.poll_get_char = arc_serial_poll_getchar,
@@ -497,22 +483,19 @@ static int arc_serial_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if (co->index < 0 || co->index >= CONFIG_SERIAL_ARC_NR_PORTS) {
+	if (co->index < 0 || co->index >= CONFIG_SERIAL_ARC_NR_PORTS)
 		return -ENODEV;
-	}
 
 	/*
 	 * The uart port backing the console (e.g. ttyARC1) might not have been
 	 * init yet. If so, defer the console setup to after the port.
 	 */
 	port = &arc_uart_ports[co->index].port;
-	if (!port->membase) {
+	if (!port->membase)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	/*
 	 * Serial core will call port->ops->set_termios( )
@@ -523,9 +506,8 @@ static int arc_serial_console_setup(struct console *co, char *options)
 
 static void arc_serial_console_putchar(struct uart_port *port, unsigned char ch)
 {
-	while (!(UART_GET_STATUS(port) & TXEMPTY)) {
+	while (!(UART_GET_STATUS(port) & TXEMPTY))
 		cpu_relax();
-	}
 
 	UART_SET_DATA(port, (unsigned char)ch);
 }
@@ -534,7 +516,7 @@ static void arc_serial_console_putchar(struct uart_port *port, unsigned char ch)
  * Interrupts are disabled on entering
  */
 static void arc_serial_console_write(struct console *co, const char *s,
-                                     unsigned int count)
+				     unsigned int count)
 {
 	struct uart_port *port = &arc_uart_ports[co->index].port;
 	unsigned long flags;
@@ -545,17 +527,17 @@ static void arc_serial_console_write(struct console *co, const char *s,
 }
 
 static struct console arc_console = {
-	.name   = ARC_SERIAL_DEV_NAME,
-	.write  = arc_serial_console_write,
-	.device = uart_console_device,
-	.setup  = arc_serial_console_setup,
-	.flags  = CON_PRINTBUFFER,
-	.index  = -1,
-	.data   = &arc_uart_driver
+	.name	= ARC_SERIAL_DEV_NAME,
+	.write	= arc_serial_console_write,
+	.device	= uart_console_device,
+	.setup	= arc_serial_console_setup,
+	.flags	= CON_PRINTBUFFER,
+	.index	= -1,
+	.data	= &arc_uart_driver
 };
 
 static void arc_early_serial_write(struct console *con, const char *s,
-                                   unsigned int n)
+				   unsigned int n)
 {
 	struct earlycon_device *dev = con->data;
 
@@ -563,14 +545,13 @@ static void arc_early_serial_write(struct console *con, const char *s,
 }
 
 static int __init arc_early_console_setup(struct earlycon_device *dev,
-        const char *opt)
+					  const char *opt)
 {
 	struct uart_port *port = &dev->port;
 	unsigned int l, h, hw_val;
 
-	if (!dev->port.membase) {
+	if (!dev->port.membase)
 		return -ENODEV;
-	}
 
 	hw_val = port->uartclk / (dev->baud * 4) - 1;
 	l = hw_val & 0xFF;
@@ -584,7 +565,7 @@ static int __init arc_early_console_setup(struct earlycon_device *dev,
 }
 OF_EARLYCON_DECLARE(arc_uart, "snps,arc-uart", arc_early_console_setup);
 
-#endif  /* CONFIG_SERIAL_ARC_CONSOLE */
+#endif	/* CONFIG_SERIAL_ARC_CONSOLE */
 
 static int arc_serial_probe(struct platform_device *pdev)
 {
@@ -595,14 +576,12 @@ static int arc_serial_probe(struct platform_device *pdev)
 	u32 val;
 
 	/* no device tree device */
-	if (!np) {
+	if (!np)
 		return -ENODEV;
-	}
 
 	dev_id = of_alias_get_id(np, "serial");
-	if (dev_id < 0) {
+	if (dev_id < 0)
 		dev_id = 0;
-	}
 
 	if (dev_id >= ARRAY_SIZE(arc_uart_ports)) {
 		dev_err(&pdev->dev, "serial%d out of range\n", dev_id);
@@ -661,7 +640,7 @@ static struct platform_driver arc_platform_driver = {
 	.driver = {
 		.name = DRIVER_NAME,
 		.of_match_table  = arc_uart_dt_ids,
-	},
+	 },
 };
 
 static int __init arc_serial_init(void)
@@ -669,14 +648,12 @@ static int __init arc_serial_init(void)
 	int ret;
 
 	ret = uart_register_driver(&arc_uart_driver);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = platform_driver_register(&arc_platform_driver);
-	if (ret) {
+	if (ret)
 		uart_unregister_driver(&arc_uart_driver);
-	}
 
 	return ret;
 }

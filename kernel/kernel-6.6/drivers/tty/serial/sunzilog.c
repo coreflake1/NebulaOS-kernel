@@ -30,7 +30,7 @@
 #include <linux/console.h>
 #include <linux/spinlock.h>
 #ifdef CONFIG_SERIO
-	#include <linux/serio.h>
+#include <linux/serio.h>
 #endif
 #include <linux/init.h>
 #include <linux/of.h>
@@ -51,9 +51,9 @@
  * completion.
  */
 #ifndef CONFIG_SPARC64
-#define ZSDELAY()       udelay(5)
-#define ZSDELAY_LONG()      udelay(20)
-#define ZS_WSYNC(channel)   do { } while (0)
+#define ZSDELAY()		udelay(5)
+#define ZSDELAY_LONG()		udelay(20)
+#define ZS_WSYNC(channel)	do { } while (0)
 #else
 #define ZSDELAY()
 #define ZSDELAY_LONG()
@@ -61,59 +61,59 @@
 	readb(&((__channel)->control))
 #endif
 
-#define ZS_CLOCK        4915200 /* Zilog input clock rate. */
-#define ZS_CLOCK_DIVISOR    16      /* Divisor this driver uses. */
+#define ZS_CLOCK		4915200 /* Zilog input clock rate. */
+#define ZS_CLOCK_DIVISOR	16      /* Divisor this driver uses. */
 
 /*
  * We wrap our port structure around the generic uart_port.
  */
 struct uart_sunzilog_port {
-	struct uart_port        port;
+	struct uart_port		port;
 
 	/* IRQ servicing chain.  */
-	struct uart_sunzilog_port   *next;
+	struct uart_sunzilog_port	*next;
 
 	/* Current values of Zilog write registers.  */
-	unsigned char           curregs[NUM_ZSREGS];
+	unsigned char			curregs[NUM_ZSREGS];
 
-	unsigned int            flags;
-#define SUNZILOG_FLAG_CONS_KEYB     0x00000001
-#define SUNZILOG_FLAG_CONS_MOUSE    0x00000002
-#define SUNZILOG_FLAG_IS_CONS       0x00000004
-#define SUNZILOG_FLAG_IS_KGDB       0x00000008
-#define SUNZILOG_FLAG_MODEM_STATUS  0x00000010
-#define SUNZILOG_FLAG_IS_CHANNEL_A  0x00000020
-#define SUNZILOG_FLAG_REGS_HELD     0x00000040
-#define SUNZILOG_FLAG_TX_STOPPED    0x00000080
-#define SUNZILOG_FLAG_TX_ACTIVE     0x00000100
-#define SUNZILOG_FLAG_ESCC      0x00000200
-#define SUNZILOG_FLAG_ISR_HANDLER   0x00000400
+	unsigned int			flags;
+#define SUNZILOG_FLAG_CONS_KEYB		0x00000001
+#define SUNZILOG_FLAG_CONS_MOUSE	0x00000002
+#define SUNZILOG_FLAG_IS_CONS		0x00000004
+#define SUNZILOG_FLAG_IS_KGDB		0x00000008
+#define SUNZILOG_FLAG_MODEM_STATUS	0x00000010
+#define SUNZILOG_FLAG_IS_CHANNEL_A	0x00000020
+#define SUNZILOG_FLAG_REGS_HELD		0x00000040
+#define SUNZILOG_FLAG_TX_STOPPED	0x00000080
+#define SUNZILOG_FLAG_TX_ACTIVE		0x00000100
+#define SUNZILOG_FLAG_ESCC		0x00000200
+#define SUNZILOG_FLAG_ISR_HANDLER	0x00000400
 
 	unsigned int cflag;
 
-	unsigned char           parity_mask;
-	unsigned char           prev_status;
+	unsigned char			parity_mask;
+	unsigned char			prev_status;
 
 #ifdef CONFIG_SERIO
-	struct serio            serio;
-	int             serio_open;
+	struct serio			serio;
+	int				serio_open;
 #endif
 };
 
 static void sunzilog_putchar(struct uart_port *port, unsigned char ch);
 
-#define ZILOG_CHANNEL_FROM_PORT(PORT)   ((struct zilog_channel __iomem *)((PORT)->membase))
-#define UART_ZILOG(PORT)        ((struct uart_sunzilog_port *)(PORT))
+#define ZILOG_CHANNEL_FROM_PORT(PORT)	((struct zilog_channel __iomem *)((PORT)->membase))
+#define UART_ZILOG(PORT)		((struct uart_sunzilog_port *)(PORT))
 
-#define ZS_IS_KEYB(UP)  ((UP)->flags & SUNZILOG_FLAG_CONS_KEYB)
-#define ZS_IS_MOUSE(UP) ((UP)->flags & SUNZILOG_FLAG_CONS_MOUSE)
-#define ZS_IS_CONS(UP)  ((UP)->flags & SUNZILOG_FLAG_IS_CONS)
-#define ZS_IS_KGDB(UP)  ((UP)->flags & SUNZILOG_FLAG_IS_KGDB)
-#define ZS_WANTS_MODEM_STATUS(UP)   ((UP)->flags & SUNZILOG_FLAG_MODEM_STATUS)
-#define ZS_IS_CHANNEL_A(UP) ((UP)->flags & SUNZILOG_FLAG_IS_CHANNEL_A)
-#define ZS_REGS_HELD(UP)    ((UP)->flags & SUNZILOG_FLAG_REGS_HELD)
-#define ZS_TX_STOPPED(UP)   ((UP)->flags & SUNZILOG_FLAG_TX_STOPPED)
-#define ZS_TX_ACTIVE(UP)    ((UP)->flags & SUNZILOG_FLAG_TX_ACTIVE)
+#define ZS_IS_KEYB(UP)	((UP)->flags & SUNZILOG_FLAG_CONS_KEYB)
+#define ZS_IS_MOUSE(UP)	((UP)->flags & SUNZILOG_FLAG_CONS_MOUSE)
+#define ZS_IS_CONS(UP)	((UP)->flags & SUNZILOG_FLAG_IS_CONS)
+#define ZS_IS_KGDB(UP)	((UP)->flags & SUNZILOG_FLAG_IS_KGDB)
+#define ZS_WANTS_MODEM_STATUS(UP)	((UP)->flags & SUNZILOG_FLAG_MODEM_STATUS)
+#define ZS_IS_CHANNEL_A(UP)	((UP)->flags & SUNZILOG_FLAG_IS_CHANNEL_A)
+#define ZS_REGS_HELD(UP)	((UP)->flags & SUNZILOG_FLAG_REGS_HELD)
+#define ZS_TX_STOPPED(UP)	((UP)->flags & SUNZILOG_FLAG_TX_STOPPED)
+#define ZS_TX_ACTIVE(UP)	((UP)->flags & SUNZILOG_FLAG_TX_ACTIVE)
 
 /* Reading and writing Zilog8530 registers.  The delays are to make this
  * driver work on the Sun4 which needs a settling delay after each chip
@@ -124,7 +124,7 @@ static void sunzilog_putchar(struct uart_port *port, unsigned char ch);
  * when {read,write}_zsreg is invoked.
  */
 static unsigned char read_zsreg(struct zilog_channel __iomem *channel,
-                                unsigned char reg)
+				unsigned char reg)
 {
 	unsigned char retval;
 
@@ -137,7 +137,7 @@ static unsigned char read_zsreg(struct zilog_channel __iomem *channel,
 }
 
 static void write_zsreg(struct zilog_channel __iomem *channel,
-                        unsigned char reg, unsigned char value)
+			unsigned char reg, unsigned char value)
 {
 	writeb(reg, &channel->control);
 	ZSDELAY();
@@ -154,9 +154,8 @@ static void sunzilog_clear_fifo(struct zilog_channel __iomem *channel)
 
 		regval = readb(&channel->control);
 		ZSDELAY();
-		if (regval & Rx_CH_AV) {
+		if (regval & Rx_CH_AV)
 			break;
-		}
 
 		regval = read_zsreg(channel, R1);
 		readb(&channel->data);
@@ -182,9 +181,8 @@ static int __load_zsregs(struct zilog_channel __iomem *channel, unsigned char *r
 	/* Let pending transmits finish.  */
 	for (i = 0; i < 1000; i++) {
 		unsigned char stat = read_zsreg(channel, R1);
-		if (stat & ALL_SNT) {
+		if (stat & ALL_SNT)
 			break;
-		}
 		udelay(100);
 	}
 
@@ -196,7 +194,7 @@ static int __load_zsregs(struct zilog_channel __iomem *channel, unsigned char *r
 
 	/* Disable all interrupts.  */
 	write_zsreg(channel, R1,
-	            regs[R1] & ~(RxINT_MASK | TxINT_ENAB | EXT_INT_ENAB));
+		    regs[R1] & ~(RxINT_MASK | TxINT_ENAB | EXT_INT_ENAB));
 
 	/* Set parity, sync config, stop bits, and clock divisor.  */
 	write_zsreg(channel, R4, regs[R4]);
@@ -226,7 +224,7 @@ static int __load_zsregs(struct zilog_channel __iomem *channel, unsigned char *r
 	/* Lower and upper byte of baud rate generator divisor.  */
 	write_zsreg(channel, R12, regs[R12]);
 	write_zsreg(channel, R13, regs[R13]);
-
+	
 	/* Now rewrite R14, with BRENAB (if set).  */
 	write_zsreg(channel, R14, regs[R14]);
 
@@ -235,14 +233,14 @@ static int __load_zsregs(struct zilog_channel __iomem *channel, unsigned char *r
 
 	/* ESCC Extension Register */
 	r15 = read_zsreg(channel, R15);
-	if (r15 & 0x01) {
+	if (r15 & 0x01)	{
 		write_zsreg(channel, R7,  regs[R7p]);
 
 		/* External status interrupt and FIFO control.  */
 		write_zsreg(channel, R15, regs[R15] & ~WR7pEN);
 		escc = 1;
 	} else {
-		/* Clear FIFO bit case it is an issue */
+		 /* Clear FIFO bit case it is an issue */
 		regs[R15] &= ~FIFOEN;
 		escc = 0;
 	}
@@ -268,7 +266,7 @@ static int __load_zsregs(struct zilog_channel __iomem *channel, unsigned char *r
  * The UART port lock must be held and local interrupts disabled.
  */
 static void sunzilog_maybe_update_regs(struct uart_sunzilog_port *up,
-                                       struct zilog_channel __iomem *channel)
+				       struct zilog_channel __iomem *channel)
 {
 	if (!ZS_REGS_HELD(up)) {
 		if (ZS_TX_ACTIVE(up)) {
@@ -294,46 +292,43 @@ static void sunzilog_change_mouse_baud(struct uart_sunzilog_port *up)
 }
 
 static void sunzilog_kbdms_receive_chars(struct uart_sunzilog_port *up,
-        unsigned char ch, int is_break)
+					 unsigned char ch, int is_break)
 {
 	if (ZS_IS_KEYB(up)) {
 		/* Stop-A is handled by drivers/char/keyboard.c now. */
 #ifdef CONFIG_SERIO
-		if (up->serio_open) {
+		if (up->serio_open)
 			serio_interrupt(&up->serio, ch, 0);
-		}
 #endif
 	} else if (ZS_IS_MOUSE(up)) {
 		int ret = suncore_mouse_baud_detection(ch, is_break);
 
 		switch (ret) {
-			case 2:
-				sunzilog_change_mouse_baud(up);
-				fallthrough;
-			case 1:
-				break;
+		case 2:
+			sunzilog_change_mouse_baud(up);
+			fallthrough;
+		case 1:
+			break;
 
-			case 0:
+		case 0:
 #ifdef CONFIG_SERIO
-				if (up->serio_open) {
-					serio_interrupt(&up->serio, ch, 0);
-				}
+			if (up->serio_open)
+				serio_interrupt(&up->serio, ch, 0);
 #endif
-				break;
+			break;
 		}
 	}
 }
 
 static struct tty_port *
 sunzilog_receive_chars(struct uart_sunzilog_port *up,
-                       struct zilog_channel __iomem *channel)
+		       struct zilog_channel __iomem *channel)
 {
 	struct tty_port *port = NULL;
 	unsigned char ch, r1, flag;
 
-	if (up->port.state != NULL) {   /* Unopened serial console */
+	if (up->port.state != NULL)		/* Unopened serial console */
 		port = &up->port.state->port;
-	}
 
 	for (;;) {
 
@@ -350,13 +345,11 @@ sunzilog_receive_chars(struct uart_sunzilog_port *up,
 		/* This funny hack depends upon BRK_ABRT not interfering
 		 * with the other bits we care about in R1.
 		 */
-		if (ch & BRK_ABRT) {
+		if (ch & BRK_ABRT)
 			r1 |= BRK_ABRT;
-		}
 
-		if (!(ch & Rx_CH_AV)) {
+		if (!(ch & Rx_CH_AV))
 			break;
-		}
 
 		ch = readb(&channel->data);
 		ZSDELAY();
@@ -375,44 +368,39 @@ sunzilog_receive_chars(struct uart_sunzilog_port *up,
 			if (r1 & BRK_ABRT) {
 				r1 &= ~(PAR_ERR | CRC_ERR);
 				up->port.icount.brk++;
-				if (uart_handle_break(&up->port)) {
+				if (uart_handle_break(&up->port))
 					continue;
-				}
-			} else if (r1 & PAR_ERR) {
+			}
+			else if (r1 & PAR_ERR)
 				up->port.icount.parity++;
-			} else if (r1 & CRC_ERR) {
+			else if (r1 & CRC_ERR)
 				up->port.icount.frame++;
-			}
-			if (r1 & Rx_OVR) {
+			if (r1 & Rx_OVR)
 				up->port.icount.overrun++;
-			}
 			r1 &= up->port.read_status_mask;
-			if (r1 & BRK_ABRT) {
+			if (r1 & BRK_ABRT)
 				flag = TTY_BREAK;
-			} else if (r1 & PAR_ERR) {
+			else if (r1 & PAR_ERR)
 				flag = TTY_PARITY;
-			} else if (r1 & CRC_ERR) {
+			else if (r1 & CRC_ERR)
 				flag = TTY_FRAME;
-			}
 		}
-		if (uart_handle_sysrq_char(&up->port, ch) || !port) {
+		if (uart_handle_sysrq_char(&up->port, ch) || !port)
 			continue;
-		}
 
 		if (up->port.ignore_status_mask == 0xff ||
 		    (r1 & up->port.ignore_status_mask) == 0) {
-			tty_insert_flip_char(port, ch, flag);
+		    	tty_insert_flip_char(port, ch, flag);
 		}
-		if (r1 & Rx_OVR) {
+		if (r1 & Rx_OVR)
 			tty_insert_flip_char(port, 0, TTY_OVERRUN);
-		}
 	}
 
 	return port;
 }
 
 static void sunzilog_status_handle(struct uart_sunzilog_port *up,
-                                   struct zilog_channel __iomem *channel)
+				   struct zilog_channel __iomem *channel)
 {
 	unsigned char status;
 
@@ -424,9 +412,8 @@ static void sunzilog_status_handle(struct uart_sunzilog_port *up,
 	ZS_WSYNC(channel);
 
 	if (status & BRK_ABRT) {
-		if (ZS_IS_MOUSE(up)) {
+		if (ZS_IS_MOUSE(up))
 			sunzilog_kbdms_receive_chars(up, 0, 1);
-		}
 		if (ZS_IS_CONS(up)) {
 			/* Wait for BREAK to deassert to avoid potentially
 			 * confusing the PROM.
@@ -434,9 +421,8 @@ static void sunzilog_status_handle(struct uart_sunzilog_port *up,
 			while (1) {
 				status = readb(&channel->control);
 				ZSDELAY();
-				if (!(status & BRK_ABRT)) {
+				if (!(status & BRK_ABRT))
 					break;
-				}
 			}
 			sun_do_break();
 			return;
@@ -444,9 +430,8 @@ static void sunzilog_status_handle(struct uart_sunzilog_port *up,
 	}
 
 	if (ZS_WANTS_MODEM_STATUS(up)) {
-		if (status & SYNC) {
+		if (status & SYNC)
 			up->port.icount.dsr++;
-		}
 
 		/* The Zilog just gives us an interrupt when DCD/CTS/etc. change.
 		 * But it does not tell us which bit has changed, we have to keep
@@ -454,10 +439,10 @@ static void sunzilog_status_handle(struct uart_sunzilog_port *up,
 		 */
 		if ((status ^ up->prev_status) ^ DCD)
 			uart_handle_dcd_change(&up->port,
-			                       (status & DCD));
+					       (status & DCD));
 		if ((status ^ up->prev_status) ^ CTS)
 			uart_handle_cts_change(&up->port,
-			                       (status & CTS));
+					       (status & CTS));
 
 		wake_up_interruptible(&up->port.state->port.delta_msr_wait);
 	}
@@ -466,7 +451,7 @@ static void sunzilog_status_handle(struct uart_sunzilog_port *up,
 }
 
 static void sunzilog_transmit_chars(struct uart_sunzilog_port *up,
-                                    struct zilog_channel __iomem *channel)
+				    struct zilog_channel __iomem *channel)
 {
 	struct circ_buf *xmit;
 
@@ -482,9 +467,8 @@ static void sunzilog_transmit_chars(struct uart_sunzilog_port *up,
 		 * easy because console writes cannot sleep.  One solution might be
 		 * to poll on enough port->xmit space becoming free.  -DaveM
 		 */
-		if (!(status & Tx_BUF_EMP)) {
+		if (!(status & Tx_BUF_EMP))
 			return;
-		}
 	}
 
 	up->flags &= ~SUNZILOG_FLAG_TX_ACTIVE;
@@ -510,17 +494,14 @@ static void sunzilog_transmit_chars(struct uart_sunzilog_port *up,
 		return;
 	}
 
-	if (up->port.state == NULL) {
+	if (up->port.state == NULL)
 		goto ack_tx_int;
-	}
 	xmit = &up->port.state->xmit;
-	if (uart_circ_empty(xmit)) {
+	if (uart_circ_empty(xmit))
 		goto ack_tx_int;
-	}
 
-	if (uart_tx_stopped(&up->port)) {
+	if (uart_tx_stopped(&up->port))
 		goto ack_tx_int;
-	}
 
 	up->flags |= SUNZILOG_FLAG_TX_ACTIVE;
 	writeb(xmit->buf[xmit->tail], &channel->data);
@@ -529,9 +510,8 @@ static void sunzilog_transmit_chars(struct uart_sunzilog_port *up,
 
 	uart_xmit_advance(&up->port, 1);
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(&up->port);
-	}
 
 	return;
 
@@ -547,7 +527,7 @@ static irqreturn_t sunzilog_interrupt(int irq, void *dev_id)
 
 	while (up) {
 		struct zilog_channel __iomem *channel
-		    = ZILOG_CHANNEL_FROM_PORT(&up->port);
+			= ZILOG_CHANNEL_FROM_PORT(&up->port);
 		struct tty_port *port;
 		unsigned char r3;
 
@@ -561,21 +541,17 @@ static irqreturn_t sunzilog_interrupt(int irq, void *dev_id)
 			ZSDELAY();
 			ZS_WSYNC(channel);
 
-			if (r3 & CHARxIP) {
+			if (r3 & CHARxIP)
 				port = sunzilog_receive_chars(up, channel);
-			}
-			if (r3 & CHAEXT) {
+			if (r3 & CHAEXT)
 				sunzilog_status_handle(up, channel);
-			}
-			if (r3 & CHATxIP) {
+			if (r3 & CHATxIP)
 				sunzilog_transmit_chars(up, channel);
-			}
 		}
 		uart_port_unlock(&up->port);
 
-		if (port) {
+		if (port)
 			tty_flip_buffer_push(port);
-		}
 
 		/* Channel B */
 		up = up->next;
@@ -588,21 +564,17 @@ static irqreturn_t sunzilog_interrupt(int irq, void *dev_id)
 			ZSDELAY();
 			ZS_WSYNC(channel);
 
-			if (r3 & CHBRxIP) {
+			if (r3 & CHBRxIP)
 				port = sunzilog_receive_chars(up, channel);
-			}
-			if (r3 & CHBEXT) {
+			if (r3 & CHBEXT)
 				sunzilog_status_handle(up, channel);
-			}
-			if (r3 & CHBTxIP) {
+			if (r3 & CHBTxIP)
 				sunzilog_transmit_chars(up, channel);
-			}
 		}
 		uart_port_unlock(&up->port);
 
-		if (port) {
+		if (port)
 			tty_flip_buffer_push(port);
-		}
 
 		up = up->next;
 	}
@@ -638,11 +610,10 @@ static unsigned int sunzilog_tx_empty(struct uart_port *port)
 
 	uart_port_unlock_irqrestore(port, flags);
 
-	if (status & Tx_BUF_EMP) {
+	if (status & Tx_BUF_EMP)
 		ret = TIOCSER_TEMT;
-	} else {
+	else
 		ret = 0;
-	}
 
 	return ret;
 }
@@ -656,15 +627,12 @@ static unsigned int sunzilog_get_mctrl(struct uart_port *port)
 	status = sunzilog_read_channel_status(port);
 
 	ret = 0;
-	if (status & DCD) {
+	if (status & DCD)
 		ret |= TIOCM_CAR;
-	}
-	if (status & SYNC) {
+	if (status & SYNC)
 		ret |= TIOCM_DSR;
-	}
-	if (status & CTS) {
+	if (status & CTS)
 		ret |= TIOCM_CTS;
-	}
 
 	return ret;
 }
@@ -673,24 +641,22 @@ static unsigned int sunzilog_get_mctrl(struct uart_port *port)
 static void sunzilog_set_mctrl(struct uart_port *port, unsigned int mctrl)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 	struct zilog_channel __iomem *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char set_bits, clear_bits;
 
 	set_bits = clear_bits = 0;
 
-	if (mctrl & TIOCM_RTS) {
+	if (mctrl & TIOCM_RTS)
 		set_bits |= RTS;
-	} else {
+	else
 		clear_bits |= RTS;
-	}
-	if (mctrl & TIOCM_DTR) {
+	if (mctrl & TIOCM_DTR)
 		set_bits |= DTR;
-	} else {
+	else
 		clear_bits |= DTR;
-	}
 
-	/* NOTE: Not subject to 'transmitter active' rule.  */
+	/* NOTE: Not subject to 'transmitter active' rule.  */ 
 	up->curregs[R5] |= set_bits;
 	up->curregs[R5] &= ~clear_bits;
 	write_zsreg(channel, R5, up->curregs[R5]);
@@ -700,7 +666,7 @@ static void sunzilog_set_mctrl(struct uart_port *port, unsigned int mctrl)
 static void sunzilog_stop_tx(struct uart_port *port)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 
 	up->flags |= SUNZILOG_FLAG_TX_STOPPED;
 }
@@ -709,7 +675,7 @@ static void sunzilog_stop_tx(struct uart_port *port)
 static void sunzilog_start_tx(struct uart_port *port)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 	struct zilog_channel __iomem *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char status;
 
@@ -720,9 +686,8 @@ static void sunzilog_start_tx(struct uart_port *port)
 	ZSDELAY();
 
 	/* TX busy?  Just wait for the TX done interrupt.  */
-	if (!(status & Tx_BUF_EMP)) {
+	if (!(status & Tx_BUF_EMP))
 		return;
-	}
 
 	/* Send the first character to jump-start the TX done
 	 * IRQ sending engine.
@@ -737,18 +702,16 @@ static void sunzilog_start_tx(struct uart_port *port)
 	} else {
 		struct circ_buf *xmit = &port->state->xmit;
 
-		if (uart_circ_empty(xmit)) {
+		if (uart_circ_empty(xmit))
 			return;
-		}
 		writeb(xmit->buf[xmit->tail], &channel->data);
 		ZSDELAY();
 		ZS_WSYNC(channel);
 
 		uart_xmit_advance(port, 1);
 
-		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+		if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 			uart_write_wakeup(&up->port);
-		}
 	}
 }
 
@@ -758,9 +721,8 @@ static void sunzilog_stop_rx(struct uart_port *port)
 	struct uart_sunzilog_port *up = UART_ZILOG(port);
 	struct zilog_channel __iomem *channel;
 
-	if (ZS_IS_CONS(up)) {
+	if (ZS_IS_CONS(up))
 		return;
-	}
 
 	channel = ZILOG_CHANNEL_FROM_PORT(port);
 
@@ -773,7 +735,7 @@ static void sunzilog_stop_rx(struct uart_port *port)
 static void sunzilog_enable_ms(struct uart_port *port)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 	struct zilog_channel __iomem *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char new_reg;
 
@@ -781,7 +743,7 @@ static void sunzilog_enable_ms(struct uart_port *port)
 	if (new_reg != up->curregs[R15]) {
 		up->curregs[R15] = new_reg;
 
-		/* NOTE: Not subject to 'transmitter active' rule.  */
+		/* NOTE: Not subject to 'transmitter active' rule.  */ 
 		write_zsreg(channel, R15, up->curregs[R15] & ~WR7pEN);
 	}
 }
@@ -790,18 +752,17 @@ static void sunzilog_enable_ms(struct uart_port *port)
 static void sunzilog_break_ctl(struct uart_port *port, int break_state)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 	struct zilog_channel __iomem *channel = ZILOG_CHANNEL_FROM_PORT(port);
 	unsigned char set_bits, clear_bits, new_reg;
 	unsigned long flags;
 
 	set_bits = clear_bits = 0;
 
-	if (break_state) {
+	if (break_state)
 		set_bits |= SND_BRK;
-	} else {
+	else
 		clear_bits |= SND_BRK;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
@@ -809,7 +770,7 @@ static void sunzilog_break_ctl(struct uart_port *port, int break_state)
 	if (new_reg != up->curregs[R5]) {
 		up->curregs[R5] = new_reg;
 
-		/* NOTE: Not subject to 'transmitter active' rule.  */
+		/* NOTE: Not subject to 'transmitter active' rule.  */ 
 		write_zsreg(channel, R5, up->curregs[R5]);
 	}
 
@@ -836,9 +797,8 @@ static int sunzilog_startup(struct uart_port *port)
 	struct uart_sunzilog_port *up = UART_ZILOG(port);
 	unsigned long flags;
 
-	if (ZS_IS_CONS(up)) {
+	if (ZS_IS_CONS(up))
 		return 0;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 	__sunzilog_startup(up);
@@ -877,9 +837,8 @@ static void sunzilog_shutdown(struct uart_port *port)
 	struct zilog_channel __iomem *channel;
 	unsigned long flags;
 
-	if (ZS_IS_CONS(up)) {
+	if (ZS_IS_CONS(up))
 		return;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
@@ -902,7 +861,7 @@ static void sunzilog_shutdown(struct uart_port *port)
  */
 static void
 sunzilog_convert_to_zs(struct uart_sunzilog_port *up, unsigned int cflag,
-                       unsigned int iflag, int brg)
+		       unsigned int iflag, int brg)
 {
 
 	up->curregs[R10] = NRZ;
@@ -919,76 +878,68 @@ sunzilog_convert_to_zs(struct uart_sunzilog_port *up, unsigned int cflag,
 	up->curregs[R3] &= ~RxN_MASK;
 	up->curregs[R5] &= ~TxN_MASK;
 	switch (cflag & CSIZE) {
-		case CS5:
-			up->curregs[R3] |= Rx5;
-			up->curregs[R5] |= Tx5;
-			up->parity_mask = 0x1f;
-			break;
-		case CS6:
-			up->curregs[R3] |= Rx6;
-			up->curregs[R5] |= Tx6;
-			up->parity_mask = 0x3f;
-			break;
-		case CS7:
-			up->curregs[R3] |= Rx7;
-			up->curregs[R5] |= Tx7;
-			up->parity_mask = 0x7f;
-			break;
-		case CS8:
-		default:
-			up->curregs[R3] |= Rx8;
-			up->curregs[R5] |= Tx8;
-			up->parity_mask = 0xff;
-			break;
+	case CS5:
+		up->curregs[R3] |= Rx5;
+		up->curregs[R5] |= Tx5;
+		up->parity_mask = 0x1f;
+		break;
+	case CS6:
+		up->curregs[R3] |= Rx6;
+		up->curregs[R5] |= Tx6;
+		up->parity_mask = 0x3f;
+		break;
+	case CS7:
+		up->curregs[R3] |= Rx7;
+		up->curregs[R5] |= Tx7;
+		up->parity_mask = 0x7f;
+		break;
+	case CS8:
+	default:
+		up->curregs[R3] |= Rx8;
+		up->curregs[R5] |= Tx8;
+		up->parity_mask = 0xff;
+		break;
 	}
 	up->curregs[R4] &= ~0x0c;
-	if (cflag & CSTOPB) {
+	if (cflag & CSTOPB)
 		up->curregs[R4] |= SB2;
-	} else {
+	else
 		up->curregs[R4] |= SB1;
-	}
-	if (cflag & PARENB) {
+	if (cflag & PARENB)
 		up->curregs[R4] |= PAR_ENAB;
-	} else {
+	else
 		up->curregs[R4] &= ~PAR_ENAB;
-	}
-	if (!(cflag & PARODD)) {
+	if (!(cflag & PARODD))
 		up->curregs[R4] |= PAR_EVEN;
-	} else {
+	else
 		up->curregs[R4] &= ~PAR_EVEN;
-	}
 
 	up->port.read_status_mask = Rx_OVR;
-	if (iflag & INPCK) {
+	if (iflag & INPCK)
 		up->port.read_status_mask |= CRC_ERR | PAR_ERR;
-	}
-	if (iflag & (IGNBRK | BRKINT | PARMRK)) {
+	if (iflag & (IGNBRK | BRKINT | PARMRK))
 		up->port.read_status_mask |= BRK_ABRT;
-	}
 
 	up->port.ignore_status_mask = 0;
-	if (iflag & IGNPAR) {
+	if (iflag & IGNPAR)
 		up->port.ignore_status_mask |= CRC_ERR | PAR_ERR;
-	}
 	if (iflag & IGNBRK) {
 		up->port.ignore_status_mask |= BRK_ABRT;
-		if (iflag & IGNPAR) {
+		if (iflag & IGNPAR)
 			up->port.ignore_status_mask |= Rx_OVR;
-		}
 	}
 
-	if ((cflag & CREAD) == 0) {
+	if ((cflag & CREAD) == 0)
 		up->port.ignore_status_mask = 0xff;
-	}
 }
 
 /* The port lock is not held.  */
 static void
 sunzilog_set_termios(struct uart_port *port, struct ktermios *termios,
-                     const struct ktermios *old)
+		     const struct ktermios *old)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 	unsigned long flags;
 	int baud, brg;
 
@@ -1000,11 +951,10 @@ sunzilog_set_termios(struct uart_port *port, struct ktermios *termios,
 
 	sunzilog_convert_to_zs(up, termios->c_cflag, termios->c_iflag, brg);
 
-	if (UART_ENABLE_MS(&up->port, termios->c_cflag)) {
+	if (UART_ENABLE_MS(&up->port, termios->c_cflag))
 		up->flags |= SUNZILOG_FLAG_MODEM_STATUS;
-	} else {
+	else
 		up->flags &= ~SUNZILOG_FLAG_MODEM_STATUS;
-	}
 
 	up->cflag = termios->c_cflag;
 
@@ -1050,9 +1000,9 @@ static int sunzilog_get_poll_char(struct uart_port *port)
 {
 	unsigned char ch, r1;
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 	struct zilog_channel __iomem *channel
-	    = ZILOG_CHANNEL_FROM_PORT(&up->port);
+		= ZILOG_CHANNEL_FROM_PORT(&up->port);
 
 
 	r1 = read_zsreg(channel, R1);
@@ -1068,13 +1018,11 @@ static int sunzilog_get_poll_char(struct uart_port *port)
 	/* This funny hack depends upon BRK_ABRT not interfering
 	 * with the other bits we care about in R1.
 	 */
-	if (ch & BRK_ABRT) {
+	if (ch & BRK_ABRT)
 		r1 |= BRK_ABRT;
-	}
 
-	if (!(ch & Rx_CH_AV)) {
+	if (!(ch & Rx_CH_AV))
 		return NO_POLL_CHAR;
-	}
 
 	ch = readb(&channel->data);
 	ZSDELAY();
@@ -1084,35 +1032,35 @@ static int sunzilog_get_poll_char(struct uart_port *port)
 }
 
 static void sunzilog_put_poll_char(struct uart_port *port,
-                                   unsigned char ch)
+			unsigned char ch)
 {
 	struct uart_sunzilog_port *up =
-	    container_of(port, struct uart_sunzilog_port, port);
+		container_of(port, struct uart_sunzilog_port, port);
 
 	sunzilog_putchar(&up->port, ch);
 }
 #endif /* CONFIG_CONSOLE_POLL */
 
 static const struct uart_ops sunzilog_pops = {
-	.tx_empty   =   sunzilog_tx_empty,
-	.set_mctrl  =   sunzilog_set_mctrl,
-	.get_mctrl  =   sunzilog_get_mctrl,
-	.stop_tx    =   sunzilog_stop_tx,
-	.start_tx   =   sunzilog_start_tx,
-	.stop_rx    =   sunzilog_stop_rx,
-	.enable_ms  =   sunzilog_enable_ms,
-	.break_ctl  =   sunzilog_break_ctl,
-	.startup    =   sunzilog_startup,
-	.shutdown   =   sunzilog_shutdown,
-	.set_termios    =   sunzilog_set_termios,
-	.type       =   sunzilog_type,
-	.release_port   =   sunzilog_release_port,
-	.request_port   =   sunzilog_request_port,
-	.config_port    =   sunzilog_config_port,
-	.verify_port    =   sunzilog_verify_port,
+	.tx_empty	=	sunzilog_tx_empty,
+	.set_mctrl	=	sunzilog_set_mctrl,
+	.get_mctrl	=	sunzilog_get_mctrl,
+	.stop_tx	=	sunzilog_stop_tx,
+	.start_tx	=	sunzilog_start_tx,
+	.stop_rx	=	sunzilog_stop_rx,
+	.enable_ms	=	sunzilog_enable_ms,
+	.break_ctl	=	sunzilog_break_ctl,
+	.startup	=	sunzilog_startup,
+	.shutdown	=	sunzilog_shutdown,
+	.set_termios	=	sunzilog_set_termios,
+	.type		=	sunzilog_type,
+	.release_port	=	sunzilog_release_port,
+	.request_port	=	sunzilog_request_port,
+	.config_port	=	sunzilog_config_port,
+	.verify_port	=	sunzilog_verify_port,
 #ifdef CONFIG_CONSOLE_POLL
-	.poll_get_char  =   sunzilog_get_poll_char,
-	.poll_put_char  =   sunzilog_put_poll_char,
+	.poll_get_char	=	sunzilog_get_poll_char,
+	.poll_put_char	=	sunzilog_put_poll_char,
 #endif
 };
 
@@ -1123,10 +1071,10 @@ static struct zilog_layout __iomem **sunzilog_chip_regs;
 static struct uart_sunzilog_port *sunzilog_irq_chain;
 
 static struct uart_driver sunzilog_reg = {
-	.owner      =   THIS_MODULE,
-	.driver_name    =   "sunzilog",
-	.dev_name   =   "ttyS",
-	.major      =   TTY_MAJOR,
+	.owner		=	THIS_MODULE,
+	.driver_name	=	"sunzilog",
+	.dev_name	=	"ttyS",
+	.major		=	TTY_MAJOR,
 };
 
 static int __init sunzilog_alloc_tables(int num_sunzilog)
@@ -1138,24 +1086,21 @@ static int __init sunzilog_alloc_tables(int num_sunzilog)
 
 	size = num_channels * sizeof(struct uart_sunzilog_port);
 	sunzilog_port_table = kzalloc(size, GFP_KERNEL);
-	if (!sunzilog_port_table) {
+	if (!sunzilog_port_table)
 		return -ENOMEM;
-	}
 
 	for (i = 0; i < num_channels; i++) {
 		up = &sunzilog_port_table[i];
 
 		spin_lock_init(&up->port.lock);
 
-		if (i == 0) {
+		if (i == 0)
 			sunzilog_irq_chain = up;
-		}
 
-		if (i < num_channels - 1) {
+		if (i < num_channels - 1)
 			up->next = up + 1;
-		} else {
+		else
 			up->next = NULL;
-		}
 	}
 
 	size = num_sunzilog * sizeof(struct zilog_layout __iomem *);
@@ -1176,7 +1121,7 @@ static void sunzilog_free_tables(void)
 	kfree(sunzilog_chip_regs);
 }
 
-#define ZS_PUT_CHAR_MAX_DELAY   2000    /* 10 ms */
+#define ZS_PUT_CHAR_MAX_DELAY	2000	/* 10 ms */
 
 static void __maybe_unused sunzilog_putchar(struct uart_port *port, unsigned char ch)
 {
@@ -1228,9 +1173,8 @@ static int sunzilog_serio_open(struct serio *serio)
 	if (!up->serio_open) {
 		up->serio_open = 1;
 		ret = 0;
-	} else {
+	} else
 		ret = -EBUSY;
-	}
 	spin_unlock_irqrestore(&sunzilog_serio_lock, flags);
 
 	return ret;
@@ -1256,18 +1200,16 @@ sunzilog_console_write(struct console *con, const char *s, unsigned int count)
 	unsigned long flags;
 	int locked = 1;
 
-	if (up->port.sysrq || oops_in_progress) {
+	if (up->port.sysrq || oops_in_progress)
 		locked = uart_port_trylock_irqsave(&up->port, &flags);
-	} else {
+	else
 		uart_port_lock_irqsave(&up->port, &flags);
-	}
 
 	uart_console_write(&up->port, s, count, sunzilog_putchar);
 	udelay(2);
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock_irqrestore(&up->port, flags);
-	}
 }
 
 static int __init sunzilog_console_setup(struct console *con, char *options)
@@ -1276,9 +1218,8 @@ static int __init sunzilog_console_setup(struct console *con, char *options)
 	unsigned long flags;
 	int baud, brg;
 
-	if (up->port.type != PORT_SUNZILOG) {
+	if (up->port.type != PORT_SUNZILOG)
 		return -EINVAL;
-	}
 
 	printk(KERN_INFO "Console: ttyS%d (SunZilog zs%d)\n",
 	       (sunzilog_reg.minor - 64) + con->index, con->index);
@@ -1290,15 +1231,15 @@ static int __init sunzilog_console_setup(struct console *con, char *options)
 	 * this hackish cflag thing is OK.
 	 */
 	switch (con->cflag & CBAUD) {
-		case B150: baud = 150; break;
-		case B300: baud = 300; break;
-		case B600: baud = 600; break;
-		case B1200: baud = 1200; break;
-		case B2400: baud = 2400; break;
-		case B4800: baud = 4800; break;
+	case B150: baud = 150; break;
+	case B300: baud = 300; break;
+	case B600: baud = 600; break;
+	case B1200: baud = 1200; break;
+	case B2400: baud = 2400; break;
+	case B4800: baud = 4800; break;
 	default: case B9600: baud = 9600; break;
-		case B19200: baud = 19200; break;
-		case B38400: baud = 38400; break;
+	case B19200: baud = 19200; break;
+	case B38400: baud = 38400; break;
 	}
 
 	brg = BPS_TO_BRG(baud, ZS_CLOCK / ZS_CLOCK_DIVISOR);
@@ -1317,13 +1258,13 @@ static int __init sunzilog_console_setup(struct console *con, char *options)
 }
 
 static struct console sunzilog_console_ops = {
-	.name   =   "ttyS",
-	.write  =   sunzilog_console_write,
-	.device =   uart_console_device,
-	.setup  =   sunzilog_console_setup,
-	.flags  =   CON_PRINTBUFFER,
-	.index  =   -1,
-	.data   =   &sunzilog_reg,
+	.name	=	"ttyS",
+	.write	=	sunzilog_console_write,
+	.device	=	uart_console_device,
+	.setup	=	sunzilog_console_setup,
+	.flags	=	CON_PRINTBUFFER,
+	.index	=	-1,
+	.data   =	&sunzilog_reg,
 };
 
 static inline struct console *SUNZILOG_CONSOLE(void)
@@ -1332,7 +1273,7 @@ static inline struct console *SUNZILOG_CONSOLE(void)
 }
 
 #else
-#define SUNZILOG_CONSOLE()  (NULL)
+#define SUNZILOG_CONSOLE()	(NULL)
 #endif
 
 static void sunzilog_init_kbdms(struct uart_sunzilog_port *up)
@@ -1371,9 +1312,9 @@ static void sunzilog_register_serio(struct uart_sunzilog_port *up)
 		strscpy(serio->name, "zsms", sizeof(serio->name));
 	}
 	strscpy(serio->phys,
-	        ((up->flags & SUNZILOG_FLAG_CONS_KEYB) ?
-	         "zs/serio0" : "zs/serio1"),
-	        sizeof(serio->phys));
+		((up->flags & SUNZILOG_FLAG_CONS_KEYB) ?
+		 "zs/serio0" : "zs/serio1"),
+		sizeof(serio->phys));
 
 	serio->write = sunzilog_serio_write;
 	serio->open = sunzilog_serio_open;
@@ -1400,7 +1341,7 @@ static void sunzilog_init_hw(struct uart_sunzilog_port *up)
 	}
 
 	if (up->flags & (SUNZILOG_FLAG_CONS_KEYB |
-	                 SUNZILOG_FLAG_CONS_MOUSE)) {
+			 SUNZILOG_FLAG_CONS_MOUSE)) {
 		up->curregs[R1] = EXT_INT_ENAB | INT_ALL_Rx | TxINT_ENAB;
 		up->curregs[R4] = PAR_EVEN | X16CLK | SB1;
 		up->curregs[R3] = RxENAB | Rx8;
@@ -1411,9 +1352,8 @@ static void sunzilog_init_hw(struct uart_sunzilog_port *up)
 		up->curregs[R7p] = 0x00;
 		sunzilog_init_kbdms(up);
 		/* Only enable interrupts if an ISR handler available */
-		if (up->flags & SUNZILOG_FLAG_ISR_HANDLER) {
+		if (up->flags & SUNZILOG_FLAG_ISR_HANDLER)
 			up->curregs[R9] |= MIE;
-		}
 		write_zsreg(channel, R9, up->curregs[R9]);
 	} else {
 		/* Normal serial TTY. */
@@ -1438,9 +1378,8 @@ static void sunzilog_init_hw(struct uart_sunzilog_port *up)
 			up->flags |= SUNZILOG_FLAG_ESCC;
 		}
 		/* Only enable interrupts if an ISR handler available */
-		if (up->flags & SUNZILOG_FLAG_ISR_HANDLER) {
+		if (up->flags & SUNZILOG_FLAG_ISR_HANDLER)
 			up->curregs[R9] |= MIE;
-		}
 		write_zsreg(channel, R9, up->curregs[R9]);
 	}
 
@@ -1448,9 +1387,8 @@ static void sunzilog_init_hw(struct uart_sunzilog_port *up)
 
 #ifdef CONFIG_SERIO
 	if (up->flags & (SUNZILOG_FLAG_CONS_KEYB |
-	                 SUNZILOG_FLAG_CONS_MOUSE)) {
+			 SUNZILOG_FLAG_CONS_MOUSE))
 		sunzilog_register_serio(up);
-	}
 #endif
 }
 
@@ -1465,29 +1403,25 @@ static int zs_probe(struct platform_device *op)
 	int keyboard_mouse = 0;
 	int err;
 
-	if (of_property_present(op->dev.of_node, "keyboard")) {
+	if (of_property_present(op->dev.of_node, "keyboard"))
 		keyboard_mouse = 1;
-	}
 
 	/* uarts must come before keyboards/mice */
-	if (keyboard_mouse) {
+	if (keyboard_mouse)
 		inst = uart_chip_count + kbm_inst;
-	} else {
+	else
 		inst = uart_inst;
-	}
 
 	sunzilog_chip_regs[inst] = of_ioremap(&op->resource[0], 0,
-	                                      sizeof(struct zilog_layout),
-	                                      "zs");
-	if (!sunzilog_chip_regs[inst]) {
+					      sizeof(struct zilog_layout),
+					      "zs");
+	if (!sunzilog_chip_regs[inst])
 		return -ENOMEM;
-	}
 
 	rp = sunzilog_chip_regs[inst];
 
-	if (!zilog_irq) {
+	if (!zilog_irq)
 		zilog_irq = op->archdata.irqs[0];
-	}
 
 	up = &sunzilog_port_table[inst * 2];
 
@@ -1505,9 +1439,8 @@ static int zs_probe(struct platform_device *op)
 	up[0].port.dev = &op->dev;
 	up[0].flags |= SUNZILOG_FLAG_IS_CHANNEL_A;
 	up[0].port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_SUNZILOG_CONSOLE);
-	if (keyboard_mouse) {
+	if (keyboard_mouse)
 		up[0].flags |= SUNZILOG_FLAG_CONS_KEYB;
-	}
 	sunzilog_init_hw(&up[0]);
 
 	/* Channel B */
@@ -1524,33 +1457,30 @@ static int zs_probe(struct platform_device *op)
 	up[1].port.dev = &op->dev;
 	up[1].flags |= 0;
 	up[1].port.has_sysrq = IS_ENABLED(CONFIG_SERIAL_SUNZILOG_CONSOLE);
-	if (keyboard_mouse) {
+	if (keyboard_mouse)
 		up[1].flags |= SUNZILOG_FLAG_CONS_MOUSE;
-	}
 	sunzilog_init_hw(&up[1]);
 
 	if (!keyboard_mouse) {
 		if (sunserial_console_match(SUNZILOG_CONSOLE(), op->dev.of_node,
-		                            &sunzilog_reg, up[0].port.line,
-		                            false)) {
+					    &sunzilog_reg, up[0].port.line,
+					    false))
 			up->flags |= SUNZILOG_FLAG_IS_CONS;
-		}
 		err = uart_add_one_port(&sunzilog_reg, &up[0].port);
 		if (err) {
 			of_iounmap(&op->resource[0],
-			           rp, sizeof(struct zilog_layout));
+				   rp, sizeof(struct zilog_layout));
 			return err;
 		}
 		if (sunserial_console_match(SUNZILOG_CONSOLE(), op->dev.of_node,
-		                            &sunzilog_reg, up[1].port.line,
-		                            false)) {
+					    &sunzilog_reg, up[1].port.line,
+					    false))
 			up->flags |= SUNZILOG_FLAG_IS_CONS;
-		}
 		err = uart_add_one_port(&sunzilog_reg, &up[1].port);
 		if (err) {
 			uart_remove_one_port(&sunzilog_reg, &up[0].port);
 			of_iounmap(&op->resource[0],
-			           rp, sizeof(struct zilog_layout));
+				   rp, sizeof(struct zilog_layout));
 			return err;
 		}
 		uart_inst++;
@@ -1579,9 +1509,8 @@ static void zs_remove_one(struct uart_sunzilog_port *up)
 #ifdef CONFIG_SERIO
 		serio_unregister_port(&up->serio);
 #endif
-	} else {
+	} else
 		uart_remove_one_port(&sunzilog_reg, &up->port);
-	}
 }
 
 static int zs_remove(struct platform_device *op)
@@ -1611,8 +1540,8 @@ static struct platform_driver zs_driver = {
 		.name = "zs",
 		.of_match_table = zs_match,
 	},
-	.probe      = zs_probe,
-	.remove     = zs_remove,
+	.probe		= zs_probe,
+	.remove		= zs_remove,
 };
 
 static int __init sunzilog_init(void)
@@ -1624,38 +1553,33 @@ static int __init sunzilog_init(void)
 
 	for_each_node_by_name(dp, "zs") {
 		num_sunzilog++;
-		if (of_property_present(dp, "keyboard")) {
+		if (of_property_present(dp, "keyboard"))
 			num_keybms++;
-		}
 	}
 
 	if (num_sunzilog) {
 		err = sunzilog_alloc_tables(num_sunzilog);
-		if (err) {
+		if (err)
 			goto out;
-		}
 
 		uart_chip_count = num_sunzilog - num_keybms;
 
 		err = sunserial_register_minors(&sunzilog_reg,
-		                                uart_chip_count * 2);
-		if (err) {
+						uart_chip_count * 2);
+		if (err)
 			goto out_free_tables;
-		}
 	}
 
 	err = platform_driver_register(&zs_driver);
-	if (err) {
+	if (err)
 		goto out_unregister_uart;
-	}
 
 	if (zilog_irq) {
 		struct uart_sunzilog_port *up = sunzilog_irq_chain;
 		err = request_irq(zilog_irq, sunzilog_interrupt, IRQF_SHARED,
-		                  "zs", sunzilog_irq_chain);
-		if (err) {
+				  "zs", sunzilog_irq_chain);
+		if (err)
 			goto out_unregister_driver;
-		}
 
 		/* Enable Interrupts */
 		while (up) {

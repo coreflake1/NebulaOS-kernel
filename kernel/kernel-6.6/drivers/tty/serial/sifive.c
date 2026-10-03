@@ -49,53 +49,53 @@
  */
 
 /* TXDATA */
-#define SIFIVE_SERIAL_TXDATA_OFFS       0x0
-#define SIFIVE_SERIAL_TXDATA_FULL_SHIFT     31
-#define SIFIVE_SERIAL_TXDATA_FULL_MASK      (1 << SIFIVE_SERIAL_TXDATA_FULL_SHIFT)
-#define SIFIVE_SERIAL_TXDATA_DATA_SHIFT     0
-#define SIFIVE_SERIAL_TXDATA_DATA_MASK      (0xff << SIFIVE_SERIAL_TXDATA_DATA_SHIFT)
+#define SIFIVE_SERIAL_TXDATA_OFFS		0x0
+#define SIFIVE_SERIAL_TXDATA_FULL_SHIFT		31
+#define SIFIVE_SERIAL_TXDATA_FULL_MASK		(1 << SIFIVE_SERIAL_TXDATA_FULL_SHIFT)
+#define SIFIVE_SERIAL_TXDATA_DATA_SHIFT		0
+#define SIFIVE_SERIAL_TXDATA_DATA_MASK		(0xff << SIFIVE_SERIAL_TXDATA_DATA_SHIFT)
 
 /* RXDATA */
-#define SIFIVE_SERIAL_RXDATA_OFFS       0x4
-#define SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT    31
-#define SIFIVE_SERIAL_RXDATA_EMPTY_MASK     (1 << SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT)
-#define SIFIVE_SERIAL_RXDATA_DATA_SHIFT     0
-#define SIFIVE_SERIAL_RXDATA_DATA_MASK      (0xff << SIFIVE_SERIAL_RXDATA_DATA_SHIFT)
+#define SIFIVE_SERIAL_RXDATA_OFFS		0x4
+#define SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT	31
+#define SIFIVE_SERIAL_RXDATA_EMPTY_MASK		(1 << SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT)
+#define SIFIVE_SERIAL_RXDATA_DATA_SHIFT		0
+#define SIFIVE_SERIAL_RXDATA_DATA_MASK		(0xff << SIFIVE_SERIAL_RXDATA_DATA_SHIFT)
 
 /* TXCTRL */
-#define SIFIVE_SERIAL_TXCTRL_OFFS       0x8
-#define SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT    16
-#define SIFIVE_SERIAL_TXCTRL_TXCNT_MASK     (0x7 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT)
-#define SIFIVE_SERIAL_TXCTRL_NSTOP_SHIFT    1
-#define SIFIVE_SERIAL_TXCTRL_NSTOP_MASK     (1 << SIFIVE_SERIAL_TXCTRL_NSTOP_SHIFT)
-#define SIFIVE_SERIAL_TXCTRL_TXEN_SHIFT     0
-#define SIFIVE_SERIAL_TXCTRL_TXEN_MASK      (1 << SIFIVE_SERIAL_TXCTRL_TXEN_SHIFT)
+#define SIFIVE_SERIAL_TXCTRL_OFFS		0x8
+#define SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT	16
+#define SIFIVE_SERIAL_TXCTRL_TXCNT_MASK		(0x7 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT)
+#define SIFIVE_SERIAL_TXCTRL_NSTOP_SHIFT	1
+#define SIFIVE_SERIAL_TXCTRL_NSTOP_MASK		(1 << SIFIVE_SERIAL_TXCTRL_NSTOP_SHIFT)
+#define SIFIVE_SERIAL_TXCTRL_TXEN_SHIFT		0
+#define SIFIVE_SERIAL_TXCTRL_TXEN_MASK		(1 << SIFIVE_SERIAL_TXCTRL_TXEN_SHIFT)
 
 /* RXCTRL */
-#define SIFIVE_SERIAL_RXCTRL_OFFS       0xC
-#define SIFIVE_SERIAL_RXCTRL_RXCNT_SHIFT    16
-#define SIFIVE_SERIAL_RXCTRL_RXCNT_MASK     (0x7 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT)
-#define SIFIVE_SERIAL_RXCTRL_RXEN_SHIFT     0
-#define SIFIVE_SERIAL_RXCTRL_RXEN_MASK      (1 << SIFIVE_SERIAL_RXCTRL_RXEN_SHIFT)
+#define SIFIVE_SERIAL_RXCTRL_OFFS		0xC
+#define SIFIVE_SERIAL_RXCTRL_RXCNT_SHIFT	16
+#define SIFIVE_SERIAL_RXCTRL_RXCNT_MASK		(0x7 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT)
+#define SIFIVE_SERIAL_RXCTRL_RXEN_SHIFT		0
+#define SIFIVE_SERIAL_RXCTRL_RXEN_MASK		(1 << SIFIVE_SERIAL_RXCTRL_RXEN_SHIFT)
 
 /* IE */
-#define SIFIVE_SERIAL_IE_OFFS           0x10
-#define SIFIVE_SERIAL_IE_RXWM_SHIFT     1
-#define SIFIVE_SERIAL_IE_RXWM_MASK      (1 << SIFIVE_SERIAL_IE_RXWM_SHIFT)
-#define SIFIVE_SERIAL_IE_TXWM_SHIFT     0
-#define SIFIVE_SERIAL_IE_TXWM_MASK      (1 << SIFIVE_SERIAL_IE_TXWM_SHIFT)
+#define SIFIVE_SERIAL_IE_OFFS			0x10
+#define SIFIVE_SERIAL_IE_RXWM_SHIFT		1
+#define SIFIVE_SERIAL_IE_RXWM_MASK		(1 << SIFIVE_SERIAL_IE_RXWM_SHIFT)
+#define SIFIVE_SERIAL_IE_TXWM_SHIFT		0
+#define SIFIVE_SERIAL_IE_TXWM_MASK		(1 << SIFIVE_SERIAL_IE_TXWM_SHIFT)
 
 /* IP */
-#define SIFIVE_SERIAL_IP_OFFS           0x14
-#define SIFIVE_SERIAL_IP_RXWM_SHIFT     1
-#define SIFIVE_SERIAL_IP_RXWM_MASK      (1 << SIFIVE_SERIAL_IP_RXWM_SHIFT)
-#define SIFIVE_SERIAL_IP_TXWM_SHIFT     0
-#define SIFIVE_SERIAL_IP_TXWM_MASK      (1 << SIFIVE_SERIAL_IP_TXWM_SHIFT)
+#define SIFIVE_SERIAL_IP_OFFS			0x14
+#define SIFIVE_SERIAL_IP_RXWM_SHIFT		1
+#define SIFIVE_SERIAL_IP_RXWM_MASK		(1 << SIFIVE_SERIAL_IP_RXWM_SHIFT)
+#define SIFIVE_SERIAL_IP_TXWM_SHIFT		0
+#define SIFIVE_SERIAL_IP_TXWM_MASK		(1 << SIFIVE_SERIAL_IP_TXWM_SHIFT)
 
 /* DIV */
-#define SIFIVE_SERIAL_DIV_OFFS          0x18
-#define SIFIVE_SERIAL_DIV_DIV_SHIFT     0
-#define SIFIVE_SERIAL_DIV_DIV_MASK      (0xffff << SIFIVE_SERIAL_IP_DIV_SHIFT)
+#define SIFIVE_SERIAL_DIV_OFFS			0x18
+#define SIFIVE_SERIAL_DIV_DIV_SHIFT		0
+#define SIFIVE_SERIAL_DIV_DIV_MASK		(0xffff << SIFIVE_SERIAL_IP_DIV_SHIFT)
 
 /*
  * Config macros
@@ -105,28 +105,28 @@
  * SIFIVE_SERIAL_MAX_PORTS: maximum number of UARTs on a device that can
  *                          host a serial console
  */
-#define SIFIVE_SERIAL_MAX_PORTS         8
+#define SIFIVE_SERIAL_MAX_PORTS			8
 
 /*
  * SIFIVE_DEFAULT_BAUD_RATE: default baud rate that the driver should
  *                           configure itself to use
  */
-#define SIFIVE_DEFAULT_BAUD_RATE        115200
+#define SIFIVE_DEFAULT_BAUD_RATE		115200
 
 /* SIFIVE_SERIAL_NAME: our driver's name that we pass to the operating system */
-#define SIFIVE_SERIAL_NAME          "sifive-serial"
+#define SIFIVE_SERIAL_NAME			"sifive-serial"
 
 /* SIFIVE_TTY_PREFIX: tty name prefix for SiFive serial ports */
-#define SIFIVE_TTY_PREFIX           "ttySIF"
+#define SIFIVE_TTY_PREFIX			"ttySIF"
 
 /* SIFIVE_TX_FIFO_DEPTH: depth of the TX FIFO (in bytes) */
-#define SIFIVE_TX_FIFO_DEPTH            8
+#define SIFIVE_TX_FIFO_DEPTH			8
 
 /* SIFIVE_RX_FIFO_DEPTH: depth of the TX FIFO (in bytes) */
-#define SIFIVE_RX_FIFO_DEPTH            8
+#define SIFIVE_RX_FIFO_DEPTH			8
 
 #if (SIFIVE_TX_FIFO_DEPTH != SIFIVE_RX_FIFO_DEPTH)
-	#error Driver does not support configurations with different TX, RX FIFO sizes
+#error Driver does not support configurations with different TX, RX FIFO sizes
 #endif
 
 /*
@@ -145,12 +145,12 @@
  * Configuration data specific to this SiFive UART.
  */
 struct sifive_serial_port {
-	struct uart_port    port;
-	struct device       *dev;
-	unsigned char       ier;
-	unsigned long       baud_rate;
-	struct clk      *clk;
-	struct notifier_block   clk_notifier;
+	struct uart_port	port;
+	struct device		*dev;
+	unsigned char		ier;
+	unsigned long		baud_rate;
+	struct clk		*clk;
+	struct notifier_block	clk_notifier;
 };
 
 /*
@@ -158,12 +158,12 @@ struct sifive_serial_port {
  */
 
 #define port_to_sifive_serial_port(p) (container_of((p), \
-                                       struct sifive_serial_port, \
-                                       port))
+						    struct sifive_serial_port, \
+						    port))
 
 #define notifier_to_sifive_serial_port(nb) (container_of((nb), \
-        struct sifive_serial_port, \
-        clk_notifier))
+							 struct sifive_serial_port, \
+							 clk_notifier))
 
 /*
  * Forward declarations
@@ -258,7 +258,7 @@ static u32 __ssp_readl(struct sifive_serial_port *ssp, u16 offs)
 static int sifive_serial_is_txfifo_full(struct sifive_serial_port *ssp)
 {
 	return __ssp_readl(ssp, SIFIVE_SERIAL_TXDATA_OFFS) &
-	       SIFIVE_SERIAL_TXDATA_FULL_MASK;
+		SIFIVE_SERIAL_TXDATA_FULL_MASK;
 }
 
 /**
@@ -291,9 +291,9 @@ static void __ssp_transmit_chars(struct sifive_serial_port *ssp)
 	u8 ch;
 
 	uart_port_tx_limited(&ssp->port, ch, SIFIVE_TX_FIFO_DEPTH,
-	                     true,
-	                     __ssp_transmit_char(ssp, ch),
-	                     ({}));
+		true,
+		__ssp_transmit_char(ssp, ch),
+		({}));
 }
 
 /**
@@ -305,9 +305,8 @@ static void __ssp_transmit_chars(struct sifive_serial_port *ssp)
  */
 static void __ssp_enable_txwm(struct sifive_serial_port *ssp)
 {
-	if (ssp->ier & SIFIVE_SERIAL_IE_TXWM_MASK) {
+	if (ssp->ier & SIFIVE_SERIAL_IE_TXWM_MASK)
 		return;
-	}
 
 	ssp->ier |= SIFIVE_SERIAL_IE_TXWM_MASK;
 	__ssp_writel(ssp->ier, SIFIVE_SERIAL_IE_OFFS, ssp);
@@ -322,9 +321,8 @@ static void __ssp_enable_txwm(struct sifive_serial_port *ssp)
  */
 static void __ssp_enable_rxwm(struct sifive_serial_port *ssp)
 {
-	if (ssp->ier & SIFIVE_SERIAL_IE_RXWM_MASK) {
+	if (ssp->ier & SIFIVE_SERIAL_IE_RXWM_MASK)
 		return;
-	}
 
 	ssp->ier |= SIFIVE_SERIAL_IE_RXWM_MASK;
 	__ssp_writel(ssp->ier, SIFIVE_SERIAL_IE_OFFS, ssp);
@@ -339,9 +337,8 @@ static void __ssp_enable_rxwm(struct sifive_serial_port *ssp)
  */
 static void __ssp_disable_txwm(struct sifive_serial_port *ssp)
 {
-	if (!(ssp->ier & SIFIVE_SERIAL_IE_TXWM_MASK)) {
+	if (!(ssp->ier & SIFIVE_SERIAL_IE_TXWM_MASK))
 		return;
-	}
 
 	ssp->ier &= ~SIFIVE_SERIAL_IE_TXWM_MASK;
 	__ssp_writel(ssp->ier, SIFIVE_SERIAL_IE_OFFS, ssp);
@@ -356,9 +353,8 @@ static void __ssp_disable_txwm(struct sifive_serial_port *ssp)
  */
 static void __ssp_disable_rxwm(struct sifive_serial_port *ssp)
 {
-	if (!(ssp->ier & SIFIVE_SERIAL_IE_RXWM_MASK)) {
+	if (!(ssp->ier & SIFIVE_SERIAL_IE_RXWM_MASK))
 		return;
-	}
 
 	ssp->ier &= ~SIFIVE_SERIAL_IE_RXWM_MASK;
 	__ssp_writel(ssp->ier, SIFIVE_SERIAL_IE_OFFS, ssp);
@@ -383,14 +379,14 @@ static char __ssp_receive_char(struct sifive_serial_port *ssp, char *is_empty)
 
 	v = __ssp_readl(ssp, SIFIVE_SERIAL_RXDATA_OFFS);
 
-	if (!is_empty) {
+	if (!is_empty)
 		WARN_ON(1);
-	} else
+	else
 		*is_empty = (v & SIFIVE_SERIAL_RXDATA_EMPTY_MASK) >>
-		            SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT;
+			SIFIVE_SERIAL_RXDATA_EMPTY_SHIFT;
 
 	ch = (v & SIFIVE_SERIAL_RXDATA_DATA_MASK) >>
-	     SIFIVE_SERIAL_RXDATA_DATA_SHIFT;
+		SIFIVE_SERIAL_RXDATA_DATA_SHIFT;
 
 	return ch;
 }
@@ -412,12 +408,12 @@ static void __ssp_receive_chars(struct sifive_serial_port *ssp)
 
 	for (c = SIFIVE_RX_FIFO_DEPTH; c > 0; --c) {
 		ch = __ssp_receive_char(ssp, &is_empty);
-		if (is_empty) {
+		if (is_empty)
 			break;
-		}
 
 		ssp->port.icount.rx++;
-		uart_insert_char(&ssp->port, 0, 0, ch, TTY_NORMAL);
+		if (!uart_prepare_sysrq_char(&ssp->port, ch))
+			uart_insert_char(&ssp->port, 0, 0, ch, TTY_NORMAL);
 	}
 
 	tty_flip_buffer_push(&ssp->port.state->port);
@@ -451,11 +447,10 @@ static void __ssp_update_div(struct sifive_serial_port *ssp)
  * by the UART due to clock ratio granularity.
  */
 static void __ssp_update_baud_rate(struct sifive_serial_port *ssp,
-                                   unsigned int rate)
+				   unsigned int rate)
 {
-	if (ssp->baud_rate == rate) {
+	if (ssp->baud_rate == rate)
 		return;
-	}
 
 	ssp->baud_rate = rate;
 	__ssp_update_div(ssp);
@@ -493,9 +488,8 @@ static void __ssp_set_stop_bits(struct sifive_serial_port *ssp, char nstop)
  */
 static void __maybe_unused __ssp_wait_for_xmitr(struct sifive_serial_port *ssp)
 {
-	while (sifive_serial_is_txfifo_full(ssp)) {
-		udelay(1);    /* XXX Could probably be more intelligent here */
-	}
+	while (sifive_serial_is_txfifo_full(ssp))
+		udelay(1); /* XXX Could probably be more intelligent here */
 }
 
 /*
@@ -536,14 +530,12 @@ static irqreturn_t sifive_serial_irq(int irq, void *dev_id)
 		return IRQ_NONE;
 	}
 
-	if (ip & SIFIVE_SERIAL_IP_RXWM_MASK) {
+	if (ip & SIFIVE_SERIAL_IP_RXWM_MASK)
 		__ssp_receive_chars(ssp);
-	}
-	if (ip & SIFIVE_SERIAL_IP_TXWM_MASK) {
+	if (ip & SIFIVE_SERIAL_IP_TXWM_MASK)
 		__ssp_transmit_chars(ssp);
-	}
 
-	uart_port_unlock(&ssp->port);
+	uart_unlock_and_check_sysrq(&ssp->port);
 
 	return IRQ_HANDLED;
 }
@@ -571,8 +563,11 @@ static void sifive_serial_break_ctl(struct uart_port *port, int break_state)
 static int sifive_serial_startup(struct uart_port *port)
 {
 	struct sifive_serial_port *ssp = port_to_sifive_serial_port(port);
+	unsigned long flags;
 
+	uart_port_lock_irqsave(&ssp->port, &flags);
 	__ssp_enable_rxwm(ssp);
+	uart_port_unlock_irqrestore(&ssp->port, flags);
 
 	return 0;
 }
@@ -580,9 +575,12 @@ static int sifive_serial_startup(struct uart_port *port)
 static void sifive_serial_shutdown(struct uart_port *port)
 {
 	struct sifive_serial_port *ssp = port_to_sifive_serial_port(port);
+	unsigned long flags;
 
+	uart_port_lock_irqsave(&ssp->port, &flags);
 	__ssp_disable_rxwm(ssp);
 	__ssp_disable_txwm(ssp);
+	uart_port_unlock_irqrestore(&ssp->port, flags);
 }
 
 /**
@@ -599,7 +597,7 @@ static void sifive_serial_shutdown(struct uart_port *port)
  * allowing the clock's rate to be changed.
  */
 static int sifive_serial_clk_notifier(struct notifier_block *nb,
-                                      unsigned long event, void *data)
+				      unsigned long event, void *data)
 {
 	struct clk_notifier_data *cnd = data;
 	struct sifive_serial_port *ssp = notifier_to_sifive_serial_port(nb);
@@ -633,8 +631,8 @@ static int sifive_serial_clk_notifier(struct notifier_block *nb,
 }
 
 static void sifive_serial_set_termios(struct uart_port *port,
-                                      struct ktermios *termios,
-                                      const struct ktermios *old)
+				      struct ktermios *termios,
+				      const struct ktermios *old)
 {
 	struct sifive_serial_port *ssp = port_to_sifive_serial_port(port);
 	unsigned long flags;
@@ -647,13 +645,11 @@ static void sifive_serial_set_termios(struct uart_port *port,
 		termios->c_cflag &= ~CSIZE;
 		termios->c_cflag |= CS8;
 	}
-	if (termios->c_iflag & (INPCK | PARMRK)) {
+	if (termios->c_iflag & (INPCK | PARMRK))
 		dev_err_once(ssp->port.dev, "parity checking not supported\n");
-	}
-	if (termios->c_iflag & BRKINT) {
+	if (termios->c_iflag & BRKINT)
 		dev_err_once(ssp->port.dev, "BREAK detection not supported\n");
-	}
-	termios->c_iflag &= ~(INPCK | PARMRK | BRKINT);
+	termios->c_iflag &= ~(INPCK|PARMRK|BRKINT);
 
 	/* Set number of stop bits */
 	nstop = (termios->c_cflag & CSTOPB) ? 2 : 1;
@@ -661,7 +657,7 @@ static void sifive_serial_set_termios(struct uart_port *port,
 
 	/* Set line rate */
 	rate = uart_get_baud_rate(port, termios, old, 0,
-	                          ssp->port.uartclk / 16);
+				  ssp->port.uartclk / 16);
 	__ssp_update_baud_rate(ssp, rate);
 
 	uart_port_lock_irqsave(&ssp->port, &flags);
@@ -674,14 +670,12 @@ static void sifive_serial_set_termios(struct uart_port *port,
 	/* Ignore all characters if CREAD is not set */
 	v = __ssp_readl(ssp, SIFIVE_SERIAL_RXCTRL_OFFS);
 	old_v = v;
-	if ((termios->c_cflag & CREAD) == 0) {
+	if ((termios->c_cflag & CREAD) == 0)
 		v &= SIFIVE_SERIAL_RXCTRL_RXEN_MASK;
-	} else {
+	else
 		v |= SIFIVE_SERIAL_RXCTRL_RXEN_MASK;
-	}
-	if (v != old_v) {
+	if (v != old_v)
 		__ssp_writel(v, SIFIVE_SERIAL_RXCTRL_OFFS, ssp);
-	}
 
 	uart_port_unlock_irqrestore(&ssp->port, flags);
 }
@@ -703,7 +697,7 @@ static void sifive_serial_config_port(struct uart_port *port, int flags)
 }
 
 static int sifive_serial_verify_port(struct uart_port *port,
-                                     struct serial_struct *ser)
+				     struct serial_struct *ser)
 {
 	return -EINVAL;
 }
@@ -720,15 +714,14 @@ static int sifive_serial_poll_get_char(struct uart_port *port)
 	char is_empty, ch;
 
 	ch = __ssp_receive_char(ssp, &is_empty);
-	if (is_empty) {
+	if (is_empty)
 		return NO_POLL_CHAR;
-	}
 
 	return ch;
 }
 
 static void sifive_serial_poll_put_char(struct uart_port *port,
-                                        unsigned char c)
+					unsigned char c)
 {
 	struct sifive_serial_port *ssp = port_to_sifive_serial_port(port);
 
@@ -745,15 +738,14 @@ static void sifive_serial_poll_put_char(struct uart_port *port,
 static void early_sifive_serial_putc(struct uart_port *port, unsigned char c)
 {
 	while (__ssp_early_readl(port, SIFIVE_SERIAL_TXDATA_OFFS) &
-	       SIFIVE_SERIAL_TXDATA_FULL_MASK) {
+	       SIFIVE_SERIAL_TXDATA_FULL_MASK)
 		cpu_relax();
-	}
 
 	__ssp_early_writel(c, SIFIVE_SERIAL_TXDATA_OFFS, port);
 }
 
 static void early_sifive_serial_write(struct console *con, const char *s,
-                                      unsigned int n)
+				      unsigned int n)
 {
 	struct earlycon_device *dev = con->data;
 	struct uart_port *port = &dev->port;
@@ -762,13 +754,12 @@ static void early_sifive_serial_write(struct console *con, const char *s,
 }
 
 static int __init early_sifive_serial_setup(struct earlycon_device *dev,
-        const char *options)
+					    const char *options)
 {
 	struct uart_port *port = &dev->port;
 
-	if (!port->membase) {
+	if (!port->membase)
 		return -ENODEV;
-	}
 
 	dev->con->write = early_sifive_serial_write;
 
@@ -777,7 +768,7 @@ static int __init early_sifive_serial_setup(struct earlycon_device *dev,
 
 OF_EARLYCON_DECLARE(sifive, "sifive,uart0", early_sifive_serial_setup);
 OF_EARLYCON_DECLARE(sifive, "sifive,fu540-c000-uart0",
-                    early_sifive_serial_setup);
+		    early_sifive_serial_setup);
 #endif /* CONFIG_SERIAL_EARLYCON */
 
 /*
@@ -797,25 +788,20 @@ static void sifive_serial_console_putchar(struct uart_port *port, unsigned char 
 }
 
 static void sifive_serial_console_write(struct console *co, const char *s,
-                                        unsigned int count)
+					unsigned int count)
 {
 	struct sifive_serial_port *ssp = sifive_serial_console_ports[co->index];
 	unsigned long flags;
 	unsigned int ier;
 	int locked = 1;
 
-	if (!ssp) {
+	if (!ssp)
 		return;
-	}
 
-	local_irq_save(flags);
-	if (ssp->port.sysrq) {
-		locked = 0;
-	} else if (oops_in_progress) {
-		locked = uart_port_trylock(&ssp->port);
-	} else {
-		uart_port_lock(&ssp->port);
-	}
+	if (oops_in_progress)
+		locked = uart_port_trylock_irqsave(&ssp->port, &flags);
+	else
+		uart_port_lock_irqsave(&ssp->port, &flags);
 
 	ier = __ssp_readl(ssp, SIFIVE_SERIAL_IE_OFFS);
 	__ssp_writel(0, SIFIVE_SERIAL_IE_OFFS, ssp);
@@ -824,10 +810,8 @@ static void sifive_serial_console_write(struct console *co, const char *s,
 
 	__ssp_writel(ier, SIFIVE_SERIAL_IE_OFFS, ssp);
 
-	if (locked) {
-		uart_port_unlock(&ssp->port);
-	}
-	local_irq_restore(flags);
+	if (locked)
+		uart_port_unlock_irqrestore(&ssp->port, flags);
 }
 
 static int sifive_serial_console_setup(struct console *co, char *options)
@@ -838,18 +822,15 @@ static int sifive_serial_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if (co->index < 0 || co->index >= SIFIVE_SERIAL_MAX_PORTS) {
+	if (co->index < 0 || co->index >= SIFIVE_SERIAL_MAX_PORTS)
 		return -ENODEV;
-	}
 
 	ssp = sifive_serial_console_ports[co->index];
-	if (!ssp) {
+	if (!ssp)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(&ssp->port, co, baud, parity, bits, flow);
 }
@@ -857,13 +838,13 @@ static int sifive_serial_console_setup(struct console *co, char *options)
 static struct uart_driver sifive_serial_uart_driver;
 
 static struct console sifive_serial_console = {
-	.name       = SIFIVE_TTY_PREFIX,
-	.write      = sifive_serial_console_write,
-	.device     = uart_console_device,
-	.setup      = sifive_serial_console_setup,
-	.flags      = CON_PRINTBUFFER,
-	.index      = -1,
-	.data       = &sifive_serial_uart_driver,
+	.name		= SIFIVE_TTY_PREFIX,
+	.write		= sifive_serial_console_write,
+	.device		= uart_console_device,
+	.setup		= sifive_serial_console_setup,
+	.flags		= CON_PRINTBUFFER,
+	.index		= -1,
+	.data		= &sifive_serial_uart_driver,
 };
 
 static int __init sifive_console_init(void)
@@ -884,11 +865,11 @@ static void __ssp_remove_console_port(struct sifive_serial_port *ssp)
 	sifive_serial_console_ports[ssp->port.line] = NULL;
 }
 
-#define SIFIVE_SERIAL_CONSOLE   (&sifive_serial_console)
+#define SIFIVE_SERIAL_CONSOLE	(&sifive_serial_console)
 
 #else
 
-#define SIFIVE_SERIAL_CONSOLE   NULL
+#define SIFIVE_SERIAL_CONSOLE	NULL
 
 static void __ssp_add_console_port(struct sifive_serial_port *ssp)
 {}
@@ -898,33 +879,33 @@ static void __ssp_remove_console_port(struct sifive_serial_port *ssp)
 #endif
 
 static const struct uart_ops sifive_serial_uops = {
-	.tx_empty   = sifive_serial_tx_empty,
-	.set_mctrl  = sifive_serial_set_mctrl,
-	.get_mctrl  = sifive_serial_get_mctrl,
-	.stop_tx    = sifive_serial_stop_tx,
-	.start_tx   = sifive_serial_start_tx,
-	.stop_rx    = sifive_serial_stop_rx,
-	.break_ctl  = sifive_serial_break_ctl,
-	.startup    = sifive_serial_startup,
-	.shutdown   = sifive_serial_shutdown,
-	.set_termios    = sifive_serial_set_termios,
-	.type       = sifive_serial_type,
-	.release_port   = sifive_serial_release_port,
-	.request_port   = sifive_serial_request_port,
-	.config_port    = sifive_serial_config_port,
-	.verify_port    = sifive_serial_verify_port,
+	.tx_empty	= sifive_serial_tx_empty,
+	.set_mctrl	= sifive_serial_set_mctrl,
+	.get_mctrl	= sifive_serial_get_mctrl,
+	.stop_tx	= sifive_serial_stop_tx,
+	.start_tx	= sifive_serial_start_tx,
+	.stop_rx	= sifive_serial_stop_rx,
+	.break_ctl	= sifive_serial_break_ctl,
+	.startup	= sifive_serial_startup,
+	.shutdown	= sifive_serial_shutdown,
+	.set_termios	= sifive_serial_set_termios,
+	.type		= sifive_serial_type,
+	.release_port	= sifive_serial_release_port,
+	.request_port	= sifive_serial_request_port,
+	.config_port	= sifive_serial_config_port,
+	.verify_port	= sifive_serial_verify_port,
 #ifdef CONFIG_CONSOLE_POLL
-	.poll_get_char  = sifive_serial_poll_get_char,
-	.poll_put_char  = sifive_serial_poll_put_char,
+	.poll_get_char	= sifive_serial_poll_get_char,
+	.poll_put_char	= sifive_serial_poll_put_char,
 #endif
 };
 
 static struct uart_driver sifive_serial_uart_driver = {
-	.owner      = THIS_MODULE,
-	.driver_name    = SIFIVE_SERIAL_NAME,
-	.dev_name   = SIFIVE_TTY_PREFIX,
-	.nr     = SIFIVE_SERIAL_MAX_PORTS,
-	.cons       = SIFIVE_SERIAL_CONSOLE,
+	.owner		= THIS_MODULE,
+	.driver_name	= SIFIVE_SERIAL_NAME,
+	.dev_name	= SIFIVE_TTY_PREFIX,
+	.nr		= SIFIVE_SERIAL_MAX_PORTS,
+	.cons		= SIFIVE_SERIAL_CONSOLE,
 };
 
 static int sifive_serial_probe(struct platform_device *pdev)
@@ -936,14 +917,12 @@ static int sifive_serial_probe(struct platform_device *pdev)
 	int irq, id, r;
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return -EPROBE_DEFER;
-	}
 
 	base = devm_platform_get_and_ioremap_resource(pdev, 0, &mem);
-	if (IS_ERR(base)) {
+	if (IS_ERR(base))
 		return PTR_ERR(base);
-	}
 
 	clk = devm_clk_get_enabled(&pdev->dev, NULL);
 	if (IS_ERR(clk)) {
@@ -965,9 +944,8 @@ static int sifive_serial_probe(struct platform_device *pdev)
 #endif
 
 	ssp = devm_kzalloc(&pdev->dev, sizeof(*ssp), GFP_KERNEL);
-	if (!ssp) {
+	if (!ssp)
 		return -ENOMEM;
-	}
 
 	ssp->port.dev = &pdev->dev;
 	ssp->port.type = PORT_SIFIVE_V0;
@@ -985,7 +963,7 @@ static int sifive_serial_probe(struct platform_device *pdev)
 	r = clk_notifier_register(ssp->clk, &ssp->clk_notifier);
 	if (r) {
 		dev_err(&pdev->dev, "could not register clock notifier: %d\n",
-		        r);
+			r);
 		goto probe_out1;
 	}
 
@@ -998,16 +976,16 @@ static int sifive_serial_probe(struct platform_device *pdev)
 
 	/* Enable transmits and set the watermark level to 1 */
 	__ssp_writel((1 << SIFIVE_SERIAL_TXCTRL_TXCNT_SHIFT) |
-	             SIFIVE_SERIAL_TXCTRL_TXEN_MASK,
-	             SIFIVE_SERIAL_TXCTRL_OFFS, ssp);
+		     SIFIVE_SERIAL_TXCTRL_TXEN_MASK,
+		     SIFIVE_SERIAL_TXCTRL_OFFS, ssp);
 
 	/* Enable receives and set the watermark level to 0 */
 	__ssp_writel((0 << SIFIVE_SERIAL_RXCTRL_RXCNT_SHIFT) |
-	             SIFIVE_SERIAL_RXCTRL_RXEN_MASK,
-	             SIFIVE_SERIAL_RXCTRL_OFFS, ssp);
+		     SIFIVE_SERIAL_RXCTRL_RXEN_MASK,
+		     SIFIVE_SERIAL_RXCTRL_OFFS, ssp);
 
 	r = request_irq(ssp->port.irq, sifive_serial_irq, ssp->port.irqflags,
-	                dev_name(&pdev->dev), ssp);
+			dev_name(&pdev->dev), ssp);
 	if (r) {
 		dev_err(&pdev->dev, "could not attach interrupt: %d\n", r);
 		goto probe_out2;
@@ -1059,7 +1037,7 @@ static int sifive_serial_resume(struct device *dev)
 }
 
 DEFINE_SIMPLE_DEV_PM_OPS(sifive_uart_pm_ops, sifive_serial_suspend,
-                         sifive_serial_resume);
+			 sifive_serial_resume);
 
 static const struct of_device_id sifive_serial_of_match[] = {
 	{ .compatible = "sifive,fu540-c000-uart0" },
@@ -1069,10 +1047,10 @@ static const struct of_device_id sifive_serial_of_match[] = {
 MODULE_DEVICE_TABLE(of, sifive_serial_of_match);
 
 static struct platform_driver sifive_serial_platform_driver = {
-	.probe      = sifive_serial_probe,
-	.remove     = sifive_serial_remove,
-	.driver     = {
-		.name   = SIFIVE_SERIAL_NAME,
+	.probe		= sifive_serial_probe,
+	.remove		= sifive_serial_remove,
+	.driver		= {
+		.name	= SIFIVE_SERIAL_NAME,
 		.pm = pm_sleep_ptr(&sifive_uart_pm_ops),
 		.of_match_table = sifive_serial_of_match,
 	},
@@ -1083,14 +1061,12 @@ static int __init sifive_serial_init(void)
 	int r;
 
 	r = uart_register_driver(&sifive_serial_uart_driver);
-	if (r) {
+	if (r)
 		goto init_out1;
-	}
 
 	r = platform_driver_register(&sifive_serial_platform_driver);
-	if (r) {
+	if (r)
 		goto init_out2;
-	}
 
 	return 0;
 

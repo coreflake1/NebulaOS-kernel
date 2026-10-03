@@ -15,56 +15,56 @@
  * disabled functionality.
  */
 #ifndef _TIF_PATCH_PENDING
-	#define _TIF_PATCH_PENDING      (0)
+# define _TIF_PATCH_PENDING		(0)
 #endif
 
 #ifndef _TIF_UPROBE
-	#define _TIF_UPROBE         (0)
+# define _TIF_UPROBE			(0)
 #endif
 
 /*
  * SYSCALL_WORK flags handled in syscall_enter_from_user_mode()
  */
 #ifndef ARCH_SYSCALL_WORK_ENTER
-	#define ARCH_SYSCALL_WORK_ENTER (0)
+# define ARCH_SYSCALL_WORK_ENTER	(0)
 #endif
 
 /*
  * SYSCALL_WORK flags handled in syscall_exit_to_user_mode()
  */
 #ifndef ARCH_SYSCALL_WORK_EXIT
-	#define ARCH_SYSCALL_WORK_EXIT      (0)
+# define ARCH_SYSCALL_WORK_EXIT		(0)
 #endif
 
-#define SYSCALL_WORK_ENTER  (SYSCALL_WORK_SECCOMP |         \
-                             SYSCALL_WORK_SYSCALL_TRACEPOINT |  \
-                             SYSCALL_WORK_SYSCALL_TRACE |       \
-                             SYSCALL_WORK_SYSCALL_EMU |     \
-                             SYSCALL_WORK_SYSCALL_AUDIT |       \
-                             SYSCALL_WORK_SYSCALL_USER_DISPATCH |   \
-                             ARCH_SYSCALL_WORK_ENTER)
-#define SYSCALL_WORK_EXIT   (SYSCALL_WORK_SYSCALL_TRACEPOINT |  \
-                             SYSCALL_WORK_SYSCALL_TRACE |       \
-                             SYSCALL_WORK_SYSCALL_AUDIT |       \
-                             SYSCALL_WORK_SYSCALL_USER_DISPATCH |   \
-                             SYSCALL_WORK_SYSCALL_EXIT_TRAP |   \
-                             ARCH_SYSCALL_WORK_EXIT)
+#define SYSCALL_WORK_ENTER	(SYSCALL_WORK_SECCOMP |			\
+				 SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
+				 SYSCALL_WORK_SYSCALL_TRACE |		\
+				 SYSCALL_WORK_SYSCALL_EMU |		\
+				 SYSCALL_WORK_SYSCALL_AUDIT |		\
+				 SYSCALL_WORK_SYSCALL_USER_DISPATCH |	\
+				 ARCH_SYSCALL_WORK_ENTER)
+#define SYSCALL_WORK_EXIT	(SYSCALL_WORK_SYSCALL_TRACEPOINT |	\
+				 SYSCALL_WORK_SYSCALL_TRACE |		\
+				 SYSCALL_WORK_SYSCALL_AUDIT |		\
+				 SYSCALL_WORK_SYSCALL_USER_DISPATCH |	\
+				 SYSCALL_WORK_SYSCALL_EXIT_TRAP	|	\
+				 ARCH_SYSCALL_WORK_EXIT)
 
 /*
  * TIF flags handled in exit_to_user_mode_loop()
  */
 #ifndef ARCH_EXIT_TO_USER_MODE_WORK
-	#define ARCH_EXIT_TO_USER_MODE_WORK     (0)
+# define ARCH_EXIT_TO_USER_MODE_WORK		(0)
 #endif
 
-#define EXIT_TO_USER_MODE_WORK                      \
-	(_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_UPROBE |       \
-	 _TIF_NEED_RESCHED | _TIF_PATCH_PENDING | _TIF_NOTIFY_SIGNAL |  \
+#define EXIT_TO_USER_MODE_WORK						\
+	(_TIF_SIGPENDING | _TIF_NOTIFY_RESUME | _TIF_UPROBE |		\
+	 _TIF_NEED_RESCHED | _TIF_PATCH_PENDING | _TIF_NOTIFY_SIGNAL |	\
 	 _TIF_NEED_RESCHED_LAZY | ARCH_EXIT_TO_USER_MODE_WORK)
 
 /**
  * arch_enter_from_user_mode - Architecture specific sanity check for user mode regs
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Defaults to an empty implementation. Can be replaced by architecture
  * specific code.
@@ -102,7 +102,7 @@ void enter_from_user_mode(struct pt_regs *regs);
 
 /**
  * syscall_enter_from_user_mode_prepare - Establish state and enable interrupts
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Invoked from architecture specific syscall entry code with interrupts
  * disabled. The calling code has to be non-instrumentable. When the
@@ -119,9 +119,9 @@ void syscall_enter_from_user_mode_prepare(struct pt_regs *regs);
 
 /**
  * syscall_enter_from_user_mode_work - Check and handle work before invoking
- *                     a syscall
- * @regs:   Pointer to currents pt_regs
- * @syscall:    The syscall number
+ *				       a syscall
+ * @regs:	Pointer to currents pt_regs
+ * @syscall:	The syscall number
  *
  * Invoked from architecture specific syscall entry code with interrupts
  * enabled after invoking syscall_enter_from_user_mode_prepare() and extra
@@ -144,9 +144,9 @@ long syscall_enter_from_user_mode_work(struct pt_regs *regs, long syscall);
 
 /**
  * syscall_enter_from_user_mode - Establish state and check and handle work
- *                before invoking a syscall
- * @regs:   Pointer to currents pt_regs
- * @syscall:    The syscall number
+ *				  before invoking a syscall
+ * @regs:	Pointer to currents pt_regs
+ * @syscall:	The syscall number
  *
  * Invoked from architecture specific syscall entry code with interrupts
  * disabled. The calling code has to be non-instrumentable. When the
@@ -163,7 +163,7 @@ long syscall_enter_from_user_mode(struct pt_regs *regs, long syscall);
 
 /**
  * local_irq_enable_exit_to_user - Exit to user variant of local_irq_enable()
- * @ti_work:    Cached TIF flags gathered with interrupts disabled
+ * @ti_work:	Cached TIF flags gathered with interrupts disabled
  *
  * Defaults to local_irq_enable(). Can be supplied by architecture specific
  * code.
@@ -194,46 +194,46 @@ static inline void local_irq_disable_exit_to_user(void)
 
 /**
  * arch_exit_to_user_mode_work - Architecture specific TIF work for exit
- *               to user mode.
- * @regs:   Pointer to currents pt_regs
- * @ti_work:    Cached TIF flags gathered with interrupts disabled
+ *				 to user mode.
+ * @regs:	Pointer to currents pt_regs
+ * @ti_work:	Cached TIF flags gathered with interrupts disabled
  *
  * Invoked from exit_to_user_mode_loop() with interrupt enabled
  *
  * Defaults to NOOP. Can be supplied by architecture specific code.
  */
 static inline void arch_exit_to_user_mode_work(struct pt_regs *regs,
-        unsigned long ti_work);
+					       unsigned long ti_work);
 
 #ifndef arch_exit_to_user_mode_work
 static inline void arch_exit_to_user_mode_work(struct pt_regs *regs,
-        unsigned long ti_work)
+					       unsigned long ti_work)
 {
 }
 #endif
 
 /**
  * arch_exit_to_user_mode_prepare - Architecture specific preparation for
- *                  exit to user mode.
- * @regs:   Pointer to currents pt_regs
- * @ti_work:    Cached TIF flags gathered with interrupts disabled
+ *				    exit to user mode.
+ * @regs:	Pointer to currents pt_regs
+ * @ti_work:	Cached TIF flags gathered with interrupts disabled
  *
  * Invoked from exit_to_user_mode_prepare() with interrupt disabled as the last
  * function before return. Defaults to NOOP.
  */
 static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-        unsigned long ti_work);
+						  unsigned long ti_work);
 
 #ifndef arch_exit_to_user_mode_prepare
 static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
-        unsigned long ti_work)
+						  unsigned long ti_work)
 {
 }
 #endif
 
 /**
  * arch_exit_to_user_mode - Architecture specific final work before
- *              exit to user mode.
+ *			    exit to user mode.
  *
  * Invoked from exit_to_user_mode() with interrupt disabled as the last
  * function before return. Defaults to NOOP.
@@ -252,7 +252,7 @@ static __always_inline void arch_exit_to_user_mode(void) { }
 
 /**
  * arch_do_signal_or_restart -  Architecture specific signal delivery function
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Invoked from exit_to_user_mode_loop().
  */
@@ -280,7 +280,7 @@ void exit_to_user_mode(void);
 
 /**
  * syscall_exit_to_user_mode_work - Handle work before returning to user mode
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Same as step 1 and 2 of syscall_exit_to_user_mode() but without calling
  * exit_to_user_mode() to perform the final transition to user mode.
@@ -295,7 +295,7 @@ void syscall_exit_to_user_mode_work(struct pt_regs *regs);
 
 /**
  * syscall_exit_to_user_mode - Handle work before returning to user mode
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Invoked with interrupts enabled and fully valid regs. Returns with all
  * work handled, interrupts disabled such that the caller can immediately
@@ -304,16 +304,16 @@ void syscall_exit_to_user_mode_work(struct pt_regs *regs);
  *
  * The call order is:
  *  1) One-time syscall exit work:
- *  - rseq syscall exit
+ *	- rseq syscall exit
  *      - audit
- *  - syscall tracing
- *  - ptrace (single stepping)
+ *	- syscall tracing
+ *	- ptrace (single stepping)
  *
  *  2) Preparatory work
- *  - Exit to user mode loop (common TIF handling). Invokes
- *    arch_exit_to_user_mode_work() for architecture specific TIF work
- *  - Architecture specific one time work arch_exit_to_user_mode_prepare()
- *  - Address limit and lockdep checks
+ *	- Exit to user mode loop (common TIF handling). Invokes
+ *	  arch_exit_to_user_mode_work() for architecture specific TIF work
+ *	- Architecture specific one time work arch_exit_to_user_mode_prepare()
+ *	- Address limit and lockdep checks
  *
  *  3) Final transition (lockdep, tracing, context tracking, RCU), i.e. the
  *     functionality in exit_to_user_mode().
@@ -326,7 +326,7 @@ void syscall_exit_to_user_mode(struct pt_regs *regs);
 
 /**
  * irqentry_enter_from_user_mode - Establish state before invoking the irq handler
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Invoked from architecture specific entry code with interrupts disabled.
  * Can only be called when the interrupt entry came from user mode. The
@@ -339,7 +339,7 @@ void irqentry_enter_from_user_mode(struct pt_regs *regs);
 
 /**
  * irqentry_exit_to_user_mode - Interrupt exit work
- * @regs:   Pointer to current's pt_regs
+ * @regs:	Pointer to current's pt_regs
  *
  * Invoked with interrupts disabled and fully valid regs. Returns with all
  * work handled, interrupts disabled such that the caller can immediately
@@ -370,15 +370,15 @@ void irqentry_exit_to_user_mode(struct pt_regs *regs);
  */
 typedef struct irqentry_state {
 	union {
-		bool    exit_rcu;
-		bool    lockdep;
+		bool	exit_rcu;
+		bool	lockdep;
 	};
 } irqentry_state_t;
 #endif
 
 /**
  * irqentry_enter - Handle state tracking on ordinary interrupt entries
- * @regs:   Pointer to pt_regs of interrupted context
+ * @regs:	Pointer to pt_regs of interrupted context
  *
  * Invokes:
  *  - lockdep irqflag state tracking as low level ASM entry disabled
@@ -416,24 +416,24 @@ irqentry_state_t noinstr irqentry_enter(struct pt_regs *regs);
  */
 void raw_irqentry_exit_cond_resched(void);
 #ifdef CONFIG_PREEMPT_DYNAMIC
-	#if defined(CONFIG_HAVE_PREEMPT_DYNAMIC_CALL)
-		#define irqentry_exit_cond_resched_dynamic_enabled  raw_irqentry_exit_cond_resched
-		#define irqentry_exit_cond_resched_dynamic_disabled NULL
-		DECLARE_STATIC_CALL(irqentry_exit_cond_resched, raw_irqentry_exit_cond_resched);
-		#define irqentry_exit_cond_resched()    static_call(irqentry_exit_cond_resched)()
-	#elif defined(CONFIG_HAVE_PREEMPT_DYNAMIC_KEY)
-		DECLARE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
-		void dynamic_irqentry_exit_cond_resched(void);
-		#define irqentry_exit_cond_resched()    dynamic_irqentry_exit_cond_resched()
-	#endif
+#if defined(CONFIG_HAVE_PREEMPT_DYNAMIC_CALL)
+#define irqentry_exit_cond_resched_dynamic_enabled	raw_irqentry_exit_cond_resched
+#define irqentry_exit_cond_resched_dynamic_disabled	NULL
+DECLARE_STATIC_CALL(irqentry_exit_cond_resched, raw_irqentry_exit_cond_resched);
+#define irqentry_exit_cond_resched()	static_call(irqentry_exit_cond_resched)()
+#elif defined(CONFIG_HAVE_PREEMPT_DYNAMIC_KEY)
+DECLARE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
+void dynamic_irqentry_exit_cond_resched(void);
+#define irqentry_exit_cond_resched()	dynamic_irqentry_exit_cond_resched()
+#endif
 #else /* CONFIG_PREEMPT_DYNAMIC */
-	#define irqentry_exit_cond_resched()    raw_irqentry_exit_cond_resched()
+#define irqentry_exit_cond_resched()	raw_irqentry_exit_cond_resched()
 #endif /* CONFIG_PREEMPT_DYNAMIC */
 
 /**
  * irqentry_exit - Handle return from exception that used irqentry_enter()
- * @regs:   Pointer to pt_regs (exception entry regs)
- * @state:  Return value from matching call to irqentry_enter()
+ * @regs:	Pointer to pt_regs (exception entry regs)
+ * @state:	Return value from matching call to irqentry_enter()
  *
  * Depending on the return target (kernel/user) this runs the necessary
  * preemption and work checks if possible and required and returns to
@@ -448,7 +448,7 @@ void noinstr irqentry_exit(struct pt_regs *regs, irqentry_state_t state);
 
 /**
  * irqentry_nmi_enter - Handle NMI entry
- * @regs:   Pointer to currents pt_regs
+ * @regs:	Pointer to currents pt_regs
  *
  * Similar to irqentry_enter() but taking care of the NMI constraints.
  */
@@ -456,8 +456,8 @@ irqentry_state_t noinstr irqentry_nmi_enter(struct pt_regs *regs);
 
 /**
  * irqentry_nmi_exit - Handle return from NMI handling
- * @regs:   Pointer to pt_regs (NMI entry regs)
- * @irq_state:  Return value from matching call to irqentry_nmi_enter()
+ * @regs:	Pointer to pt_regs (NMI entry regs)
+ * @irq_state:	Return value from matching call to irqentry_nmi_enter()
  *
  * Last action before returning to the low level assembly code.
  *

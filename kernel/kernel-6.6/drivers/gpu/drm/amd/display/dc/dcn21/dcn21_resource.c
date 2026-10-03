@@ -99,28 +99,28 @@
 #define BASE(seg) BASE_INNER(seg)
 
 #define SR(reg_name)\
-	.reg_name = BASE(mm ## reg_name ## _BASE_IDX) +  \
-	            mm ## reg_name
+		.reg_name = BASE(mm ## reg_name ## _BASE_IDX) +  \
+					mm ## reg_name
 
 #define SRI(reg_name, block, id)\
 	.reg_name = BASE(mm ## block ## id ## _ ## reg_name ## _BASE_IDX) + \
-	            mm ## block ## id ## _ ## reg_name
+					mm ## block ## id ## _ ## reg_name
 
 #define SRIR(var_name, reg_name, block, id)\
 	.var_name = BASE(mm ## block ## id ## _ ## reg_name ## _BASE_IDX) + \
-	            mm ## block ## id ## _ ## reg_name
+					mm ## block ## id ## _ ## reg_name
 
 #define SRII(reg_name, block, id)\
 	.reg_name[id] = BASE(mm ## block ## id ## _ ## reg_name ## _BASE_IDX) + \
-	                mm ## block ## id ## _ ## reg_name
+					mm ## block ## id ## _ ## reg_name
 
 #define DCCG_SRII(reg_name, block, id)\
 	.block ## _ ## reg_name[id] = BASE(mm ## block ## id ## _ ## reg_name ## _BASE_IDX) + \
-	                              mm ## block ## id ## _ ## reg_name
+					mm ## block ## id ## _ ## reg_name
 
 #define VUPDATE_SRII(reg_name, block, id)\
 	.reg_name[id] = BASE(mm ## reg_name ## _ ## block ## id ## _BASE_IDX) + \
-	                mm ## reg_name ## _ ## block ## id
+					mm ## reg_name ## _ ## block ## id
 
 /* NBIO */
 #define NBIO_BASE_INNER(seg) \
@@ -130,8 +130,8 @@
 	NBIO_BASE_INNER(seg)
 
 #define NBIO_SR(reg_name)\
-	.reg_name = NBIO_BASE(mm ## reg_name ## _BASE_IDX) + \
-	            mm ## reg_name
+		.reg_name = NBIO_BASE(mm ## reg_name ## _BASE_IDX) + \
+					mm ## reg_name
 
 /* MMHUB */
 #define MMHUB_BASE_INNER(seg) \
@@ -141,13 +141,13 @@
 	MMHUB_BASE_INNER(seg)
 
 #define MMHUB_SR(reg_name)\
-	.reg_name = MMHUB_BASE(mmMM ## reg_name ## _BASE_IDX) + \
-	            mmMM ## reg_name
+		.reg_name = MMHUB_BASE(mmMM ## reg_name ## _BASE_IDX) + \
+					mmMM ## reg_name
 
 #define clk_src_regs(index, pllid)\
-	[index] = {\
-	           CS_COMMON_REG_LIST_DCN2_1(index, pllid),\
-	          }
+[index] = {\
+	CS_COMMON_REG_LIST_DCN2_1(index, pllid),\
+}
 
 static const struct dce110_clk_src_regs clk_src_regs[] = {
 	clk_src_regs(0, A),
@@ -158,46 +158,46 @@ static const struct dce110_clk_src_regs clk_src_regs[] = {
 };
 
 static const struct dce110_clk_src_shift cs_shift = {
-	CS_COMMON_MASK_SH_LIST_DCN2_0(__SHIFT)
+		CS_COMMON_MASK_SH_LIST_DCN2_0(__SHIFT)
 };
 
 static const struct dce110_clk_src_mask cs_mask = {
-	CS_COMMON_MASK_SH_LIST_DCN2_0(_MASK)
+		CS_COMMON_MASK_SH_LIST_DCN2_0(_MASK)
 };
 
 static const struct bios_registers bios_regs = {
-	NBIO_SR(BIOS_SCRATCH_3),
-	NBIO_SR(BIOS_SCRATCH_6)
+		NBIO_SR(BIOS_SCRATCH_3),
+		NBIO_SR(BIOS_SCRATCH_6)
 };
 
 static const struct dce_dmcu_registers dmcu_regs = {
-	DMCU_DCN20_REG_LIST()
+		DMCU_DCN20_REG_LIST()
 };
 
 static const struct dce_dmcu_shift dmcu_shift = {
-	DMCU_MASK_SH_LIST_DCN10(__SHIFT)
+		DMCU_MASK_SH_LIST_DCN10(__SHIFT)
 };
 
 static const struct dce_dmcu_mask dmcu_mask = {
-	DMCU_MASK_SH_LIST_DCN10(_MASK)
+		DMCU_MASK_SH_LIST_DCN10(_MASK)
 };
 
 static const struct dce_abm_registers abm_regs = {
-	ABM_DCN20_REG_LIST()
+		ABM_DCN20_REG_LIST()
 };
 
 static const struct dce_abm_shift abm_shift = {
-	ABM_MASK_SH_LIST_DCN20(__SHIFT)
+		ABM_MASK_SH_LIST_DCN20(__SHIFT)
 };
 
 static const struct dce_abm_mask abm_mask = {
-	ABM_MASK_SH_LIST_DCN20(_MASK)
+		ABM_MASK_SH_LIST_DCN20(_MASK)
 };
 
 #define audio_regs(id)\
-	[id] = {\
-	        AUD_COMMON_REG_LIST(id)\
-	       }
+[id] = {\
+		AUD_COMMON_REG_LIST(id)\
+}
 
 static const struct dce_audio_registers audio_regs[] = {
 	audio_regs(0),
@@ -209,34 +209,34 @@ static const struct dce_audio_registers audio_regs[] = {
 };
 
 #define DCE120_AUD_COMMON_MASK_SH_LIST(mask_sh)\
-	SF(AZF0ENDPOINT0_AZALIA_F0_CODEC_ENDPOINT_INDEX, AZALIA_ENDPOINT_REG_INDEX, mask_sh),\
-	SF(AZF0ENDPOINT0_AZALIA_F0_CODEC_ENDPOINT_DATA, AZALIA_ENDPOINT_REG_DATA, mask_sh),\
-	AUD_COMMON_MASK_SH_LIST_BASE(mask_sh)
+		SF(AZF0ENDPOINT0_AZALIA_F0_CODEC_ENDPOINT_INDEX, AZALIA_ENDPOINT_REG_INDEX, mask_sh),\
+		SF(AZF0ENDPOINT0_AZALIA_F0_CODEC_ENDPOINT_DATA, AZALIA_ENDPOINT_REG_DATA, mask_sh),\
+		AUD_COMMON_MASK_SH_LIST_BASE(mask_sh)
 
 static const struct dce_audio_shift audio_shift = {
-	DCE120_AUD_COMMON_MASK_SH_LIST(__SHIFT)
+		DCE120_AUD_COMMON_MASK_SH_LIST(__SHIFT)
 };
 
 static const struct dce_audio_mask audio_mask = {
-	DCE120_AUD_COMMON_MASK_SH_LIST(_MASK)
+		DCE120_AUD_COMMON_MASK_SH_LIST(_MASK)
 };
 
 static const struct dccg_registers dccg_regs = {
-	DCCG_COMMON_REG_LIST_DCN_BASE()
+		DCCG_COMMON_REG_LIST_DCN_BASE()
 };
 
 static const struct dccg_shift dccg_shift = {
-	DCCG_MASK_SH_LIST_DCN2_1(__SHIFT)
+		DCCG_MASK_SH_LIST_DCN2_1(__SHIFT)
 };
 
 static const struct dccg_mask dccg_mask = {
-	DCCG_MASK_SH_LIST_DCN2_1(_MASK)
+		DCCG_MASK_SH_LIST_DCN2_1(_MASK)
 };
 
 #define opp_regs(id)\
-	[id] = {\
-	        OPP_REG_LIST_DCN20(id),\
-	       }
+[id] = {\
+	OPP_REG_LIST_DCN20(id),\
+}
 
 static const struct dcn20_opp_registers opp_regs[] = {
 	opp_regs(0),
@@ -248,15 +248,15 @@ static const struct dcn20_opp_registers opp_regs[] = {
 };
 
 static const struct dcn20_opp_shift opp_shift = {
-	OPP_MASK_SH_LIST_DCN20(__SHIFT)
+		OPP_MASK_SH_LIST_DCN20(__SHIFT)
 };
 
 static const struct dcn20_opp_mask opp_mask = {
-	OPP_MASK_SH_LIST_DCN20(_MASK)
+		OPP_MASK_SH_LIST_DCN20(_MASK)
 };
 
 #define tg_regs(id)\
-	[id] = {TG_COMMON_REG_LIST_DCN2_0(id)}
+[id] = {TG_COMMON_REG_LIST_DCN2_0(id)}
 
 static const struct dcn_optc_registers tg_regs[] = {
 	tg_regs(0),
@@ -274,17 +274,17 @@ static const struct dcn_optc_mask tg_mask = {
 };
 
 static const struct dcn20_mpc_registers mpc_regs = {
-	MPC_REG_LIST_DCN2_0(0),
-	MPC_REG_LIST_DCN2_0(1),
-	MPC_REG_LIST_DCN2_0(2),
-	MPC_REG_LIST_DCN2_0(3),
-	MPC_REG_LIST_DCN2_0(4),
-	MPC_REG_LIST_DCN2_0(5),
-	MPC_OUT_MUX_REG_LIST_DCN2_0(0),
-	MPC_OUT_MUX_REG_LIST_DCN2_0(1),
-	MPC_OUT_MUX_REG_LIST_DCN2_0(2),
-	MPC_OUT_MUX_REG_LIST_DCN2_0(3),
-	MPC_DBG_REG_LIST_DCN2_0()
+		MPC_REG_LIST_DCN2_0(0),
+		MPC_REG_LIST_DCN2_0(1),
+		MPC_REG_LIST_DCN2_0(2),
+		MPC_REG_LIST_DCN2_0(3),
+		MPC_REG_LIST_DCN2_0(4),
+		MPC_REG_LIST_DCN2_0(5),
+		MPC_OUT_MUX_REG_LIST_DCN2_0(0),
+		MPC_OUT_MUX_REG_LIST_DCN2_0(1),
+		MPC_OUT_MUX_REG_LIST_DCN2_0(2),
+		MPC_OUT_MUX_REG_LIST_DCN2_0(3),
+		MPC_DBG_REG_LIST_DCN2_0()
 };
 
 static const struct dcn20_mpc_shift mpc_shift = {
@@ -298,42 +298,42 @@ static const struct dcn20_mpc_mask mpc_mask = {
 };
 
 #define hubp_regs(id)\
-	[id] = {\
-	        HUBP_REG_LIST_DCN21(id)\
-	       }
+[id] = {\
+	HUBP_REG_LIST_DCN21(id)\
+}
 
 static const struct dcn_hubp2_registers hubp_regs[] = {
-	hubp_regs(0),
-	hubp_regs(1),
-	hubp_regs(2),
-	hubp_regs(3)
+		hubp_regs(0),
+		hubp_regs(1),
+		hubp_regs(2),
+		hubp_regs(3)
 };
 
 static const struct dcn_hubp2_shift hubp_shift = {
-	HUBP_MASK_SH_LIST_DCN21(__SHIFT)
+		HUBP_MASK_SH_LIST_DCN21(__SHIFT)
 };
 
 static const struct dcn_hubp2_mask hubp_mask = {
-	HUBP_MASK_SH_LIST_DCN21(_MASK)
+		HUBP_MASK_SH_LIST_DCN21(_MASK)
 };
 
 static const struct dcn_hubbub_registers hubbub_reg = {
-	HUBBUB_REG_LIST_DCN21()
+		HUBBUB_REG_LIST_DCN21()
 };
 
 static const struct dcn_hubbub_shift hubbub_shift = {
-	HUBBUB_MASK_SH_LIST_DCN21(__SHIFT)
+		HUBBUB_MASK_SH_LIST_DCN21(__SHIFT)
 };
 
 static const struct dcn_hubbub_mask hubbub_mask = {
-	HUBBUB_MASK_SH_LIST_DCN21(_MASK)
+		HUBBUB_MASK_SH_LIST_DCN21(_MASK)
 };
 
 
 #define vmid_regs(id)\
-	[id] = {\
-	        DCN20_VMID_REG_LIST(id)\
-	       }
+[id] = {\
+		DCN20_VMID_REG_LIST(id)\
+}
 
 static const struct dcn_vmid_registers vmid_regs[] = {
 	vmid_regs(0),
@@ -355,17 +355,17 @@ static const struct dcn_vmid_registers vmid_regs[] = {
 };
 
 static const struct dcn20_vmid_shift vmid_shifts = {
-	DCN20_VMID_MASK_SH_LIST(__SHIFT)
+		DCN20_VMID_MASK_SH_LIST(__SHIFT)
 };
 
 static const struct dcn20_vmid_mask vmid_masks = {
-	DCN20_VMID_MASK_SH_LIST(_MASK)
+		DCN20_VMID_MASK_SH_LIST(_MASK)
 };
 
 #define dsc_regsDCN20(id)\
-	[id] = {\
-	        DSC_REG_LIST_DCN20(id)\
-	       }
+[id] = {\
+	DSC_REG_LIST_DCN20(id)\
+}
 
 static const struct dcn20_dsc_registers dsc_regs[] = {
 	dsc_regsDCN20(0),
@@ -385,9 +385,9 @@ static const struct dcn20_dsc_mask dsc_mask = {
 };
 
 #define ipp_regs(id)\
-	[id] = {\
-	        IPP_REG_LIST_DCN20(id),\
-	       }
+[id] = {\
+	IPP_REG_LIST_DCN20(id),\
+}
 
 static const struct dcn10_ipp_registers ipp_regs[] = {
 	ipp_regs(0),
@@ -397,40 +397,40 @@ static const struct dcn10_ipp_registers ipp_regs[] = {
 };
 
 static const struct dcn10_ipp_shift ipp_shift = {
-	IPP_MASK_SH_LIST_DCN20(__SHIFT)
+		IPP_MASK_SH_LIST_DCN20(__SHIFT)
 };
 
 static const struct dcn10_ipp_mask ipp_mask = {
-	IPP_MASK_SH_LIST_DCN20(_MASK),
+		IPP_MASK_SH_LIST_DCN20(_MASK),
 };
 
 #define opp_regs(id)\
-	[id] = {\
-	        OPP_REG_LIST_DCN20(id),\
-	       }
+[id] = {\
+	OPP_REG_LIST_DCN20(id),\
+}
 
 
 #define aux_engine_regs(id)\
-	[id] = {\
-	        AUX_COMMON_REG_LIST0(id), \
-	        .AUXN_IMPCAL = 0, \
-	        .AUXP_IMPCAL = 0, \
-	        .AUX_RESET_MASK = DP_AUX0_AUX_CONTROL__AUX_RESET_MASK, \
-	       }
+[id] = {\
+	AUX_COMMON_REG_LIST0(id), \
+	.AUXN_IMPCAL = 0, \
+	.AUXP_IMPCAL = 0, \
+	.AUX_RESET_MASK = DP_AUX0_AUX_CONTROL__AUX_RESET_MASK, \
+}
 
 static const struct dce110_aux_registers aux_engine_regs[] = {
-	aux_engine_regs(0),
-	aux_engine_regs(1),
-	aux_engine_regs(2),
-	aux_engine_regs(3),
-	aux_engine_regs(4),
+		aux_engine_regs(0),
+		aux_engine_regs(1),
+		aux_engine_regs(2),
+		aux_engine_regs(3),
+		aux_engine_regs(4),
 };
 
 #define tf_regs(id)\
-	[id] = {\
-	        TF_REG_LIST_DCN20(id),\
-	        TF_REG_LIST_DCN20_COMMON_APPEND(id),\
-	       }
+[id] = {\
+	TF_REG_LIST_DCN20(id),\
+	TF_REG_LIST_DCN20_COMMON_APPEND(id),\
+}
 
 static const struct dcn2_dpp_registers tf_regs[] = {
 	tf_regs(0),
@@ -440,19 +440,19 @@ static const struct dcn2_dpp_registers tf_regs[] = {
 };
 
 static const struct dcn2_dpp_shift tf_shift = {
-	TF_REG_LIST_SH_MASK_DCN20(__SHIFT),
-	TF_DEBUG_REG_LIST_SH_DCN20
+		TF_REG_LIST_SH_MASK_DCN20(__SHIFT),
+		TF_DEBUG_REG_LIST_SH_DCN20
 };
 
 static const struct dcn2_dpp_mask tf_mask = {
-	TF_REG_LIST_SH_MASK_DCN20(_MASK),
-	TF_DEBUG_REG_LIST_MASK_DCN20
+		TF_REG_LIST_SH_MASK_DCN20(_MASK),
+		TF_DEBUG_REG_LIST_MASK_DCN20
 };
 
 #define stream_enc_regs(id)\
-	[id] = {\
-	        SE_DCN2_REG_LIST(id)\
-	       }
+[id] = {\
+	SE_DCN2_REG_LIST(id)\
+}
 
 static const struct dcn10_stream_enc_registers stream_enc_regs[] = {
 	stream_enc_regs(0),
@@ -471,20 +471,20 @@ static const struct dce110_aux_registers_mask aux_mask = {
 };
 
 static const struct dcn10_stream_encoder_shift se_shift = {
-	SE_COMMON_MASK_SH_LIST_DCN20(__SHIFT)
+		SE_COMMON_MASK_SH_LIST_DCN20(__SHIFT)
 };
 
 static const struct dcn10_stream_encoder_mask se_mask = {
-	SE_COMMON_MASK_SH_LIST_DCN20(_MASK)
+		SE_COMMON_MASK_SH_LIST_DCN20(_MASK)
 };
 
 static void dcn21_pp_smu_destroy(struct pp_smu_funcs **pp_smu);
 
 static struct input_pixel_processor *dcn21_ipp_create(
-    struct dc_context *ctx, uint32_t inst)
+	struct dc_context *ctx, uint32_t inst)
 {
 	struct dcn10_ipp *ipp =
-	    kzalloc(sizeof(struct dcn10_ipp), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn10_ipp), GFP_KERNEL);
 
 	if (!ipp) {
 		BREAK_TO_DEBUGGER();
@@ -492,25 +492,23 @@ static struct input_pixel_processor *dcn21_ipp_create(
 	}
 
 	dcn20_ipp_construct(ipp, ctx, inst,
-	                    &ipp_regs[inst], &ipp_shift, &ipp_mask);
+			&ipp_regs[inst], &ipp_shift, &ipp_mask);
 	return &ipp->base;
 }
 
 static struct dpp *dcn21_dpp_create(
-    struct dc_context *ctx,
-    uint32_t inst)
+	struct dc_context *ctx,
+	uint32_t inst)
 {
 	struct dcn20_dpp *dpp =
-	    kzalloc(sizeof(struct dcn20_dpp), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn20_dpp), GFP_KERNEL);
 
-	if (!dpp) {
+	if (!dpp)
 		return NULL;
-	}
 
 	if (dpp2_construct(dpp, ctx, inst,
-	                   &tf_regs[inst], &tf_shift, &tf_mask)) {
+			&tf_regs[inst], &tf_shift, &tf_mask))
 		return &dpp->base;
-	}
 
 	BREAK_TO_DEBUGGER();
 	kfree(dpp);
@@ -518,22 +516,21 @@ static struct dpp *dcn21_dpp_create(
 }
 
 static struct dce_aux *dcn21_aux_engine_create(
-    struct dc_context *ctx,
-    uint32_t inst)
+	struct dc_context *ctx,
+	uint32_t inst)
 {
 	struct aux_engine_dce110 *aux_engine =
-	    kzalloc(sizeof(struct aux_engine_dce110), GFP_KERNEL);
+		kzalloc(sizeof(struct aux_engine_dce110), GFP_KERNEL);
 
-	if (!aux_engine) {
+	if (!aux_engine)
 		return NULL;
-	}
 
 	dce110_aux_engine_construct(aux_engine, ctx, inst,
-	                            SW_AUX_TIMEOUT_PERIOD_MULTIPLIER * AUX_TIMEOUT_PERIOD,
-	                            &aux_engine_regs[inst],
-	                            &aux_mask,
-	                            &aux_shift,
-	                            ctx->dc->caps.extended_aux_timeout_support);
+				    SW_AUX_TIMEOUT_PERIOD_MULTIPLIER * AUX_TIMEOUT_PERIOD,
+				    &aux_engine_regs[inst],
+					&aux_mask,
+					&aux_shift,
+					ctx->dc->caps.extended_aux_timeout_support);
 
 	return &aux_engine->base;
 }
@@ -541,73 +538,72 @@ static struct dce_aux *dcn21_aux_engine_create(
 #define i2c_inst_regs(id) { I2C_HW_ENGINE_COMMON_REG_LIST(id) }
 
 static const struct dce_i2c_registers i2c_hw_regs[] = {
-	i2c_inst_regs(1),
-	i2c_inst_regs(2),
-	i2c_inst_regs(3),
-	i2c_inst_regs(4),
-	i2c_inst_regs(5),
+		i2c_inst_regs(1),
+		i2c_inst_regs(2),
+		i2c_inst_regs(3),
+		i2c_inst_regs(4),
+		i2c_inst_regs(5),
 };
 
 static const struct dce_i2c_shift i2c_shifts = {
-	I2C_COMMON_MASK_SH_LIST_DCN2(__SHIFT)
+		I2C_COMMON_MASK_SH_LIST_DCN2(__SHIFT)
 };
 
 static const struct dce_i2c_mask i2c_masks = {
-	I2C_COMMON_MASK_SH_LIST_DCN2(_MASK)
+		I2C_COMMON_MASK_SH_LIST_DCN2(_MASK)
 };
 
 static struct dce_i2c_hw *dcn21_i2c_hw_create(struct dc_context *ctx,
-        uint32_t inst)
+					      uint32_t inst)
 {
 	struct dce_i2c_hw *dce_i2c_hw =
-	    kzalloc(sizeof(struct dce_i2c_hw), GFP_KERNEL);
+		kzalloc(sizeof(struct dce_i2c_hw), GFP_KERNEL);
 
-	if (!dce_i2c_hw) {
+	if (!dce_i2c_hw)
 		return NULL;
-	}
 
 	dcn2_i2c_hw_construct(dce_i2c_hw, ctx, inst,
-	                      &i2c_hw_regs[inst], &i2c_shifts, &i2c_masks);
+				    &i2c_hw_regs[inst], &i2c_shifts, &i2c_masks);
 
 	return dce_i2c_hw;
 }
 
 static const struct resource_caps res_cap_rn = {
-	.num_timing_generator = 4,
-	.num_opp = 4,
-	.num_video_plane = 4,
-	.num_audio = 4, // 4 audio endpoints.  4 audio streams
-	.num_stream_encoder = 5,
-	.num_pll = 5,  // maybe 3 because the last two used for USB-c
-	.num_dwb = 1,
-	.num_ddc = 5,
-	.num_vmid = 16,
-	.num_dsc = 3,
+		.num_timing_generator = 4,
+		.num_opp = 4,
+		.num_video_plane = 4,
+		.num_audio = 4, // 4 audio endpoints.  4 audio streams
+		.num_stream_encoder = 5,
+		.num_pll = 5,  // maybe 3 because the last two used for USB-c
+		.num_dwb = 1,
+		.num_ddc = 5,
+		.num_vmid = 16,
+		.num_dsc = 3,
 };
 
 #ifdef DIAGS_BUILD
 static const struct resource_caps res_cap_rn_FPGA_4pipe = {
-	.num_timing_generator = 4,
-	.num_opp = 4,
-	.num_video_plane = 4,
-	.num_audio = 7,
-	.num_stream_encoder = 4,
-	.num_pll = 4,
-	.num_dwb = 1,
-	.num_ddc = 4,
-	.num_dsc = 0,
+		.num_timing_generator = 4,
+		.num_opp = 4,
+		.num_video_plane = 4,
+		.num_audio = 7,
+		.num_stream_encoder = 4,
+		.num_pll = 4,
+		.num_dwb = 1,
+		.num_ddc = 4,
+		.num_dsc = 0,
 };
 
 static const struct resource_caps res_cap_rn_FPGA_2pipe_dsc = {
-	.num_timing_generator = 2,
-	.num_opp = 2,
-	.num_video_plane = 2,
-	.num_audio = 7,
-	.num_stream_encoder = 2,
-	.num_pll = 4,
-	.num_dwb = 1,
-	.num_ddc = 4,
-	.num_dsc = 2,
+		.num_timing_generator = 2,
+		.num_opp = 2,
+		.num_video_plane = 2,
+		.num_audio = 7,
+		.num_stream_encoder = 2,
+		.num_pll = 4,
+		.num_dwb = 1,
+		.num_ddc = 4,
+		.num_dsc = 2,
 };
 #endif
 
@@ -616,59 +612,59 @@ static const struct dc_plane_cap plane_cap = {
 	.per_pixel_alpha = true,
 
 	.pixel_format_support = {
-		.argb8888 = true,
-		.nv12 = true,
-		.fp16 = true,
-		.p010 = true
+			.argb8888 = true,
+			.nv12 = true,
+			.fp16 = true,
+			.p010 = true
 	},
 
 	.max_upscale_factor = {
-		.argb8888 = 16000,
-		.nv12 = 16000,
-		.fp16 = 16000
+			.argb8888 = 16000,
+			.nv12 = 16000,
+			.fp16 = 16000
 	},
 
 	.max_downscale_factor = {
-		.argb8888 = 250,
-		.nv12 = 250,
-		.fp16 = 250
+			.argb8888 = 250,
+			.nv12 = 250,
+			.fp16 = 250
 	},
 	64,
 	64
 };
 
 static const struct dc_debug_options debug_defaults_drv = {
-	.disable_dmcu = false,
-	.force_abm_enable = false,
-	.timing_trace = false,
-	.clock_trace = true,
-	.disable_pplib_clock_request = true,
-	.min_disp_clk_khz = 100000,
-	.pipe_split_policy = MPC_SPLIT_DYNAMIC,
-	.force_single_disp_pipe_split = false,
-	.disable_dcc = DCC_ENABLE,
-	.vsr_support = true,
-	.performance_trace = false,
-	.max_downscale_src_width = 4096,
-	.disable_pplib_wm_range = false,
-	.scl_reset_length10 = true,
-	.sanity_checks = true,
-	.disable_48mhz_pwrdwn = false,
-	.usbc_combo_phy_reset_wa = true,
-	.dmub_command_table = true,
-	.use_max_lb = true,
-	.enable_legacy_fast_update = true,
+		.disable_dmcu = false,
+		.force_abm_enable = false,
+		.timing_trace = false,
+		.clock_trace = true,
+		.disable_pplib_clock_request = true,
+		.min_disp_clk_khz = 100000,
+		.pipe_split_policy = MPC_SPLIT_DYNAMIC,
+		.force_single_disp_pipe_split = false,
+		.disable_dcc = DCC_ENABLE,
+		.vsr_support = true,
+		.performance_trace = false,
+		.max_downscale_src_width = 4096,
+		.disable_pplib_wm_range = false,
+		.scl_reset_length10 = true,
+		.sanity_checks = true,
+		.disable_48mhz_pwrdwn = false,
+		.usbc_combo_phy_reset_wa = true,
+		.dmub_command_table = true,
+		.use_max_lb = true,
+		.enable_legacy_fast_update = true,
 };
 
 static const struct dc_panel_config panel_config_defaults = {
-	.psr = {
-		.disable_psr = false,
-		.disallow_psrsu = false,
-		.disallow_replay = false,
-	},
-	.ilr = {
-		.optimize_edp_link_rate = true,
-	},
+		.psr = {
+			.disable_psr = false,
+			.disallow_psrsu = false,
+			.disallow_replay = false,
+		},
+		.ilr = {
+			.optimize_edp_link_rate = true,
+		},
 };
 
 enum dcn20_clk_src_array_id {
@@ -692,9 +688,8 @@ static void dcn21_resource_destruct(struct dcn21_resource_pool *pool)
 	}
 
 	for (i = 0; i < pool->base.res_cap->num_dsc; i++) {
-		if (pool->base.dscs[i] != NULL) {
+		if (pool->base.dscs[i] != NULL)
 			dcn20_dsc_destroy(&pool->base.dscs[i]);
-		}
 	}
 
 	if (pool->base.mpc != NULL) {
@@ -706,13 +701,11 @@ static void dcn21_resource_destruct(struct dcn21_resource_pool *pool)
 		pool->base.hubbub = NULL;
 	}
 	for (i = 0; i < pool->base.pipe_count; i++) {
-		if (pool->base.dpps[i] != NULL) {
+		if (pool->base.dpps[i] != NULL)
 			dcn20_dpp_destroy(&pool->base.dpps[i]);
-		}
 
-		if (pool->base.ipps[i] != NULL) {
+		if (pool->base.ipps[i] != NULL)
 			pool->base.ipps[i]->funcs->ipp_destroy(&pool->base.ipps[i]);
-		}
 
 		if (pool->base.hubps[i] != NULL) {
 			kfree(TO_DCN20_HUBP(pool->base.hubps[i]));
@@ -725,9 +718,8 @@ static void dcn21_resource_destruct(struct dcn21_resource_pool *pool)
 	}
 
 	for (i = 0; i < pool->base.res_cap->num_ddc; i++) {
-		if (pool->base.engines[i] != NULL) {
+		if (pool->base.engines[i] != NULL)
 			dce110_engine_destroy(&pool->base.engines[i]);
-		}
 		if (pool->base.hw_i2cs[i] != NULL) {
 			kfree(pool->base.hw_i2cs[i]);
 			pool->base.hw_i2cs[i] = NULL;
@@ -739,13 +731,12 @@ static void dcn21_resource_destruct(struct dcn21_resource_pool *pool)
 	}
 
 	for (i = 0; i < pool->base.res_cap->num_opp; i++) {
-		if (pool->base.opps[i] != NULL) {
+		if (pool->base.opps[i] != NULL)
 			pool->base.opps[i]->funcs->opp_destroy(&pool->base.opps[i]);
-		}
 	}
 
 	for (i = 0; i < pool->base.res_cap->num_timing_generator; i++) {
-		if (pool->base.timing_generators[i] != NULL)    {
+		if (pool->base.timing_generators[i] != NULL)	{
 			kfree(DCN10TG_FROM_TG(pool->base.timing_generators[i]));
 			pool->base.timing_generators[i] = NULL;
 		}
@@ -763,9 +754,8 @@ static void dcn21_resource_destruct(struct dcn21_resource_pool *pool)
 	}
 
 	for (i = 0; i < pool->base.audio_count; i++) {
-		if (pool->base.audios[i]) {
+		if (pool->base.audios[i])
 			dce_aud_destroy(&pool->base.audios[i]);
-		}
 	}
 
 	for (i = 0; i < pool->base.clk_src_count; i++) {
@@ -781,46 +771,41 @@ static void dcn21_resource_destruct(struct dcn21_resource_pool *pool)
 	}
 
 	if (pool->base.abm != NULL) {
-		if (pool->base.abm->ctx->dc->config.disable_dmcu) {
+		if (pool->base.abm->ctx->dc->config.disable_dmcu)
 			dmub_abm_destroy(&pool->base.abm);
-		} else {
+		else
 			dce_abm_destroy(&pool->base.abm);
-		}
 	}
 
-	if (pool->base.dmcu != NULL) {
+	if (pool->base.dmcu != NULL)
 		dce_dmcu_destroy(&pool->base.dmcu);
-	}
 
-	if (pool->base.psr != NULL) {
+	if (pool->base.psr != NULL)
 		dmub_psr_destroy(&pool->base.psr);
-	}
 
-	if (pool->base.dccg != NULL) {
+	if (pool->base.dccg != NULL)
 		dcn_dccg_destroy(&pool->base.dccg);
-	}
 
-	if (pool->base.pp_smu != NULL) {
+	if (pool->base.pp_smu != NULL)
 		dcn21_pp_smu_destroy(&pool->base.pp_smu);
-	}
 }
 
 bool dcn21_fast_validate_bw(struct dc *dc,
-                            struct dc_state *context,
-                            display_e2e_pipe_params_st *pipes,
-                            int *pipe_cnt_out,
-                            int *pipe_split_from,
-                            int *vlevel_out,
-                            bool fast_validate)
+			    struct dc_state *context,
+			    display_e2e_pipe_params_st *pipes,
+			    int *pipe_cnt_out,
+			    int *pipe_split_from,
+			    int *vlevel_out,
+			    bool fast_validate)
 {
 	bool out = false;
 	int split[MAX_PIPES] = { 0 };
+	bool merge[MAX_PIPES] = { false };
 	int pipe_cnt, i, pipe_idx, vlevel;
 
 	ASSERT(pipes);
-	if (!pipes) {
+	if (!pipes)
 		return false;
-	}
 
 	dcn20_merge_pipes_for_validate(dc, context);
 
@@ -840,7 +825,7 @@ bool dcn21_fast_validate_bw(struct dc *dc,
 	 * prefetch mode > 0 so try capping the prefetch mode to start.
 	 */
 	context->bw_ctx.dml.soc.allow_dram_self_refresh_or_dram_clock_change_in_vblank =
-	    dm_allow_self_refresh_and_mclk_switch;
+				dm_allow_self_refresh_and_mclk_switch;
 	vlevel = dml_get_voltage_level(&context->bw_ctx.dml, pipes, pipe_cnt);
 
 	if (vlevel > context->bw_ctx.dml.soc.num_states) {
@@ -852,30 +837,28 @@ bool dcn21_fast_validate_bw(struct dc *dc,
 		 * at least support prefetch mode 1.
 		 */
 		context->bw_ctx.dml.soc.allow_dram_self_refresh_or_dram_clock_change_in_vblank =
-		    dm_allow_self_refresh;
+					dm_allow_self_refresh;
 		vlevel = dml_get_voltage_level(&context->bw_ctx.dml, pipes, pipe_cnt);
-		if (vlevel > context->bw_ctx.dml.soc.num_states) {
+		if (vlevel > context->bw_ctx.dml.soc.num_states)
 			goto validate_fail;
-		}
 	}
 
-	vlevel = dcn20_validate_apply_pipe_split_flags(dc, context, vlevel, split, NULL);
+	vlevel = dcn20_validate_apply_pipe_split_flags(dc, context, vlevel, split, merge);
 
 	for (i = 0, pipe_idx = 0; i < dc->res_pool->pipe_count; i++) {
 		struct pipe_ctx *pipe = &context->res_ctx.pipe_ctx[i];
 		struct pipe_ctx *mpo_pipe = pipe->bottom_pipe;
 		struct vba_vars_st *vba = &context->bw_ctx.dml.vba;
 
-		if (!pipe->stream) {
+		if (!pipe->stream)
 			continue;
-		}
 
 		/* We only support full screen mpo with ODM */
 		if (vba->ODMCombineEnabled[vba->pipe_plane[pipe_idx]] != dm_odm_combine_mode_disabled
-		    && pipe->plane_state && mpo_pipe
-		    && memcmp(&mpo_pipe->plane_state->clip_rect,
-		              &pipe->stream->src,
-		              sizeof(struct rect)) != 0) {
+				&& pipe->plane_state && mpo_pipe
+				&& memcmp(&mpo_pipe->plane_state->clip_rect,
+						&pipe->stream->src,
+						sizeof(struct rect)) != 0) {
 			ASSERT(mpo_pipe->plane_state != pipe->plane_state);
 			goto validate_fail;
 		}
@@ -883,17 +866,15 @@ bool dcn21_fast_validate_bw(struct dc *dc,
 	}
 
 	/*initialize pipe_just_split_from to invalid idx*/
-	for (i = 0; i < MAX_PIPES; i++) {
+	for (i = 0; i < MAX_PIPES; i++)
 		pipe_split_from[i] = -1;
-	}
 
 	for (i = 0, pipe_idx = -1; i < dc->res_pool->pipe_count; i++) {
 		struct pipe_ctx *pipe = &context->res_ctx.pipe_ctx[i];
 		struct pipe_ctx *hsplit_pipe = pipe->bottom_pipe;
 
-		if (!pipe->stream || pipe_split_from[i] >= 0) {
+		if (!pipe->stream || pipe_split_from[i] >= 0)
 			continue;
-		}
 
 		pipe_idx++;
 
@@ -901,21 +882,18 @@ bool dcn21_fast_validate_bw(struct dc *dc,
 			hsplit_pipe = dcn20_find_secondary_pipe(dc, &context->res_ctx, dc->res_pool, pipe);
 			ASSERT(hsplit_pipe);
 			if (!dcn20_split_stream_for_odm(
-			        dc, &context->res_ctx,
-			        pipe, hsplit_pipe)) {
+					dc, &context->res_ctx,
+					pipe, hsplit_pipe))
 				goto validate_fail;
-			}
 			pipe_split_from[hsplit_pipe->pipe_idx] = pipe_idx;
 			dcn20_build_mapped_resource(dc, context, pipe->stream);
 		}
 
-		if (!pipe->plane_state) {
+		if (!pipe->plane_state)
 			continue;
-		}
 		/* Skip 2nd half of already split pipe */
-		if (pipe->top_pipe && pipe->plane_state == pipe->top_pipe->plane_state) {
+		if (pipe->top_pipe && pipe->plane_state == pipe->top_pipe->plane_state)
 			continue;
-		}
 
 		if (split[i] == 2) {
 			if (!hsplit_pipe || hsplit_pipe->plane_state != pipe->plane_state) {
@@ -930,15 +908,14 @@ bool dcn21_fast_validate_bw(struct dc *dc,
 				}
 				if (context->bw_ctx.dml.vba.ODMCombineEnabled[pipe_idx]) {
 					if (!dcn20_split_stream_for_odm(
-					        dc, &context->res_ctx,
-					        pipe, hsplit_pipe)) {
+							dc, &context->res_ctx,
+							pipe, hsplit_pipe))
 						goto validate_fail;
-					}
 					dcn20_build_mapped_resource(dc, context, pipe->stream);
 				} else {
 					dcn20_split_stream_for_mpc(
-					    &context->res_ctx, dc->res_pool,
-					    pipe, hsplit_pipe);
+							&context->res_ctx, dc->res_pool,
+							pipe, hsplit_pipe);
 					resource_build_scaling_params(pipe);
 					resource_build_scaling_params(hsplit_pipe);
 				}
@@ -952,7 +929,7 @@ bool dcn21_fast_validate_bw(struct dc *dc,
 	/* Actual dsc count per stream dsc validation*/
 	if (!dcn20_validate_dsc(dc, context)) {
 		context->bw_ctx.dml.vba.ValidationStatus[context->bw_ctx.dml.vba.soc.num_states] =
-		    DML_FAIL_DSC_VALIDATION_FAILURE;
+				DML_FAIL_DSC_VALIDATION_FAILURE;
 		goto validate_fail;
 	}
 
@@ -974,15 +951,14 @@ validate_out:
  * dcn20_validate_bandwidth in dcn20_resource.c.
  */
 static bool dcn21_validate_bandwidth(struct dc *dc, struct dc_state *context,
-                                     bool fast_validate)
+		bool fast_validate)
 {
 	bool voltage_supported;
 	display_e2e_pipe_params_st *pipes;
 
 	pipes = kcalloc(dc->res_pool->pipe_count, sizeof(display_e2e_pipe_params_st), GFP_KERNEL);
-	if (!pipes) {
+	if (!pipes)
 		return false;
-	}
 
 	DC_FP_START();
 	voltage_supported = dcn21_validate_bandwidth_fp(dc, context, fast_validate, pipes);
@@ -1002,21 +978,20 @@ static void dcn21_destroy_resource_pool(struct resource_pool **pool)
 }
 
 static struct clock_source *dcn21_clock_source_create(
-    struct dc_context *ctx,
-    struct dc_bios *bios,
-    enum clock_source_id id,
-    const struct dce110_clk_src_regs *regs,
-    bool dp_clk_src)
+		struct dc_context *ctx,
+		struct dc_bios *bios,
+		enum clock_source_id id,
+		const struct dce110_clk_src_regs *regs,
+		bool dp_clk_src)
 {
 	struct dce110_clk_src *clk_src =
-	    kzalloc(sizeof(struct dce110_clk_src), GFP_KERNEL);
+		kzalloc(sizeof(struct dce110_clk_src), GFP_KERNEL);
 
-	if (!clk_src) {
+	if (!clk_src)
 		return NULL;
-	}
 
 	if (dcn20_clk_src_construct(clk_src, ctx, bios, id,
-	                            regs, &cs_shift, &cs_mask)) {
+			regs, &cs_shift, &cs_mask)) {
 		clk_src->base.dp_clk_src = dp_clk_src;
 		return &clk_src->base;
 	}
@@ -1027,20 +1002,18 @@ static struct clock_source *dcn21_clock_source_create(
 }
 
 static struct hubp *dcn21_hubp_create(
-    struct dc_context *ctx,
-    uint32_t inst)
+	struct dc_context *ctx,
+	uint32_t inst)
 {
 	struct dcn21_hubp *hubp21 =
-	    kzalloc(sizeof(struct dcn21_hubp), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn21_hubp), GFP_KERNEL);
 
-	if (!hubp21) {
+	if (!hubp21)
 		return NULL;
-	}
 
 	if (hubp21_construct(hubp21, ctx, inst,
-	                     &hubp_regs[inst], &hubp_shift, &hubp_mask)) {
+			&hubp_regs[inst], &hubp_shift, &hubp_mask))
 		return &hubp21->base;
-	}
 
 	BREAK_TO_DEBUGGER();
 	kfree(hubp21);
@@ -1052,16 +1025,15 @@ static struct hubbub *dcn21_hubbub_create(struct dc_context *ctx)
 	int i;
 
 	struct dcn20_hubbub *hubbub = kzalloc(sizeof(struct dcn20_hubbub),
-	                                      GFP_KERNEL);
+					  GFP_KERNEL);
 
-	if (!hubbub) {
+	if (!hubbub)
 		return NULL;
-	}
 
 	hubbub21_construct(hubbub, ctx,
-	                   &hubbub_reg,
-	                   &hubbub_shift,
-	                   &hubbub_mask);
+			&hubbub_reg,
+			&hubbub_shift,
+			&hubbub_mask);
 
 	for (i = 0; i < res_cap_rn.num_vmid; i++) {
 		struct dcn20_vmid *vmid = &hubbub->vmid[i];
@@ -1078,10 +1050,10 @@ static struct hubbub *dcn21_hubbub_create(struct dc_context *ctx)
 }
 
 static struct output_pixel_processor *dcn21_opp_create(struct dc_context *ctx,
-        uint32_t inst)
+						       uint32_t inst)
 {
 	struct dcn20_opp *opp =
-	    kzalloc(sizeof(struct dcn20_opp), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn20_opp), GFP_KERNEL);
 
 	if (!opp) {
 		BREAK_TO_DEBUGGER();
@@ -1089,19 +1061,18 @@ static struct output_pixel_processor *dcn21_opp_create(struct dc_context *ctx,
 	}
 
 	dcn20_opp_construct(opp, ctx, inst,
-	                    &opp_regs[inst], &opp_shift, &opp_mask);
+			&opp_regs[inst], &opp_shift, &opp_mask);
 	return &opp->base;
 }
 
 static struct timing_generator *dcn21_timing_generator_create(struct dc_context *ctx,
-        uint32_t instance)
+							      uint32_t instance)
 {
 	struct optc *tgn10 =
-	    kzalloc(sizeof(struct optc), GFP_KERNEL);
+		kzalloc(sizeof(struct optc), GFP_KERNEL);
 
-	if (!tgn10) {
+	if (!tgn10)
 		return NULL;
-	}
 
 	tgn10->base.inst = instance;
 	tgn10->base.ctx = ctx;
@@ -1118,36 +1089,35 @@ static struct timing_generator *dcn21_timing_generator_create(struct dc_context 
 static struct mpc *dcn21_mpc_create(struct dc_context *ctx)
 {
 	struct dcn20_mpc *mpc20 = kzalloc(sizeof(struct dcn20_mpc),
-	                                  GFP_KERNEL);
+					  GFP_KERNEL);
 
-	if (!mpc20) {
+	if (!mpc20)
 		return NULL;
-	}
 
 	dcn20_mpc_construct(mpc20, ctx,
-	                    &mpc_regs,
-	                    &mpc_shift,
-	                    &mpc_mask,
-	                    6);
+			&mpc_regs,
+			&mpc_shift,
+			&mpc_mask,
+			6);
 
 	return &mpc20->base;
 }
 
 static void read_dce_straps(
-    struct dc_context *ctx,
-    struct resource_straps *straps)
+	struct dc_context *ctx,
+	struct resource_straps *straps)
 {
 	generic_reg_get(ctx, mmDC_PINSTRAPS + BASE(mmDC_PINSTRAPS_BASE_IDX),
-	                FN(DC_PINSTRAPS, DC_PINSTRAPS_AUDIO), &straps->dc_pinstraps_audio);
+		FN(DC_PINSTRAPS, DC_PINSTRAPS_AUDIO), &straps->dc_pinstraps_audio);
 
 }
 
 
 static struct display_stream_compressor *dcn21_dsc_create(struct dc_context *ctx,
-        uint32_t inst)
+							  uint32_t inst)
 {
 	struct dcn20_dsc *dsc =
-	    kzalloc(sizeof(struct dcn20_dsc), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn20_dsc), GFP_KERNEL);
 
 	if (!dsc) {
 		BREAK_TO_DEBUGGER();
@@ -1162,15 +1132,13 @@ static struct pp_smu_funcs *dcn21_pp_smu_create(struct dc_context *ctx)
 {
 	struct pp_smu_funcs *pp_smu = kzalloc(sizeof(*pp_smu), GFP_KERNEL);
 
-	if (!pp_smu) {
+	if (!pp_smu)
 		return pp_smu;
-	}
 
 	dm_pp_get_funcs(ctx, pp_smu);
 
-	if (pp_smu->ctx.ver != PP_SMU_VER_RN) {
+	if (pp_smu->ctx.ver != PP_SMU_VER_RN)
 		pp_smu = memset(pp_smu, 0, sizeof(struct pp_smu_funcs));
-	}
 
 
 	return pp_smu;
@@ -1185,10 +1153,10 @@ static void dcn21_pp_smu_destroy(struct pp_smu_funcs **pp_smu)
 }
 
 static struct audio *dcn21_create_audio(
-    struct dc_context *ctx, unsigned int inst)
+		struct dc_context *ctx, unsigned int inst)
 {
 	return dce_audio_create(ctx, inst,
-	                        &audio_regs[inst], &audio_shift, &audio_mask);
+			&audio_regs[inst], &audio_shift, &audio_mask);
 }
 
 static struct dc_cap_funcs cap_funcs = {
@@ -1196,36 +1164,35 @@ static struct dc_cap_funcs cap_funcs = {
 };
 
 static struct stream_encoder *dcn21_stream_encoder_create(enum engine_id eng_id,
-        struct dc_context *ctx)
+							  struct dc_context *ctx)
 {
 	struct dcn10_stream_encoder *enc1 =
-	    kzalloc(sizeof(struct dcn10_stream_encoder), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn10_stream_encoder), GFP_KERNEL);
 
-	if (!enc1) {
+	if (!enc1)
 		return NULL;
-	}
 
 	dcn20_stream_encoder_construct(enc1, ctx, ctx->dc_bios, eng_id,
-	                               &stream_enc_regs[eng_id],
-	                               &se_shift, &se_mask);
+					&stream_enc_regs[eng_id],
+					&se_shift, &se_mask);
 
 	return &enc1->base;
 }
 
 static const struct dce_hwseq_registers hwseq_reg = {
-	HWSEQ_DCN21_REG_LIST()
+		HWSEQ_DCN21_REG_LIST()
 };
 
 static const struct dce_hwseq_shift hwseq_shift = {
-	HWSEQ_DCN21_MASK_SH_LIST(__SHIFT)
+		HWSEQ_DCN21_MASK_SH_LIST(__SHIFT)
 };
 
 static const struct dce_hwseq_mask hwseq_mask = {
-	HWSEQ_DCN21_MASK_SH_LIST(_MASK)
+		HWSEQ_DCN21_MASK_SH_LIST(_MASK)
 };
 
 static struct dce_hwseq *dcn21_hwseq_create(
-    struct dc_context *ctx)
+	struct dc_context *ctx)
 {
 	struct dce_hwseq *hws = kzalloc(sizeof(struct dce_hwseq), GFP_KERNEL);
 
@@ -1248,25 +1215,25 @@ static const struct resource_create_funcs res_create_funcs = {
 };
 
 static const struct encoder_feature_support link_enc_feature = {
-	.max_hdmi_deep_color = COLOR_DEPTH_121212,
-	.max_hdmi_pixel_clock = 600000,
-	.hdmi_ycbcr420_supported = true,
-	.dp_ycbcr420_supported = true,
-	.fec_supported = true,
-	.flags.bits.IS_HBR2_CAPABLE = true,
-	.flags.bits.IS_HBR3_CAPABLE = true,
-	.flags.bits.IS_TPS3_CAPABLE = true,
-	.flags.bits.IS_TPS4_CAPABLE = true
+		.max_hdmi_deep_color = COLOR_DEPTH_121212,
+		.max_hdmi_pixel_clock = 600000,
+		.hdmi_ycbcr420_supported = true,
+		.dp_ycbcr420_supported = true,
+		.fec_supported = true,
+		.flags.bits.IS_HBR2_CAPABLE = true,
+		.flags.bits.IS_HBR3_CAPABLE = true,
+		.flags.bits.IS_TPS3_CAPABLE = true,
+		.flags.bits.IS_TPS4_CAPABLE = true
 };
 
 
 #define link_regs(id, phyid)\
-	[id] = {\
-	        LE_DCN2_REG_LIST(id), \
-	        UNIPHY_DCN2_REG_LIST(phyid), \
-	        DPCS_DCN21_REG_LIST(id), \
-	        SRI(DP_DPHY_INTERNAL_CTRL, DP, id) \
-	       }
+[id] = {\
+	LE_DCN2_REG_LIST(id), \
+	UNIPHY_DCN2_REG_LIST(phyid), \
+	DPCS_DCN21_REG_LIST(id), \
+	SRI(DP_DPHY_INTERNAL_CTRL, DP, id) \
+}
 
 static const struct dcn10_link_enc_registers link_enc_regs[] = {
 	link_regs(0, A),
@@ -1289,89 +1256,88 @@ static const struct dce_panel_cntl_mask panel_cntl_mask = {
 };
 
 #define aux_regs(id)\
-	[id] = {\
-	        DCN2_AUX_REG_LIST(id)\
-	       }
+[id] = {\
+	DCN2_AUX_REG_LIST(id)\
+}
 
 static const struct dcn10_link_enc_aux_registers link_enc_aux_regs[] = {
-	aux_regs(0),
-	aux_regs(1),
-	aux_regs(2),
-	aux_regs(3),
-	aux_regs(4)
+		aux_regs(0),
+		aux_regs(1),
+		aux_regs(2),
+		aux_regs(3),
+		aux_regs(4)
 };
 
 #define hpd_regs(id)\
-	[id] = {\
-	        HPD_REG_LIST(id)\
-	       }
+[id] = {\
+	HPD_REG_LIST(id)\
+}
 
 static const struct dcn10_link_enc_hpd_registers link_enc_hpd_regs[] = {
-	hpd_regs(0),
-	hpd_regs(1),
-	hpd_regs(2),
-	hpd_regs(3),
-	hpd_regs(4)
+		hpd_regs(0),
+		hpd_regs(1),
+		hpd_regs(2),
+		hpd_regs(3),
+		hpd_regs(4)
 };
 
 static const struct dcn10_link_enc_shift le_shift = {
-	LINK_ENCODER_MASK_SH_LIST_DCN20(__SHIFT), \
+	LINK_ENCODER_MASK_SH_LIST_DCN20(__SHIFT),\
 	DPCS_DCN21_MASK_SH_LIST(__SHIFT)
 };
 
 static const struct dcn10_link_enc_mask le_mask = {
-	LINK_ENCODER_MASK_SH_LIST_DCN20(_MASK), \
+	LINK_ENCODER_MASK_SH_LIST_DCN20(_MASK),\
 	DPCS_DCN21_MASK_SH_LIST(_MASK)
 };
 
 static int map_transmitter_id_to_phy_instance(
-    enum transmitter transmitter)
+	enum transmitter transmitter)
 {
 	switch (transmitter) {
-		case TRANSMITTER_UNIPHY_A:
-			return 0;
-			break;
-		case TRANSMITTER_UNIPHY_B:
-			return 1;
-			break;
-		case TRANSMITTER_UNIPHY_C:
-			return 2;
-			break;
-		case TRANSMITTER_UNIPHY_D:
-			return 3;
-			break;
-		case TRANSMITTER_UNIPHY_E:
-			return 4;
-			break;
-		default:
-			ASSERT(0);
-			return 0;
+	case TRANSMITTER_UNIPHY_A:
+		return 0;
+	break;
+	case TRANSMITTER_UNIPHY_B:
+		return 1;
+	break;
+	case TRANSMITTER_UNIPHY_C:
+		return 2;
+	break;
+	case TRANSMITTER_UNIPHY_D:
+		return 3;
+	break;
+	case TRANSMITTER_UNIPHY_E:
+		return 4;
+	break;
+	default:
+		ASSERT(0);
+		return 0;
 	}
 }
 
 static struct link_encoder *dcn21_link_encoder_create(
-    struct dc_context *ctx,
-    const struct encoder_init_data *enc_init_data)
+	struct dc_context *ctx,
+	const struct encoder_init_data *enc_init_data)
 {
 	struct dcn21_link_encoder *enc21 =
-	    kzalloc(sizeof(struct dcn21_link_encoder), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn21_link_encoder), GFP_KERNEL);
 	int link_regs_id;
 
-	if (!enc21) {
+	if (!enc21 || enc_init_data->hpd_source >= ARRAY_SIZE(link_enc_hpd_regs))
 		return NULL;
-	}
 
 	link_regs_id =
-	    map_transmitter_id_to_phy_instance(enc_init_data->transmitter);
+		map_transmitter_id_to_phy_instance(enc_init_data->transmitter);
 
 	dcn21_link_encoder_construct(enc21,
-	                             enc_init_data,
-	                             &link_enc_feature,
-	                             &link_enc_regs[link_regs_id],
-	                             &link_enc_aux_regs[enc_init_data->channel - 1],
-	                             &link_enc_hpd_regs[enc_init_data->hpd_source],
-	                             &le_shift,
-	                             &le_mask);
+				      enc_init_data,
+				      &link_enc_feature,
+				      &link_enc_regs[link_regs_id],
+				      &link_enc_aux_regs[enc_init_data->channel - 1],
+				      &link_enc_hpd_regs[enc_init_data->hpd_source],
+				      &le_shift,
+				      &le_mask);
 
 	return &enc21->enc10.base;
 }
@@ -1379,17 +1345,16 @@ static struct link_encoder *dcn21_link_encoder_create(
 static struct panel_cntl *dcn21_panel_cntl_create(const struct panel_cntl_init_data *init_data)
 {
 	struct dce_panel_cntl *panel_cntl =
-	    kzalloc(sizeof(struct dce_panel_cntl), GFP_KERNEL);
+		kzalloc(sizeof(struct dce_panel_cntl), GFP_KERNEL);
 
-	if (!panel_cntl) {
+	if (!panel_cntl)
 		return NULL;
-	}
 
 	dce_panel_cntl_construct(panel_cntl,
-	                         init_data,
-	                         &panel_cntl_regs[init_data->inst],
-	                         &panel_cntl_shift,
-	                         &panel_cntl_mask);
+			init_data,
+			&panel_cntl_regs[init_data->inst],
+			&panel_cntl_shift,
+			&panel_cntl_mask);
 
 	return &panel_cntl->base;
 }
@@ -1442,9 +1407,9 @@ static const struct resource_funcs dcn21_res_pool_funcs = {
 };
 
 static bool dcn21_resource_construct(
-    uint8_t num_virtual_links,
-    struct dc *dc,
-    struct dcn21_resource_pool *pool)
+	uint8_t num_virtual_links,
+	struct dc *dc,
+	struct dcn21_resource_pool *pool)
 {
 	int i, j;
 	struct dc_context *ctx = dc->ctx;
@@ -1458,9 +1423,7 @@ static bool dcn21_resource_construct(
 #ifdef DIAGS_BUILD
 	if (IS_FPGA_MAXIMUS_DC(dc->ctx->dce_environment))
 		//pool->base.res_cap = &res_cap_nv10_FPGA_2pipe_dsc;
-	{
 		pool->base.res_cap = &res_cap_rn_FPGA_4pipe;
-	}
 #endif
 
 	pool->base.funcs = &dcn21_res_pool_funcs;
@@ -1526,47 +1489,45 @@ static bool dcn21_resource_construct(
 
 	dc->caps.dp_hdmi21_pcon_support = true;
 
-	if (dc->ctx->dce_environment == DCE_ENV_PRODUCTION_DRV) {
+	if (dc->ctx->dce_environment == DCE_ENV_PRODUCTION_DRV)
 		dc->debug = debug_defaults_drv;
-	}
 
 	// Init the vm_helper
-	if (dc->vm_helper) {
+	if (dc->vm_helper)
 		vm_helper_init(dc->vm_helper, 16);
-	}
 
 	/*************************************************
 	 *  Create resources                             *
 	 *************************************************/
 
 	pool->base.clock_sources[DCN20_CLK_SRC_PLL0] =
-	    dcn21_clock_source_create(ctx, ctx->dc_bios,
-	                              CLOCK_SOURCE_COMBO_PHY_PLL0,
-	                              &clk_src_regs[0], false);
+			dcn21_clock_source_create(ctx, ctx->dc_bios,
+				CLOCK_SOURCE_COMBO_PHY_PLL0,
+				&clk_src_regs[0], false);
 	pool->base.clock_sources[DCN20_CLK_SRC_PLL1] =
-	    dcn21_clock_source_create(ctx, ctx->dc_bios,
-	                              CLOCK_SOURCE_COMBO_PHY_PLL1,
-	                              &clk_src_regs[1], false);
+			dcn21_clock_source_create(ctx, ctx->dc_bios,
+				CLOCK_SOURCE_COMBO_PHY_PLL1,
+				&clk_src_regs[1], false);
 	pool->base.clock_sources[DCN20_CLK_SRC_PLL2] =
-	    dcn21_clock_source_create(ctx, ctx->dc_bios,
-	                              CLOCK_SOURCE_COMBO_PHY_PLL2,
-	                              &clk_src_regs[2], false);
+			dcn21_clock_source_create(ctx, ctx->dc_bios,
+				CLOCK_SOURCE_COMBO_PHY_PLL2,
+				&clk_src_regs[2], false);
 	pool->base.clock_sources[DCN20_CLK_SRC_PLL3] =
-	    dcn21_clock_source_create(ctx, ctx->dc_bios,
-	                              CLOCK_SOURCE_COMBO_PHY_PLL3,
-	                              &clk_src_regs[3], false);
+			dcn21_clock_source_create(ctx, ctx->dc_bios,
+				CLOCK_SOURCE_COMBO_PHY_PLL3,
+				&clk_src_regs[3], false);
 	pool->base.clock_sources[DCN20_CLK_SRC_PLL4] =
-	    dcn21_clock_source_create(ctx, ctx->dc_bios,
-	                              CLOCK_SOURCE_COMBO_PHY_PLL4,
-	                              &clk_src_regs[4], false);
+			dcn21_clock_source_create(ctx, ctx->dc_bios,
+				CLOCK_SOURCE_COMBO_PHY_PLL4,
+				&clk_src_regs[4], false);
 
 	pool->base.clk_src_count = DCN20_CLK_SRC_TOTAL_DCN21;
 
 	/* todo: not reuse phy_pll registers */
 	pool->base.dp_clock_source =
-	    dcn21_clock_source_create(ctx, ctx->dc_bios,
-	                              CLOCK_SOURCE_ID_DP_DTO,
-	                              &clk_src_regs[0], true);
+			dcn21_clock_source_create(ctx, ctx->dc_bios,
+				CLOCK_SOURCE_ID_DP_DTO,
+				&clk_src_regs[0], true);
 
 	for (i = 0; i < pool->base.clk_src_count; i++) {
 		if (pool->base.clock_sources[i] == NULL) {
@@ -1585,9 +1546,9 @@ static bool dcn21_resource_construct(
 
 	if (!dc->config.disable_dmcu) {
 		pool->base.dmcu = dcn21_dmcu_create(ctx,
-		                                    &dmcu_regs,
-		                                    &dmcu_shift,
-		                                    &dmcu_mask);
+				&dmcu_regs,
+				&dmcu_shift,
+				&dmcu_mask);
 		if (pool->base.dmcu == NULL) {
 			dm_error("DC: failed to create dmcu!\n");
 			BREAK_TO_DEBUGGER();
@@ -1609,23 +1570,22 @@ static bool dcn21_resource_construct(
 
 	if (dc->config.disable_dmcu)
 		pool->base.abm = dmub_abm_create(ctx,
-		                                 &abm_regs,
-		                                 &abm_shift,
-		                                 &abm_mask);
+			&abm_regs,
+			&abm_shift,
+			&abm_mask);
 	else
 		pool->base.abm = dce_abm_create(ctx,
-		                                &abm_regs,
-		                                &abm_shift,
-		                                &abm_mask);
+			&abm_regs,
+			&abm_shift,
+			&abm_mask);
 
 	pool->base.pp_smu = dcn21_pp_smu_create(ctx);
 
 	num_pipes = dcn2_1_ip.max_num_dpp;
 
 	for (i = 0; i < dcn2_1_ip.max_num_dpp; i++)
-		if (pipe_fuses & 1 << i) {
+		if (pipe_fuses & 1 << i)
 			num_pipes--;
-		}
 	dcn2_1_ip.max_num_dpp = num_pipes;
 	dcn2_1_ip.max_num_otg = num_pipes;
 
@@ -1633,9 +1593,8 @@ static bool dcn21_resource_construct(
 
 	init_data.ctx = dc->ctx;
 	pool->base.irqs = dal_irq_service_dcn21_create(&init_data);
-	if (!pool->base.irqs) {
+	if (!pool->base.irqs)
 		goto create_fail;
-	}
 
 	j = 0;
 	/* mem input -> ipp -> dpp -> opp -> TG */
@@ -1643,15 +1602,14 @@ static bool dcn21_resource_construct(
 		/* if pipe is disabled, skip instance of HW pipe,
 		 * i.e, skip ASIC register instance
 		 */
-		if ((pipe_fuses & (1 << i)) != 0) {
+		if ((pipe_fuses & (1 << i)) != 0)
 			continue;
-		}
 
 		pool->base.hubps[j] = dcn21_hubp_create(ctx, i);
 		if (pool->base.hubps[j] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error(
-			    "DC: failed to create memory input!\n");
+				"DC: failed to create memory input!\n");
 			goto create_fail;
 		}
 
@@ -1659,7 +1617,7 @@ static bool dcn21_resource_construct(
 		if (pool->base.ipps[j] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error(
-			    "DC: failed to create input pixel processor!\n");
+				"DC: failed to create input pixel processor!\n");
 			goto create_fail;
 		}
 
@@ -1667,7 +1625,7 @@ static bool dcn21_resource_construct(
 		if (pool->base.dpps[j] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error(
-			    "DC: failed to create dpps!\n");
+				"DC: failed to create dpps!\n");
 			goto create_fail;
 		}
 
@@ -1675,12 +1633,12 @@ static bool dcn21_resource_construct(
 		if (pool->base.opps[j] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error(
-			    "DC: failed to create output pixel processor!\n");
+				"DC: failed to create output pixel processor!\n");
 			goto create_fail;
 		}
 
 		pool->base.timing_generators[j] = dcn21_timing_generator_create(
-		                                      ctx, i);
+				ctx, i);
 		if (pool->base.timing_generators[j] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error("DC: failed to create tg!\n");
@@ -1694,14 +1652,14 @@ static bool dcn21_resource_construct(
 		if (pool->base.engines[i] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error(
-			    "DC:failed to create aux engine!!\n");
+				"DC:failed to create aux engine!!\n");
 			goto create_fail;
 		}
 		pool->base.hw_i2cs[i] = dcn21_i2c_hw_create(ctx, i);
 		if (pool->base.hw_i2cs[i] == NULL) {
 			BREAK_TO_DEBUGGER();
 			dm_error(
-			    "DC:failed to create hw i2c!!\n");
+				"DC:failed to create hw i2c!!\n");
 			goto create_fail;
 		}
 		pool->base.sw_i2cs[i] = NULL;
@@ -1746,17 +1704,15 @@ static bool dcn21_resource_construct(
 	}
 
 	if (!resource_construct(num_virtual_links, dc, &pool->base,
-	                        &res_create_funcs)) {
+			&res_create_funcs))
 		goto create_fail;
-	}
 
 	dcn21_hw_sequencer_construct(dc);
 
 	dc->caps.max_planes =  pool->base.pipe_count;
 
-	for (i = 0; i < dc->caps.max_planes; ++i) {
+	for (i = 0; i < dc->caps.max_planes; ++i)
 		dc->caps.planes[i] = plane_cap;
-	}
 
 	dc->cap_funcs = cap_funcs;
 
@@ -1770,19 +1726,17 @@ create_fail:
 }
 
 struct resource_pool *dcn21_create_resource_pool(
-    const struct dc_init_data *init_data,
-    struct dc *dc)
+		const struct dc_init_data *init_data,
+		struct dc *dc)
 {
 	struct dcn21_resource_pool *pool =
-	    kzalloc(sizeof(struct dcn21_resource_pool), GFP_KERNEL);
+		kzalloc(sizeof(struct dcn21_resource_pool), GFP_KERNEL);
 
-	if (!pool) {
+	if (!pool)
 		return NULL;
-	}
 
-	if (dcn21_resource_construct(init_data->num_virtual_links, dc, pool)) {
+	if (dcn21_resource_construct(init_data->num_virtual_links, dc, pool))
 		return &pool->base;
-	}
 
 	BREAK_TO_DEBUGGER();
 	kfree(pool);

@@ -207,6 +207,9 @@ retry:
 		if (!entries)
 			return NULL;
 
+		if (!ecap_coherent(info->iommu->ecap))
+			clflush_cache_range(entries, VTD_PAGE_SIZE);
+
 		/*
 		 * The pasid directory table entry won't be freed after
 		 * allocation. No worry about the race with free and
@@ -218,10 +221,8 @@ retry:
 			free_pgtable_page(entries);
 			goto retry;
 		}
-		if (!ecap_coherent(info->iommu->ecap)) {
-			clflush_cache_range(entries, VTD_PAGE_SIZE);
+		if (!ecap_coherent(info->iommu->ecap))
 			clflush_cache_range(&dir[dir_index].val, sizeof(*dir));
-		}
 	}
 
 	return &entries[index];
@@ -426,6 +427,9 @@ devtlb_invalidation_with_pasid(struct intel_iommu *iommu,
 
 	info = dev_iommu_priv_get(dev);
 	if (!info || !info->ats_enabled)
+		return;
+
+	if (!pci_device_is_present(to_pci_dev(dev)))
 		return;
 
 	sid = info->bus << 8 | info->devfn;

@@ -35,7 +35,7 @@
 #include <soc/fsl/cpm.h>
 
 #ifdef CONFIG_PPC32
-	#include <asm/reg.h> /* mfspr, SPRN_SVR */
+#include <asm/reg.h> /* mfspr, SPRN_SVR */
 #endif
 
 /*
@@ -43,7 +43,7 @@
  * but Soft-UART is a hack and we want to keep everything related to it in
  * this file.
  */
-#define UCC_SLOW_GUMR_H_SUART       0x00004000      /* Soft-UART */
+#define UCC_SLOW_GUMR_H_SUART   	0x00004000      /* Soft-UART */
 
 /*
  * soft_uart is 1 if we need to use Soft-UART mode
@@ -91,82 +91,82 @@ static int firmware_loaded;
 
 struct ucc_uart_pram {
 	struct ucc_slow_pram common;
-	u8 res1[8];         /* reserved */
-	__be16 maxidl;      /* Maximum idle chars */
-	__be16 idlc;        /* temp idle counter */
-	__be16 brkcr;       /* Break count register */
-	__be16 parec;       /* receive parity error counter */
-	__be16 frmec;       /* receive framing error counter */
-	__be16 nosec;       /* receive noise counter */
-	__be16 brkec;       /* receive break condition counter */
-	__be16 brkln;       /* last received break length */
-	__be16 uaddr[2];    /* UART address character 1 & 2 */
-	__be16 rtemp;       /* Temp storage */
-	__be16 toseq;       /* Transmit out of sequence char */
+	u8 res1[8];     	/* reserved */
+	__be16 maxidl;  	/* Maximum idle chars */
+	__be16 idlc;    	/* temp idle counter */
+	__be16 brkcr;   	/* Break count register */
+	__be16 parec;   	/* receive parity error counter */
+	__be16 frmec;   	/* receive framing error counter */
+	__be16 nosec;   	/* receive noise counter */
+	__be16 brkec;   	/* receive break condition counter */
+	__be16 brkln;   	/* last received break length */
+	__be16 uaddr[2];	/* UART address character 1 & 2 */
+	__be16 rtemp;   	/* Temp storage */
+	__be16 toseq;   	/* Transmit out of sequence char */
 	__be16 cchars[8];       /* control characters 1-8 */
-	__be16 rccm;        /* receive control character mask */
-	__be16 rccr;        /* receive control character register */
-	__be16 rlbc;        /* receive last break character */
-	__be16 res2;        /* reserved */
-	__be32 res3;        /* reserved, should be cleared */
-	u8 res4;        /* reserved, should be cleared */
-	u8 res5[3];         /* reserved, should be cleared */
-	__be32 res6;        /* reserved, should be cleared */
-	__be32 res7;        /* reserved, should be cleared */
-	__be32 res8;        /* reserved, should be cleared */
-	__be32 res9;        /* reserved, should be cleared */
-	__be32 res10;       /* reserved, should be cleared */
-	__be32 res11;       /* reserved, should be cleared */
-	__be32 res12;       /* reserved, should be cleared */
-	__be32 res13;       /* reserved, should be cleared */
-	/* The rest is for Soft-UART only */
-	__be16 supsmr;      /* 0x90, Shadow UPSMR */
-	__be16 res92;       /* 0x92, reserved, initialize to 0 */
-	__be32 rx_state;    /* 0x94, RX state, initialize to 0 */
-	__be32 rx_cnt;      /* 0x98, RX count, initialize to 0 */
-	u8 rx_length;       /* 0x9C, Char length, set to 1+CL+PEN+1+SL */
-	u8 rx_bitmark;      /* 0x9D, reserved, initialize to 0 */
+	__be16 rccm;    	/* receive control character mask */
+	__be16 rccr;    	/* receive control character register */
+	__be16 rlbc;    	/* receive last break character */
+	__be16 res2;    	/* reserved */
+	__be32 res3;    	/* reserved, should be cleared */
+	u8 res4;		/* reserved, should be cleared */
+	u8 res5[3];     	/* reserved, should be cleared */
+	__be32 res6;    	/* reserved, should be cleared */
+	__be32 res7;    	/* reserved, should be cleared */
+	__be32 res8;    	/* reserved, should be cleared */
+	__be32 res9;    	/* reserved, should be cleared */
+	__be32 res10;   	/* reserved, should be cleared */
+	__be32 res11;   	/* reserved, should be cleared */
+	__be32 res12;   	/* reserved, should be cleared */
+	__be32 res13;   	/* reserved, should be cleared */
+/* The rest is for Soft-UART only */
+	__be16 supsmr;  	/* 0x90, Shadow UPSMR */
+	__be16 res92;   	/* 0x92, reserved, initialize to 0 */
+	__be32 rx_state;	/* 0x94, RX state, initialize to 0 */
+	__be32 rx_cnt;  	/* 0x98, RX count, initialize to 0 */
+	u8 rx_length;   	/* 0x9C, Char length, set to 1+CL+PEN+1+SL */
+	u8 rx_bitmark;  	/* 0x9D, reserved, initialize to 0 */
 	u8 rx_temp_dlst_qe;     /* 0x9E, reserved, initialize to 0 */
 	u8 res14[0xBC - 0x9F];  /* reserved */
-	__be32 dump_ptr;    /* 0xBC, Dump pointer */
+	__be32 dump_ptr;	/* 0xBC, Dump pointer */
 	__be32 rx_frame_rem;    /* 0xC0, reserved, initialize to 0 */
 	u8 rx_frame_rem_size;   /* 0xC4, reserved, initialize to 0 */
-	u8 tx_mode;         /* 0xC5, mode, 0=AHDLC, 1=UART */
-	__be16 tx_state;    /* 0xC6, TX state */
+	u8 tx_mode;     	/* 0xC5, mode, 0=AHDLC, 1=UART */
+	__be16 tx_state;	/* 0xC6, TX state */
 	u8 res15[0xD0 - 0xC8];  /* reserved */
-	__be32 resD0;       /* 0xD0, reserved, initialize to 0 */
-	u8 resD4;           /* 0xD4, reserved, initialize to 0 */
-	__be16 resD5;       /* 0xD5, reserved, initialize to 0 */
-} __attribute__((packed));
+	__be32 resD0;   	/* 0xD0, reserved, initialize to 0 */
+	u8 resD4;       	/* 0xD4, reserved, initialize to 0 */
+	__be16 resD5;   	/* 0xD5, reserved, initialize to 0 */
+} __attribute__ ((packed));
 
 /* SUPSMR definitions, for Soft-UART only */
-#define UCC_UART_SUPSMR_SL          0x8000
-#define UCC_UART_SUPSMR_RPM_MASK    0x6000
-#define UCC_UART_SUPSMR_RPM_ODD     0x0000
-#define UCC_UART_SUPSMR_RPM_LOW     0x2000
-#define UCC_UART_SUPSMR_RPM_EVEN    0x4000
-#define UCC_UART_SUPSMR_RPM_HIGH    0x6000
-#define UCC_UART_SUPSMR_PEN         0x1000
-#define UCC_UART_SUPSMR_TPM_MASK    0x0C00
-#define UCC_UART_SUPSMR_TPM_ODD     0x0000
-#define UCC_UART_SUPSMR_TPM_LOW     0x0400
-#define UCC_UART_SUPSMR_TPM_EVEN    0x0800
-#define UCC_UART_SUPSMR_TPM_HIGH    0x0C00
-#define UCC_UART_SUPSMR_FRZ         0x0100
-#define UCC_UART_SUPSMR_UM_MASK     0x00c0
+#define UCC_UART_SUPSMR_SL      	0x8000
+#define UCC_UART_SUPSMR_RPM_MASK	0x6000
+#define UCC_UART_SUPSMR_RPM_ODD 	0x0000
+#define UCC_UART_SUPSMR_RPM_LOW 	0x2000
+#define UCC_UART_SUPSMR_RPM_EVEN	0x4000
+#define UCC_UART_SUPSMR_RPM_HIGH	0x6000
+#define UCC_UART_SUPSMR_PEN     	0x1000
+#define UCC_UART_SUPSMR_TPM_MASK	0x0C00
+#define UCC_UART_SUPSMR_TPM_ODD 	0x0000
+#define UCC_UART_SUPSMR_TPM_LOW 	0x0400
+#define UCC_UART_SUPSMR_TPM_EVEN	0x0800
+#define UCC_UART_SUPSMR_TPM_HIGH	0x0C00
+#define UCC_UART_SUPSMR_FRZ     	0x0100
+#define UCC_UART_SUPSMR_UM_MASK 	0x00c0
 #define UCC_UART_SUPSMR_UM_NORMAL       0x0000
 #define UCC_UART_SUPSMR_UM_MAN_MULTI    0x0040
 #define UCC_UART_SUPSMR_UM_AUTO_MULTI   0x00c0
-#define UCC_UART_SUPSMR_CL_MASK     0x0030
-#define UCC_UART_SUPSMR_CL_8        0x0030
-#define UCC_UART_SUPSMR_CL_7        0x0020
-#define UCC_UART_SUPSMR_CL_6        0x0010
-#define UCC_UART_SUPSMR_CL_5        0x0000
+#define UCC_UART_SUPSMR_CL_MASK 	0x0030
+#define UCC_UART_SUPSMR_CL_8    	0x0030
+#define UCC_UART_SUPSMR_CL_7    	0x0020
+#define UCC_UART_SUPSMR_CL_6    	0x0010
+#define UCC_UART_SUPSMR_CL_5    	0x0000
 
-#define UCC_UART_TX_STATE_AHDLC     0x00
-#define UCC_UART_TX_STATE_UART      0x01
-#define UCC_UART_TX_STATE_X1        0x00
-#define UCC_UART_TX_STATE_X16       0x80
+#define UCC_UART_TX_STATE_AHDLC 	0x00
+#define UCC_UART_TX_STATE_UART  	0x01
+#define UCC_UART_TX_STATE_X1    	0x00
+#define UCC_UART_TX_STATE_X16   	0x80
 
 #define UCC_UART_PRAM_ALIGNMENT 0x100
 
@@ -195,18 +195,18 @@ struct uart_qe_port {
 	struct qe_bd *tx_cur;
 	unsigned char *tx_buf;
 	unsigned char *rx_buf;
-	void *bd_virt;      /* virtual address of the BD buffers */
+	void *bd_virt;  	/* virtual address of the BD buffers */
 	dma_addr_t bd_dma_addr; /* bus address of the BD buffers */
 	unsigned int bd_size;   /* size of BD buffer space */
 };
 
 static struct uart_driver ucc_uart_driver = {
-	.owner      = THIS_MODULE,
+	.owner  	= THIS_MODULE,
 	.driver_name    = "ucc_uart",
 	.dev_name       = "ttyQE",
-	.major      = SERIAL_QE_MAJOR,
-	.minor      = SERIAL_QE_MINOR,
-	.nr         = UCC_MAX_UART,
+	.major  	= SERIAL_QE_MAJOR,
+	.minor  	= SERIAL_QE_MINOR,
+	.nr     	= UCC_MAX_UART,
 };
 
 /*
@@ -218,9 +218,8 @@ static struct uart_driver ucc_uart_driver = {
 static inline dma_addr_t cpu2qe_addr(void *addr, struct uart_qe_port *qe_port)
 {
 	if (likely((addr >= qe_port->bd_virt)) &&
-	    (addr < (qe_port->bd_virt + qe_port->bd_size))) {
+	    (addr < (qe_port->bd_virt + qe_port->bd_size)))
 		return qe_port->bd_dma_addr + (addr - qe_port->bd_virt);
-	}
 
 	/* something nasty happened */
 	printk(KERN_ERR "%s: addr=%p\n", __func__, addr);
@@ -238,9 +237,8 @@ static inline void *qe2cpu_addr(dma_addr_t addr, struct uart_qe_port *qe_port)
 {
 	/* sanity check */
 	if (likely((addr >= qe_port->bd_dma_addr) &&
-	           (addr < (qe_port->bd_dma_addr + qe_port->bd_size)))) {
+		   (addr < (qe_port->bd_dma_addr + qe_port->bd_size))))
 		return qe_port->bd_virt + (addr - qe_port->bd_dma_addr);
-	}
 
 	/* something nasty happened */
 	printk(KERN_ERR "%s: addr=%llx\n", __func__, (u64)addr);
@@ -259,24 +257,20 @@ static inline void *qe2cpu_addr(dma_addr_t addr, struct uart_qe_port *qe_port)
 static unsigned int qe_uart_tx_empty(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 	struct qe_bd *bdp = qe_port->tx_bd_base;
 
 	while (1) {
 		if (ioread16be(&bdp->status) & BD_SC_READY)
 			/* This BD is not done, so return "not done" */
-		{
 			return 0;
-		}
 
 		if (ioread16be(&bdp->status) & BD_SC_WRAP)
 			/*
 			 * This BD is done and it's the last one, so return
 			 * "done"
 			 */
-		{
 			return 1;
-		}
 
 		bdp++;
 	}
@@ -315,7 +309,7 @@ static unsigned int qe_uart_get_mctrl(struct uart_port *port)
 static void qe_uart_stop_tx(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 
 	qe_clrbits_be16(&qe_port->uccp->uccm, UCC_UART_UCCE_TX);
 }
@@ -353,11 +347,10 @@ static int qe_uart_tx_pump(struct uart_qe_port *qe_port)
 		iowrite16be(1, &bdp->length);
 		qe_setbits_be16(&bdp->status, BD_SC_READY);
 		/* Get next BD. */
-		if (ioread16be(&bdp->status) & BD_SC_WRAP) {
+		if (ioread16be(&bdp->status) & BD_SC_WRAP)
 			bdp = qe_port->tx_bd_base;
-		} else {
+		else
 			bdp++;
-		}
 		qe_port->tx_cur = bdp;
 
 		port->icount.tx++;
@@ -380,26 +373,23 @@ static int qe_uart_tx_pump(struct uart_qe_port *qe_port)
 			*p++ = xmit->buf[xmit->tail];
 			uart_xmit_advance(port, 1);
 			count++;
-			if (uart_circ_empty(xmit)) {
+			if (uart_circ_empty(xmit))
 				break;
-			}
 		}
 
 		iowrite16be(count, &bdp->length);
 		qe_setbits_be16(&bdp->status, BD_SC_READY);
 
 		/* Get next BD. */
-		if (ioread16be(&bdp->status) & BD_SC_WRAP) {
+		if (ioread16be(&bdp->status) & BD_SC_WRAP)
 			bdp = qe_port->tx_bd_base;
-		} else {
+		else
 			bdp++;
-		}
 	}
 	qe_port->tx_cur = bdp;
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
-	}
 
 	if (uart_circ_empty(xmit)) {
 		/* The kernel buffer is empty, so turn off TX interrupts.  We
@@ -421,17 +411,15 @@ static int qe_uart_tx_pump(struct uart_qe_port *qe_port)
 static void qe_uart_start_tx(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 
 	/* If we currently are transmitting, then just return */
-	if (ioread16be(&qe_port->uccp->uccm) & UCC_UART_UCCE_TX) {
+	if (ioread16be(&qe_port->uccp->uccm) & UCC_UART_UCCE_TX)
 		return;
-	}
 
 	/* Otherwise, pump the port and start transmission */
-	if (qe_uart_tx_pump(qe_port)) {
+	if (qe_uart_tx_pump(qe_port))
 		qe_setbits_be16(&qe_port->uccp->uccm, UCC_UART_UCCE_TX);
-	}
 }
 
 /*
@@ -440,7 +428,7 @@ static void qe_uart_start_tx(struct uart_port *port)
 static void qe_uart_stop_rx(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 
 	qe_clrbits_be16(&qe_port->uccp->uccm, UCC_UART_UCCE_RX);
 }
@@ -454,13 +442,12 @@ static void qe_uart_stop_rx(struct uart_port *port)
 static void qe_uart_break_ctl(struct uart_port *port, int break_state)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 
-	if (break_state) {
+	if (break_state)
 		ucc_slow_stop_tx(qe_port->us_private);
-	} else {
+	else
 		ucc_slow_restart_tx(qe_port->us_private);
-	}
 }
 
 /* ISR helper function for receiving character.
@@ -485,9 +472,8 @@ static void qe_uart_int_rx(struct uart_qe_port *qe_port)
 		status = ioread16be(&bdp->status);
 
 		/* If this one is empty, then we assume we've read them all */
-		if (status & BD_SC_EMPTY) {
+		if (status & BD_SC_EMPTY)
 			break;
-		}
 
 		/* get number of characters, and check space in RX buffer */
 		i = ioread16be(&bdp->length);
@@ -510,12 +496,10 @@ static void qe_uart_int_rx(struct uart_qe_port *qe_port)
 			flg = TTY_NORMAL;
 
 			if (!i && status &
-			    (BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV)) {
+			    (BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV))
 				goto handle_error;
-			}
-			if (uart_handle_sysrq_char(port, ch)) {
+			if (uart_handle_sysrq_char(port, ch))
 				continue;
-			}
 
 error_return:
 			tty_insert_flip_char(tport, ch, flg);
@@ -524,13 +508,12 @@ error_return:
 
 		/* This BD is ready to be used again. Clear status. get next */
 		qe_clrsetbits_be16(&bdp->status,
-		                   BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV | BD_SC_ID,
-		                   BD_SC_EMPTY);
-		if (ioread16be(&bdp->status) & BD_SC_WRAP) {
+				   BD_SC_BR | BD_SC_FR | BD_SC_PR | BD_SC_OV | BD_SC_ID,
+				   BD_SC_EMPTY);
+		if (ioread16be(&bdp->status) & BD_SC_WRAP)
 			bdp = qe_port->rx_bd_base;
-		} else {
+		else
 			bdp++;
-		}
 
 	}
 
@@ -546,35 +529,29 @@ error_return:
 
 handle_error:
 	/* Statistics */
-	if (status & BD_SC_BR) {
+	if (status & BD_SC_BR)
 		port->icount.brk++;
-	}
-	if (status & BD_SC_PR) {
+	if (status & BD_SC_PR)
 		port->icount.parity++;
-	}
-	if (status & BD_SC_FR) {
+	if (status & BD_SC_FR)
 		port->icount.frame++;
-	}
-	if (status & BD_SC_OV) {
+	if (status & BD_SC_OV)
 		port->icount.overrun++;
-	}
 
 	/* Mask out ignored conditions */
 	status &= port->read_status_mask;
 
 	/* Handle the remaining ones */
-	if (status & BD_SC_BR) {
+	if (status & BD_SC_BR)
 		flg = TTY_BREAK;
-	} else if (status & BD_SC_PR) {
+	else if (status & BD_SC_PR)
 		flg = TTY_PARITY;
-	} else if (status & BD_SC_FR) {
+	else if (status & BD_SC_FR)
 		flg = TTY_FRAME;
-	}
 
 	/* Overrun does not affect the current character ! */
-	if (status & BD_SC_OV) {
+	if (status & BD_SC_OV)
 		tty_insert_flip_char(tport, 0, TTY_OVERRUN);
-	}
 	port->sysrq = 0;
 	goto error_return;
 }
@@ -593,17 +570,14 @@ static irqreturn_t qe_uart_int(int irq, void *data)
 	events = ioread16be(&uccp->ucce);
 	iowrite16be(events, &uccp->ucce);
 
-	if (events & UCC_UART_UCCE_BRKE) {
+	if (events & UCC_UART_UCCE_BRKE)
 		uart_handle_break(&qe_port->port);
-	}
 
-	if (events & UCC_UART_UCCE_RX) {
+	if (events & UCC_UART_UCCE_RX)
 		qe_uart_int_rx(qe_port);
-	}
 
-	if (events & UCC_UART_UCCE_TX) {
+	if (events & UCC_UART_UCCE_TX)
 		qe_uart_tx_pump(qe_port);
-	}
 
 	return events ? IRQ_HANDLED : IRQ_NONE;
 }
@@ -642,7 +616,7 @@ static void qe_uart_initbd(struct uart_qe_port *qe_port)
 	 * virtual address for us to work with.
 	 */
 	bd_virt = qe_port->bd_virt +
-	          L1_CACHE_ALIGN(qe_port->rx_nrfifos * qe_port->rx_fifosize);
+		L1_CACHE_ALIGN(qe_port->rx_nrfifos * qe_port->rx_fifosize);
 	qe_port->tx_cur = qe_port->tx_bd_base;
 	bdp = qe_port->tx_bd_base;
 	for (i = 0; i < (qe_port->tx_nrfifos - 1); i++) {
@@ -694,36 +668,35 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
 	iowrite16be(0, &uccup->uaddr[0]);
 	iowrite16be(0, &uccup->uaddr[1]);
 	iowrite16be(0, &uccup->toseq);
-	for (i = 0; i < 8; i++) {
+	for (i = 0; i < 8; i++)
 		iowrite16be(0xC000, &uccup->cchars[i]);
-	}
 	iowrite16be(0xc0ff, &uccup->rccm);
 
 	/* Configure the GUMR registers for UART */
 	if (soft_uart) {
 		/* Soft-UART requires a 1X multiplier for TX */
 		qe_clrsetbits_be32(&uccp->gumr_l,
-		                   UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK | UCC_SLOW_GUMR_L_RDCR_MASK,
-		                   UCC_SLOW_GUMR_L_MODE_UART | UCC_SLOW_GUMR_L_TDCR_1 | UCC_SLOW_GUMR_L_RDCR_16);
+				   UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK | UCC_SLOW_GUMR_L_RDCR_MASK,
+				   UCC_SLOW_GUMR_L_MODE_UART | UCC_SLOW_GUMR_L_TDCR_1 | UCC_SLOW_GUMR_L_RDCR_16);
 
 		qe_clrsetbits_be32(&uccp->gumr_h, UCC_SLOW_GUMR_H_RFW,
-		                   UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX);
+				   UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX);
 	} else {
 		qe_clrsetbits_be32(&uccp->gumr_l,
-		                   UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK | UCC_SLOW_GUMR_L_RDCR_MASK,
-		                   UCC_SLOW_GUMR_L_MODE_UART | UCC_SLOW_GUMR_L_TDCR_16 | UCC_SLOW_GUMR_L_RDCR_16);
+				   UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK | UCC_SLOW_GUMR_L_RDCR_MASK,
+				   UCC_SLOW_GUMR_L_MODE_UART | UCC_SLOW_GUMR_L_TDCR_16 | UCC_SLOW_GUMR_L_RDCR_16);
 
 		qe_clrsetbits_be32(&uccp->gumr_h,
-		                   UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX,
-		                   UCC_SLOW_GUMR_H_RFW);
+				   UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX,
+				   UCC_SLOW_GUMR_H_RFW);
 	}
 
 #ifdef LOOPBACK
 	qe_clrsetbits_be32(&uccp->gumr_l, UCC_SLOW_GUMR_L_DIAG_MASK,
-	                   UCC_SLOW_GUMR_L_DIAG_LOOP);
+			   UCC_SLOW_GUMR_L_DIAG_LOOP);
 	qe_clrsetbits_be32(&uccp->gumr_h,
-	                   UCC_SLOW_GUMR_H_CTSP | UCC_SLOW_GUMR_H_RSYN,
-	                   UCC_SLOW_GUMR_H_CDS);
+			   UCC_SLOW_GUMR_H_CTSP | UCC_SLOW_GUMR_H_RSYN,
+			   UCC_SLOW_GUMR_H_CDS);
 #endif
 
 	/* Disable rx interrupts  and clear all pending events.  */
@@ -747,7 +720,7 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
 		iowrite8(0, &uccup->rx_frame_rem_size);
 		/* Soft-UART requires TX to be 1X */
 		iowrite8(UCC_UART_TX_STATE_UART | UCC_UART_TX_STATE_X1,
-		         &uccup->tx_mode);
+			    &uccup->tx_mode);
 		iowrite16be(0, &uccup->tx_state);
 		iowrite8(0, &uccup->resD4);
 		iowrite16be(0, &uccup->resD5);
@@ -765,27 +738,27 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
 		 * 6.Receiver must use 16x over sampling
 		 */
 		qe_clrsetbits_be32(&uccp->gumr_l,
-		                   UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK | UCC_SLOW_GUMR_L_RDCR_MASK,
-		                   UCC_SLOW_GUMR_L_MODE_QMC | UCC_SLOW_GUMR_L_TDCR_16 | UCC_SLOW_GUMR_L_RDCR_16);
+				   UCC_SLOW_GUMR_L_MODE_MASK | UCC_SLOW_GUMR_L_TDCR_MASK | UCC_SLOW_GUMR_L_RDCR_MASK,
+				   UCC_SLOW_GUMR_L_MODE_QMC | UCC_SLOW_GUMR_L_TDCR_16 | UCC_SLOW_GUMR_L_RDCR_16);
 
 		qe_clrsetbits_be32(&uccp->gumr_h,
-		                   UCC_SLOW_GUMR_H_RFW | UCC_SLOW_GUMR_H_RSYN,
-		                   UCC_SLOW_GUMR_H_SUART | UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX | UCC_SLOW_GUMR_H_TFL);
+				   UCC_SLOW_GUMR_H_RFW | UCC_SLOW_GUMR_H_RSYN,
+				   UCC_SLOW_GUMR_H_SUART | UCC_SLOW_GUMR_H_TRX | UCC_SLOW_GUMR_H_TTX | UCC_SLOW_GUMR_H_TFL);
 
 #ifdef LOOPBACK
 		qe_clrsetbits_be32(&uccp->gumr_l, UCC_SLOW_GUMR_L_DIAG_MASK,
-		                   UCC_SLOW_GUMR_L_DIAG_LOOP);
+				   UCC_SLOW_GUMR_L_DIAG_LOOP);
 		qe_clrbits_be32(&uccp->gumr_h,
-		                UCC_SLOW_GUMR_H_CTSP | UCC_SLOW_GUMR_H_CDS);
+				UCC_SLOW_GUMR_H_CTSP | UCC_SLOW_GUMR_H_CDS);
 #endif
 
 		cecr_subblock = ucc_slow_get_qe_cr_subblock(qe_port->ucc_num);
 		qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
-		             QE_CR_PROTOCOL_UNSPECIFIED, 0);
+			QE_CR_PROTOCOL_UNSPECIFIED, 0);
 	} else {
 		cecr_subblock = ucc_slow_get_qe_cr_subblock(qe_port->ucc_num);
 		qe_issue_cmd(QE_INIT_TX_RX, cecr_subblock,
-		             QE_CR_PROTOCOL_UART, 0);
+			QE_CR_PROTOCOL_UART, 0);
 	}
 }
 
@@ -795,7 +768,7 @@ static void qe_uart_init_ucc(struct uart_qe_port *qe_port)
 static int qe_uart_startup(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 	int ret;
 
 	/*
@@ -812,7 +785,7 @@ static int qe_uart_startup(struct uart_port *port)
 
 	/* Install interrupt handler. */
 	ret = request_irq(port->irq, qe_uart_int, IRQF_SHARED, "ucc-uart",
-	                  qe_port);
+		qe_port);
 	if (ret) {
 		dev_err(port->dev, "could not claim IRQ %u\n", port->irq);
 		return ret;
@@ -831,7 +804,7 @@ static int qe_uart_startup(struct uart_port *port)
 static void qe_uart_shutdown(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 	struct ucc_slow __iomem *uccp = qe_port->uccp;
 	unsigned int timeout = 20;
 
@@ -868,11 +841,11 @@ static void qe_uart_shutdown(struct uart_port *port)
  * Set the serial port parameters.
  */
 static void qe_uart_set_termios(struct uart_port *port,
-                                struct ktermios *termios,
-                                const struct ktermios *old)
+				struct ktermios *termios,
+				const struct ktermios *old)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 	struct ucc_slow __iomem *uccp = qe_port->uccp;
 	unsigned int baud;
 	unsigned long flags;
@@ -885,22 +858,22 @@ static void qe_uart_set_termios(struct uart_port *port,
 	supsmr &= UCC_UART_SUPSMR_CL_MASK;
 
 	switch (termios->c_cflag & CSIZE) {
-		case CS5:
-			upsmr |= UCC_UART_UPSMR_CL_5;
-			supsmr |= UCC_UART_SUPSMR_CL_5;
-			break;
-		case CS6:
-			upsmr |= UCC_UART_UPSMR_CL_6;
-			supsmr |= UCC_UART_SUPSMR_CL_6;
-			break;
-		case CS7:
-			upsmr |= UCC_UART_UPSMR_CL_7;
-			supsmr |= UCC_UART_SUPSMR_CL_7;
-			break;
-		default:    /* case CS8 */
-			upsmr |= UCC_UART_UPSMR_CL_8;
-			supsmr |= UCC_UART_SUPSMR_CL_8;
-			break;
+	case CS5:
+		upsmr |= UCC_UART_UPSMR_CL_5;
+		supsmr |= UCC_UART_SUPSMR_CL_5;
+		break;
+	case CS6:
+		upsmr |= UCC_UART_UPSMR_CL_6;
+		supsmr |= UCC_UART_SUPSMR_CL_6;
+		break;
+	case CS7:
+		upsmr |= UCC_UART_UPSMR_CL_7;
+		supsmr |= UCC_UART_SUPSMR_CL_7;
+		break;
+	default:	/* case CS8 */
+		upsmr |= UCC_UART_UPSMR_CL_8;
+		supsmr |= UCC_UART_SUPSMR_CL_8;
+		break;
 	}
 
 	/* If CSTOPB is set, we want two stop bits */
@@ -915,13 +888,13 @@ static void qe_uart_set_termios(struct uart_port *port,
 
 		if (!(termios->c_cflag & PARODD)) {
 			upsmr &= ~(UCC_UART_UPSMR_RPM_MASK |
-			           UCC_UART_UPSMR_TPM_MASK);
+				   UCC_UART_UPSMR_TPM_MASK);
 			upsmr |= UCC_UART_UPSMR_RPM_EVEN |
-			         UCC_UART_UPSMR_TPM_EVEN;
+				UCC_UART_UPSMR_TPM_EVEN;
 			supsmr &= ~(UCC_UART_SUPSMR_RPM_MASK |
-			            UCC_UART_SUPSMR_TPM_MASK);
+				    UCC_UART_SUPSMR_TPM_MASK);
 			supsmr |= UCC_UART_SUPSMR_RPM_EVEN |
-			          UCC_UART_SUPSMR_TPM_EVEN;
+				UCC_UART_SUPSMR_TPM_EVEN;
 		}
 	}
 
@@ -929,36 +902,31 @@ static void qe_uart_set_termios(struct uart_port *port,
 	 * Set up parity check flag
 	 */
 	port->read_status_mask = BD_SC_EMPTY | BD_SC_OV;
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		port->read_status_mask |= BD_SC_FR | BD_SC_PR;
-	}
-	if (termios->c_iflag & (IGNBRK | BRKINT | PARMRK)) {
+	if (termios->c_iflag & (IGNBRK | BRKINT | PARMRK))
 		port->read_status_mask |= BD_SC_BR;
-	}
 
 	/*
 	 * Characters to ignore
 	 */
 	port->ignore_status_mask = 0;
-	if (termios->c_iflag & IGNPAR) {
+	if (termios->c_iflag & IGNPAR)
 		port->ignore_status_mask |= BD_SC_PR | BD_SC_FR;
-	}
 	if (termios->c_iflag & IGNBRK) {
 		port->ignore_status_mask |= BD_SC_BR;
 		/*
 		 * If we're ignore parity and break indicators, ignore
 		 * overruns too.  (For real raw support).
 		 */
-		if (termios->c_iflag & IGNPAR) {
+		if (termios->c_iflag & IGNPAR)
 			port->ignore_status_mask |= BD_SC_OV;
-		}
 	}
 	/*
 	 * !!! ignore all characters if CREAD is not set
 	 */
-	if ((termios->c_cflag & CREAD) == 0) {
+	if ((termios->c_cflag & CREAD) == 0)
 		port->read_status_mask &= ~BD_SC_EMPTY;
-	}
 
 	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk / 16);
 
@@ -999,7 +967,7 @@ static int qe_uart_request_port(struct uart_port *port)
 {
 	int ret;
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 	struct ucc_slow_info *us_info = &qe_port->us_info;
 	struct ucc_slow_private *uccs;
 	unsigned int rx_size, tx_size;
@@ -1009,7 +977,7 @@ static int qe_uart_request_port(struct uart_port *port)
 	ret = ucc_slow_init(us_info, &uccs);
 	if (ret) {
 		dev_err(port->dev, "could not initialize UCC%u\n",
-		        qe_port->ucc_num);
+		       qe_port->ucc_num);
 		return ret;
 	}
 
@@ -1027,7 +995,7 @@ static int qe_uart_request_port(struct uart_port *port)
 	tx_size = L1_CACHE_ALIGN(qe_port->tx_nrfifos * qe_port->tx_fifosize);
 
 	bd_virt = dma_alloc_coherent(port->dev, rx_size + tx_size, &bd_dma_addr,
-	                             GFP_KERNEL);
+		GFP_KERNEL);
 	if (!bd_virt) {
 		dev_err(port->dev, "could not allocate buffer descriptors\n");
 		return -ENOMEM;
@@ -1065,11 +1033,11 @@ static void qe_uart_config_port(struct uart_port *port, int flags)
 static void qe_uart_release_port(struct uart_port *port)
 {
 	struct uart_qe_port *qe_port =
-	    container_of(port, struct uart_qe_port, port);
+		container_of(port, struct uart_qe_port, port);
 	struct ucc_slow_private *uccs = qe_port->us_private;
 
 	dma_free_coherent(port->dev, qe_port->bd_size, qe_port->bd_virt,
-	                  qe_port->bd_dma_addr);
+			  qe_port->bd_dma_addr);
 
 	ucc_slow_free(uccs);
 }
@@ -1078,19 +1046,16 @@ static void qe_uart_release_port(struct uart_port *port)
  * Verify that the data in serial_struct is suitable for this device.
  */
 static int qe_uart_verify_port(struct uart_port *port,
-                               struct serial_struct *ser)
+			       struct serial_struct *ser)
 {
-	if (ser->type != PORT_UNKNOWN && ser->type != PORT_CPM) {
+	if (ser->type != PORT_UNKNOWN && ser->type != PORT_CPM)
 		return -EINVAL;
-	}
 
-	if (ser->irq < 0 || ser->irq >= nr_irqs) {
+	if (ser->irq < 0 || ser->irq >= nr_irqs)
 		return -EINVAL;
-	}
 
-	if (ser->baud_base < 9600) {
+	if (ser->baud_base < 9600)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -1102,14 +1067,14 @@ static const struct uart_ops qe_uart_pops = {
 	.tx_empty       = qe_uart_tx_empty,
 	.set_mctrl      = qe_uart_set_mctrl,
 	.get_mctrl      = qe_uart_get_mctrl,
-	.stop_tx    = qe_uart_stop_tx,
+	.stop_tx	= qe_uart_stop_tx,
 	.start_tx       = qe_uart_start_tx,
-	.stop_rx    = qe_uart_stop_rx,
+	.stop_rx	= qe_uart_stop_rx,
 	.break_ctl      = qe_uart_break_ctl,
-	.startup    = qe_uart_startup,
+	.startup	= qe_uart_startup,
 	.shutdown       = qe_uart_shutdown,
 	.set_termios    = qe_uart_set_termios,
-	.type       = qe_uart_type,
+	.type   	= qe_uart_type,
 	.release_port   = qe_uart_release_port,
 	.request_port   = qe_uart_request_port,
 	.config_port    = qe_uart_config_port,
@@ -1128,16 +1093,16 @@ static const struct uart_ops qe_uart_pops = {
  *
  * The new way is:
  *
- *          cpu@0 {
- *              compatible = "PowerPC,8323";
- *              device_type = "cpu";
- *              ...
+ *      	cpu@0 {
+ *      		compatible = "PowerPC,8323";
+ *      		device_type = "cpu";
+ *      		...
  *
  *
  * The old way is:
- *           PowerPC,8323@0 {
- *              device_type = "cpu";
- *              ...
+ *      	 PowerPC,8323@0 {
+ *      		device_type = "cpu";
+ *      		...
  *
  * This code first checks the new way, and then the old way.
  */
@@ -1150,23 +1115,19 @@ static unsigned int soc_info(unsigned int *rev_h, unsigned int *rev_l)
 
 	/* Find the CPU node */
 	np = of_find_node_by_type(NULL, "cpu");
-	if (!np) {
+	if (!np)
 		return 0;
-	}
 	/* Find the compatible property */
 	soc_string = of_get_property(np, "compatible", NULL);
 	if (!soc_string)
 		/* No compatible property, so try the name. */
-	{
 		soc_string = np->name;
-	}
 
 	of_node_put(np);
 
 	/* Extract the SOC number from the "PowerPC," string */
-	if ((sscanf(soc_string, "PowerPC,%u", &soc) != 1) || !soc) {
+	if ((sscanf(soc_string, "PowerPC,%u", &soc) != 1) || !soc)
 		return 0;
-	}
 
 	/* Get the revision from the SVR */
 	svr = mfspr(SPRN_SVR);
@@ -1207,7 +1168,7 @@ static void uart_firmware_cont(const struct firmware *fw, void *context)
 	}
 
 	firmware_loaded = 1;
-out:
+ out:
 	release_firmware(fw);
 }
 
@@ -1241,10 +1202,10 @@ static int soft_uart_init(struct platform_device *ofdev)
 			return -ENXIO;
 		}
 		sprintf(filename, "fsl_qe_ucode_uart_%u_%u%u.bin",
-		        soc, rev_h, rev_l);
+			soc, rev_h, rev_l);
 
 		dev_info(&ofdev->dev, "waiting for firmware %s\n",
-		         filename);
+			 filename);
 
 		/*
 		 * We call request_firmware_nowait instead of
@@ -1254,12 +1215,12 @@ static int soft_uart_init(struct platform_device *ofdev)
 		 * kernel, then we use it.
 		 */
 		ret = request_firmware_nowait(THIS_MODULE,
-		                              FW_ACTION_UEVENT, filename, &ofdev->dev,
-		                              GFP_KERNEL, &ofdev->dev, uart_firmware_cont);
+					      FW_ACTION_UEVENT, filename, &ofdev->dev,
+					      GFP_KERNEL, &ofdev->dev, uart_firmware_cont);
 		if (ret) {
 			dev_err(&ofdev->dev,
-			        "could not load firmware %s\n",
-			        filename);
+				"could not load firmware %s\n",
+				filename);
 			return ret;
 		}
 	}
@@ -1289,9 +1250,8 @@ static int ucc_uart_probe(struct platform_device *ofdev)
 	 * Determine if we need Soft-UART mode
 	 */
 	ret = soft_uart_init(ofdev);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	qe_port = kzalloc(sizeof(struct uart_qe_port), GFP_KERNEL);
 	if (!qe_port) {
@@ -1379,7 +1339,7 @@ static int ucc_uart_probe(struct platform_device *ofdev)
 	qe_port->port.line = val;
 	if (qe_port->port.line >= UCC_MAX_UART) {
 		dev_err(&ofdev->dev, "port-number must be 0-%u\n",
-		        UCC_MAX_UART - 1);
+			UCC_MAX_UART - 1);
 		ret = -EINVAL;
 		goto out_free;
 	}
@@ -1387,7 +1347,7 @@ static int ucc_uart_probe(struct platform_device *ofdev)
 	qe_port->port.irq = irq_of_parse_and_map(np, 0);
 	if (qe_port->port.irq == 0) {
 		dev_err(&ofdev->dev, "could not map IRQ for UCC%u\n",
-		        qe_port->ucc_num + 1);
+		       qe_port->ucc_num + 1);
 		ret = -EINVAL;
 		goto out_free;
 	}
@@ -1408,17 +1368,17 @@ static int ucc_uart_probe(struct platform_device *ofdev)
 
 	if (of_property_read_u32(np, "brg-frequency", &val)) {
 		dev_err(&ofdev->dev,
-		        "missing brg-frequency in device tree\n");
+		       "missing brg-frequency in device tree\n");
 		ret = -EINVAL;
 		goto out_np;
 	}
 
-	if (val) {
+	if (val)
 		qe_port->port.uartclk = val;
-	} else {
+	else {
 		if (!IS_ENABLED(CONFIG_PPC32)) {
 			dev_err(&ofdev->dev,
-			        "invalid brg-frequency in device tree\n");
+				"invalid brg-frequency in device tree\n");
 			ret = -EINVAL;
 			goto out_np;
 		}
@@ -1430,15 +1390,15 @@ static int ucc_uart_probe(struct platform_device *ofdev)
 		 */
 		if (of_property_read_u32(np, "bus-frequency", &val)) {
 			dev_err(&ofdev->dev,
-			        "missing QE bus-frequency in device tree\n");
+				"missing QE bus-frequency in device tree\n");
 			ret = -EINVAL;
 			goto out_np;
 		}
-		if (val) {
+		if (val)
 			qe_port->port.uartclk = val / 2;
-		} else {
+		else {
 			dev_err(&ofdev->dev,
-			        "invalid QE bus-frequency in device tree\n");
+				"invalid QE bus-frequency in device tree\n");
 			ret = -EINVAL;
 			goto out_np;
 		}
@@ -1477,19 +1437,19 @@ static int ucc_uart_probe(struct platform_device *ofdev)
 	ret = uart_add_one_port(&ucc_uart_driver, &qe_port->port);
 	if (ret) {
 		dev_err(&ofdev->dev, "could not add /dev/ttyQE%u\n",
-		        qe_port->port.line);
+		       qe_port->port.line);
 		goto out_np;
 	}
 
 	platform_set_drvdata(ofdev, qe_port);
 
 	dev_info(&ofdev->dev, "UCC%u assigned to /dev/ttyQE%u\n",
-	         qe_port->ucc_num + 1, qe_port->port.line);
+		qe_port->ucc_num + 1, qe_port->port.line);
 
 	/* Display the mknod command for this device */
 	dev_dbg(&ofdev->dev, "mknod command is 'mknod /dev/ttyQE%u c %u %u'\n",
-	        qe_port->port.line, SERIAL_QE_MAJOR,
-	        SERIAL_QE_MINOR + qe_port->port.line);
+	       qe_port->port.line, SERIAL_QE_MAJOR,
+	       SERIAL_QE_MINOR + qe_port->port.line);
 
 	return 0;
 out_np:
@@ -1531,8 +1491,8 @@ static struct platform_driver ucc_uart_of_driver = {
 		.name = "ucc_uart",
 		.of_match_table    = ucc_uart_match,
 	},
-	.probe      = ucc_uart_probe,
-	.remove     = ucc_uart_remove,
+	.probe  	= ucc_uart_probe,
+	.remove 	= ucc_uart_remove,
 };
 
 static int __init ucc_uart_init(void)

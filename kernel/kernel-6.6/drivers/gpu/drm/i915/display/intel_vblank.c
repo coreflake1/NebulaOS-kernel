@@ -83,16 +83,14 @@ u32 i915_get_vblank_counter(struct drm_crtc *crtc)
 	 * when we've told it that we don't have a working frame
 	 * counter. Thus we must stop non-zero values leaking out.
 	 */
-	if (!vblank->max_vblank_count) {
+	if (!vblank->max_vblank_count)
 		return 0;
-	}
 
 	htotal = mode->crtc_htotal;
 	hsync_start = mode->crtc_hsync_start;
 	vbl_start = mode->crtc_vblank_start;
-	if (mode->flags & DRM_MODE_FLAG_INTERLACE) {
+	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
 		vbl_start = DIV_ROUND_UP(vbl_start, 2);
-	}
 
 	/* Convert to pixel count */
 	vbl_start *= htotal;
@@ -124,9 +122,8 @@ u32 g4x_get_vblank_counter(struct drm_crtc *crtc)
 	struct drm_vblank_crtc *vblank = &dev_priv->drm.vblank[drm_crtc_index(crtc)];
 	enum pipe pipe = to_intel_crtc(crtc)->pipe;
 
-	if (!vblank->max_vblank_count) {
+	if (!vblank->max_vblank_count)
 		return 0;
-	}
 
 	return intel_de_read(dev_priv, PIPE_FRMCOUNT_G4X(pipe));
 }
@@ -135,7 +132,7 @@ static u32 intel_crtc_scanlines_since_frame_timestamp(struct intel_crtc *crtc)
 {
 	struct drm_i915_private *dev_priv = to_i915(crtc->base.dev);
 	struct drm_vblank_crtc *vblank =
-	    &crtc->base.dev->vblank[drm_crtc_index(&crtc->base)];
+		&crtc->base.dev->vblank[drm_crtc_index(&crtc->base)];
 	const struct drm_display_mode *mode = &vblank->hwmode;
 	u32 htotal = mode->crtc_htotal;
 	u32 clock = mode->crtc_clock;
@@ -154,7 +151,7 @@ static u32 intel_crtc_scanlines_since_frame_timestamp(struct intel_crtc *crtc)
 		 * is sampled at every start of vertical blank.
 		 */
 		scan_prev_time = intel_de_read_fw(dev_priv,
-		                                  PIPE_FRMTMSTMP(crtc->pipe));
+						  PIPE_FRMTMSTMP(crtc->pipe));
 
 		/*
 		 * The TIMESTAMP_CTR register has the current
@@ -163,11 +160,11 @@ static u32 intel_crtc_scanlines_since_frame_timestamp(struct intel_crtc *crtc)
 		scan_curr_time = intel_de_read_fw(dev_priv, IVB_TIMESTAMP_CTR);
 
 		scan_post_time = intel_de_read_fw(dev_priv,
-		                                  PIPE_FRMTMSTMP(crtc->pipe));
+						  PIPE_FRMTMSTMP(crtc->pipe));
 	} while (scan_post_time != scan_prev_time);
 
 	return div_u64(mul_u32_u32(scan_curr_time - scan_prev_time,
-	                           clock), 1000 * htotal);
+				   clock), 1000 * htotal);
 }
 
 /*
@@ -181,7 +178,7 @@ static u32 intel_crtc_scanlines_since_frame_timestamp(struct intel_crtc *crtc)
 static u32 __intel_get_crtc_scanline_from_timestamp(struct intel_crtc *crtc)
 {
 	struct drm_vblank_crtc *vblank =
-	    &crtc->base.dev->vblank[drm_crtc_index(&crtc->base)];
+		&crtc->base.dev->vblank[drm_crtc_index(&crtc->base)];
 	const struct drm_display_mode *mode = &vblank->hwmode;
 	u32 vblank_start = mode->crtc_vblank_start;
 	u32 vtotal = mode->crtc_vtotal;
@@ -207,21 +204,18 @@ static int __intel_get_crtc_scanline(struct intel_crtc *crtc)
 	enum pipe pipe = crtc->pipe;
 	int position, vtotal;
 
-	if (!crtc->active) {
+	if (!crtc->active)
 		return 0;
-	}
 
 	vblank = &crtc->base.dev->vblank[drm_crtc_index(&crtc->base)];
 	mode = &vblank->hwmode;
 
-	if (crtc->mode_flags & I915_MODE_FLAG_GET_SCANLINE_FROM_TIMESTAMP) {
+	if (crtc->mode_flags & I915_MODE_FLAG_GET_SCANLINE_FROM_TIMESTAMP)
 		return __intel_get_crtc_scanline_from_timestamp(crtc);
-	}
 
 	vtotal = mode->crtc_vtotal;
-	if (mode->flags & DRM_MODE_FLAG_INTERLACE) {
+	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
 		vtotal /= 2;
-	}
 
 	position = intel_de_read_fw(dev_priv, PIPEDSL(pipe)) & PIPEDSL_LINE_MASK;
 
@@ -258,10 +252,10 @@ static int __intel_get_crtc_scanline(struct intel_crtc *crtc)
 }
 
 static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
-                                     bool in_vblank_irq,
-                                     int *vpos, int *hpos,
-                                     ktime_t *stime, ktime_t *etime,
-                                     const struct drm_display_mode *mode)
+				     bool in_vblank_irq,
+				     int *vpos, int *hpos,
+				     ktime_t *stime, ktime_t *etime,
+				     const struct drm_display_mode *mode)
 {
 	struct drm_device *dev = _crtc->dev;
 	struct drm_i915_private *dev_priv = to_i915(dev);
@@ -271,13 +265,13 @@ static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
 	int vbl_start, vbl_end, hsync_start, htotal, vtotal;
 	unsigned long irqflags;
 	bool use_scanline_counter = DISPLAY_VER(dev_priv) >= 5 ||
-	                            IS_G4X(dev_priv) || DISPLAY_VER(dev_priv) == 2 ||
-	                            crtc->mode_flags & I915_MODE_FLAG_USE_SCANLINE_COUNTER;
+		IS_G4X(dev_priv) || DISPLAY_VER(dev_priv) == 2 ||
+		crtc->mode_flags & I915_MODE_FLAG_USE_SCANLINE_COUNTER;
 
 	if (drm_WARN_ON(&dev_priv->drm, !mode->crtc_clock)) {
 		drm_dbg(&dev_priv->drm,
-		        "trying to get scanoutpos for disabled pipe %c\n",
-		        pipe_name(pipe));
+			"trying to get scanoutpos for disabled pipe %c\n",
+			pipe_name(pipe));
 		return false;
 	}
 
@@ -300,14 +294,12 @@ static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
 	 */
 	spin_lock_irqsave(&dev_priv->uncore.lock, irqflags);
 
-	if (IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (IS_ENABLED(CONFIG_PREEMPT_RT))
 		preempt_disable();
-	}
 
 	/* Get optional system timestamp before query. */
-	if (stime) {
+	if (stime)
 		*stime = ktime_get();
-	}
 
 	if (crtc->mode_flags & I915_MODE_FLAG_VRR) {
 		int scanlines = intel_crtc_scanlines_since_frame_timestamp(crtc);
@@ -320,9 +312,8 @@ static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
 		 * vblank end. This should make the generated timestamp
 		 * more or less match when the active portion will start.
 		 */
-		if (position >= vbl_start && scanlines < position) {
+		if (position >= vbl_start && scanlines < position)
 			position = min(crtc->vmax_vblank_start + scanlines, vtotal - 1);
-		}
 	} else if (use_scanline_counter) {
 		/* No obvious pixelcount register. Only query vertical
 		 * scanout position from Display scan line register.
@@ -365,13 +356,11 @@ static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
 	}
 
 	/* Get optional system timestamp after query. */
-	if (etime) {
+	if (etime)
 		*etime = ktime_get();
-	}
 
-	if (IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (IS_ENABLED(CONFIG_PREEMPT_RT))
 		preempt_enable();
-	}
 
 	spin_unlock_irqrestore(&dev_priv->uncore.lock, irqflags);
 
@@ -381,11 +370,10 @@ static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
 	 * vblank, position will be positive counting
 	 * up since vbl_end.
 	 */
-	if (position >= vbl_start) {
+	if (position >= vbl_start)
 		position -= vbl_end;
-	} else {
+	else
 		position += vtotal - vbl_end;
-	}
 
 	if (use_scanline_counter) {
 		*vpos = position;
@@ -399,11 +387,11 @@ static bool i915_get_crtc_scanoutpos(struct drm_crtc *_crtc,
 }
 
 bool intel_crtc_get_vblank_timestamp(struct drm_crtc *crtc, int *max_error,
-                                     ktime_t *vblank_time, bool in_vblank_irq)
+				     ktime_t *vblank_time, bool in_vblank_irq)
 {
 	return drm_crtc_vblank_helper_get_vblank_timestamp_internal(
-	           crtc, max_error, vblank_time, in_vblank_irq,
-	           i915_get_crtc_scanoutpos);
+		crtc, max_error, vblank_time, in_vblank_irq,
+		i915_get_crtc_scanoutpos);
 }
 
 int intel_get_crtc_scanline(struct intel_crtc *crtc)
@@ -420,7 +408,7 @@ int intel_get_crtc_scanline(struct intel_crtc *crtc)
 }
 
 static bool pipe_scanline_is_moving(struct drm_i915_private *dev_priv,
-                                    enum pipe pipe)
+				    enum pipe pipe)
 {
 	i915_reg_t reg = PIPEDSL(pipe);
 	u32 line1, line2;
@@ -440,8 +428,8 @@ static void wait_for_pipe_scanline_moving(struct intel_crtc *crtc, bool state)
 	/* Wait for the display line to settle/start moving */
 	if (wait_for(pipe_scanline_is_moving(dev_priv, pipe) == state, 100))
 		drm_err(&dev_priv->drm,
-		        "pipe %c scanline %s wait timed out\n",
-		        pipe_name(pipe), str_on_off(state));
+			"pipe %c scanline %s wait timed out\n",
+			pipe_name(pipe), str_on_off(state));
 }
 
 void intel_wait_for_pipe_scanline_stopped(struct intel_crtc *crtc)
@@ -490,9 +478,8 @@ static int intel_crtc_scanline_offset(const struct intel_crtc_state *crtc_state)
 		int vtotal;
 
 		vtotal = adjusted_mode->crtc_vtotal;
-		if (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE) {
+		if (adjusted_mode->flags & DRM_MODE_FLAG_INTERLACE)
 			vtotal /= 2;
-		}
 
 		return vtotal - 1;
 	} else if (HAS_DDI(i915) && intel_crtc_has_type(crtc_state, INTEL_OUTPUT_HDMI)) {
@@ -503,7 +490,7 @@ static int intel_crtc_scanline_offset(const struct intel_crtc_state *crtc_state)
 }
 
 void intel_crtc_update_active_timings(const struct intel_crtc_state *crtc_state,
-                                      bool vrr_enable)
+				      bool vrr_enable)
 {
 	struct intel_crtc *crtc = to_intel_crtc(crtc_state->uapi.crtc);
 	struct drm_i915_private *i915 = to_i915(crtc->base.dev);

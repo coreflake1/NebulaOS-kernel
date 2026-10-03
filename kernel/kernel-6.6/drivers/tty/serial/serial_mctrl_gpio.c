@@ -56,15 +56,14 @@ void mctrl_gpio_set(struct mctrl_gpios *gpios, unsigned int mctrl)
 	DECLARE_BITMAP(values, UART_GPIO_MAX);
 	unsigned int count = 0;
 
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return;
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; i++)
 		if (gpios->gpio[i] && mctrl_gpio_flags_is_dir_out(i)) {
 			desc_array[count] = gpios->gpio[i];
 			__assign_bit(count, values,
-			             mctrl & mctrl_gpios_desc[i].mctrl);
+				     mctrl & mctrl_gpios_desc[i].mctrl);
 			count++;
 		}
 	gpiod_set_array_value(count, desc_array, NULL, values);
@@ -78,11 +77,10 @@ EXPORT_SYMBOL_GPL(mctrl_gpio_set);
  * Returns: the gpio_desc structure associated to the modem line index
  */
 struct gpio_desc *mctrl_gpio_to_gpiod(struct mctrl_gpios *gpios,
-                                      enum mctrl_gpio_idx gidx)
+				      enum mctrl_gpio_idx gidx)
 {
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return NULL;
-	}
 
 	return gpios->gpio[gidx];
 }
@@ -100,17 +98,15 @@ unsigned int mctrl_gpio_get(struct mctrl_gpios *gpios, unsigned int *mctrl)
 {
 	enum mctrl_gpio_idx i;
 
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return *mctrl;
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; i++) {
 		if (gpios->gpio[i] && !mctrl_gpio_flags_is_dir_out(i)) {
-			if (gpiod_get_value(gpios->gpio[i])) {
+			if (gpiod_get_value(gpios->gpio[i]))
 				*mctrl |= mctrl_gpios_desc[i].mctrl;
-			} else {
+			else
 				*mctrl &= ~mctrl_gpios_desc[i].mctrl;
-			}
 		}
 	}
 
@@ -123,17 +119,15 @@ mctrl_gpio_get_outputs(struct mctrl_gpios *gpios, unsigned int *mctrl)
 {
 	enum mctrl_gpio_idx i;
 
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return *mctrl;
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; i++) {
 		if (gpios->gpio[i] && mctrl_gpio_flags_is_dir_out(i)) {
-			if (gpiod_get_value(gpios->gpio[i])) {
+			if (gpiod_get_value(gpios->gpio[i]))
 				*mctrl |= mctrl_gpios_desc[i].mctrl;
-			} else {
+			else
 				*mctrl &= ~mctrl_gpios_desc[i].mctrl;
-			}
 		}
 	}
 
@@ -147,9 +141,8 @@ struct mctrl_gpios *mctrl_gpio_init_noauto(struct device *dev, unsigned int idx)
 	enum mctrl_gpio_idx i;
 
 	gpios = devm_kzalloc(dev, sizeof(*gpios), GFP_KERNEL);
-	if (!gpios) {
+	if (!gpios)
 		return ERR_PTR(-ENOMEM);
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; i++) {
 		char *gpio_str;
@@ -157,26 +150,23 @@ struct mctrl_gpios *mctrl_gpio_init_noauto(struct device *dev, unsigned int idx)
 
 		/* Check if GPIO property exists and continue if not */
 		gpio_str = kasprintf(GFP_KERNEL, "%s-gpios",
-		                     mctrl_gpios_desc[i].name);
-		if (!gpio_str) {
+				     mctrl_gpios_desc[i].name);
+		if (!gpio_str)
 			continue;
-		}
 
 		present = device_property_present(dev, gpio_str);
 		kfree(gpio_str);
-		if (!present) {
+		if (!present)
 			continue;
-		}
 
 		gpios->gpio[i] =
-		    devm_gpiod_get_index_optional(dev,
-		                                  mctrl_gpios_desc[i].name,
-		                                  idx,
-		                                  mctrl_gpios_desc[i].flags);
+			devm_gpiod_get_index_optional(dev,
+						      mctrl_gpios_desc[i].name,
+						      idx,
+						      mctrl_gpios_desc[i].flags);
 
-		if (IS_ERR(gpios->gpio[i])) {
+		if (IS_ERR(gpios->gpio[i]))
 			return ERR_CAST(gpios->gpio[i]);
-		}
 	}
 
 	return gpios;
@@ -200,21 +190,17 @@ static irqreturn_t mctrl_gpio_irq_handle(int irq, void *context)
 	gpios->mctrl_prev = mctrl;
 
 	if (mctrl_diff & MCTRL_ANY_DELTA && port->state != NULL) {
-		if ((mctrl_diff & mctrl) & TIOCM_RI) {
+		if ((mctrl_diff & mctrl) & TIOCM_RI)
 			port->icount.rng++;
-		}
 
-		if ((mctrl_diff & mctrl) & TIOCM_DSR) {
+		if ((mctrl_diff & mctrl) & TIOCM_DSR)
 			port->icount.dsr++;
-		}
 
-		if (mctrl_diff & TIOCM_CD) {
+		if (mctrl_diff & TIOCM_CD)
 			uart_handle_dcd_change(port, mctrl & TIOCM_CD);
-		}
 
-		if (mctrl_diff & TIOCM_CTS) {
+		if (mctrl_diff & TIOCM_CTS)
 			uart_handle_cts_change(port, mctrl & TIOCM_CTS);
-		}
 
 		wake_up_interruptible(&port->state->port.delta_msr_wait);
 	}
@@ -241,24 +227,22 @@ struct mctrl_gpios *mctrl_gpio_init(struct uart_port *port, unsigned int idx)
 	enum mctrl_gpio_idx i;
 
 	gpios = mctrl_gpio_init_noauto(port->dev, idx);
-	if (IS_ERR(gpios)) {
+	if (IS_ERR(gpios))
 		return gpios;
-	}
 
 	gpios->port = port;
 
 	for (i = 0; i < UART_GPIO_MAX; ++i) {
 		int ret;
 
-		if (!gpios->gpio[i] || mctrl_gpio_flags_is_dir_out(i)) {
+		if (!gpios->gpio[i] || mctrl_gpio_flags_is_dir_out(i))
 			continue;
-		}
 
 		ret = gpiod_to_irq(gpios->gpio[i]);
 		if (ret < 0) {
 			dev_err(port->dev,
-			        "failed to find corresponding irq for %s (idx=%d, err=%d)\n",
-			        mctrl_gpios_desc[i].name, idx, ret);
+				"failed to find corresponding irq for %s (idx=%d, err=%d)\n",
+				mctrl_gpios_desc[i].name, idx, ret);
 			return ERR_PTR(ret);
 		}
 		gpios->irq[i] = ret;
@@ -267,14 +251,14 @@ struct mctrl_gpios *mctrl_gpio_init(struct uart_port *port, unsigned int idx)
 		irq_set_status_flags(gpios->irq[i], IRQ_NOAUTOEN);
 
 		ret = devm_request_irq(port->dev, gpios->irq[i],
-		                       mctrl_gpio_irq_handle,
-		                       IRQ_TYPE_EDGE_BOTH, dev_name(port->dev),
-		                       gpios);
+				       mctrl_gpio_irq_handle,
+				       IRQ_TYPE_EDGE_BOTH, dev_name(port->dev),
+				       gpios);
 		if (ret) {
 			/* alternatively implement polling */
 			dev_err(port->dev,
-			        "failed to request irq for %s (idx=%d, err=%d)\n",
-			        mctrl_gpios_desc[i].name, idx, ret);
+				"failed to request irq for %s (idx=%d, err=%d)\n",
+				mctrl_gpios_desc[i].name, idx, ret);
 			return ERR_PTR(ret);
 		}
 	}
@@ -295,18 +279,15 @@ void mctrl_gpio_free(struct device *dev, struct mctrl_gpios *gpios)
 {
 	enum mctrl_gpio_idx i;
 
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return;
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; i++) {
-		if (gpios->irq[i]) {
+		if (gpios->irq[i])
 			devm_free_irq(gpios->port->dev, gpios->irq[i], gpios);
-		}
 
-		if (gpios->gpio[i]) {
+		if (gpios->gpio[i])
 			devm_gpiod_put(dev, gpios->gpio[i]);
-		}
 	}
 	devm_kfree(dev, gpios);
 }
@@ -320,14 +301,12 @@ void mctrl_gpio_enable_ms(struct mctrl_gpios *gpios)
 {
 	enum mctrl_gpio_idx i;
 
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return;
-	}
 
 	/* .enable_ms may be called multiple times */
-	if (gpios->mctrl_on) {
+	if (gpios->mctrl_on)
 		return;
-	}
 
 	gpios->mctrl_on = true;
 
@@ -335,59 +314,72 @@ void mctrl_gpio_enable_ms(struct mctrl_gpios *gpios)
 	mctrl_gpio_get(gpios, &gpios->mctrl_prev);
 
 	for (i = 0; i < UART_GPIO_MAX; ++i) {
-		if (!gpios->irq[i]) {
+		if (!gpios->irq[i])
 			continue;
-		}
 
 		enable_irq(gpios->irq[i]);
 	}
 }
 EXPORT_SYMBOL_GPL(mctrl_gpio_enable_ms);
 
-/**
- * mctrl_gpio_disable_ms - disable irqs and handling of changes to the ms lines
- * @gpios: gpios to disable
- */
-void mctrl_gpio_disable_ms(struct mctrl_gpios *gpios)
+static void mctrl_gpio_disable_ms(struct mctrl_gpios *gpios, bool sync)
 {
 	enum mctrl_gpio_idx i;
 
-	if (gpios == NULL) {
+	if (gpios == NULL)
 		return;
-	}
 
-	if (!gpios->mctrl_on) {
+	if (!gpios->mctrl_on)
 		return;
-	}
 
 	gpios->mctrl_on = false;
 
 	for (i = 0; i < UART_GPIO_MAX; ++i) {
-		if (!gpios->irq[i]) {
+		if (!gpios->irq[i])
 			continue;
-		}
 
-		disable_irq(gpios->irq[i]);
+		if (sync)
+			disable_irq(gpios->irq[i]);
+		else
+			disable_irq_nosync(gpios->irq[i]);
 	}
 }
-EXPORT_SYMBOL_GPL(mctrl_gpio_disable_ms);
+
+/**
+ * mctrl_gpio_disable_ms_sync - disable irqs and handling of changes to the ms
+ * lines, and wait for any pending IRQ to be processed
+ * @gpios: gpios to disable
+ */
+void mctrl_gpio_disable_ms_sync(struct mctrl_gpios *gpios)
+{
+	mctrl_gpio_disable_ms(gpios, true);
+}
+EXPORT_SYMBOL_GPL(mctrl_gpio_disable_ms_sync);
+
+/**
+ * mctrl_gpio_disable_ms_no_sync - disable irqs and handling of changes to the
+ * ms lines, and return immediately
+ * @gpios: gpios to disable
+ */
+void mctrl_gpio_disable_ms_no_sync(struct mctrl_gpios *gpios)
+{
+	mctrl_gpio_disable_ms(gpios, false);
+}
+EXPORT_SYMBOL_GPL(mctrl_gpio_disable_ms_no_sync);
 
 void mctrl_gpio_enable_irq_wake(struct mctrl_gpios *gpios)
 {
 	enum mctrl_gpio_idx i;
 
-	if (!gpios) {
+	if (!gpios)
 		return;
-	}
 
-	if (!gpios->mctrl_on) {
+	if (!gpios->mctrl_on)
 		return;
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; ++i) {
-		if (!gpios->irq[i]) {
+		if (!gpios->irq[i])
 			continue;
-		}
 
 		enable_irq_wake(gpios->irq[i]);
 	}
@@ -398,18 +390,15 @@ void mctrl_gpio_disable_irq_wake(struct mctrl_gpios *gpios)
 {
 	enum mctrl_gpio_idx i;
 
-	if (!gpios) {
+	if (!gpios)
 		return;
-	}
 
-	if (!gpios->mctrl_on) {
+	if (!gpios->mctrl_on)
 		return;
-	}
 
 	for (i = 0; i < UART_GPIO_MAX; ++i) {
-		if (!gpios->irq[i]) {
+		if (!gpios->irq[i])
 			continue;
-		}
 
 		disable_irq_wake(gpios->irq[i]);
 	}

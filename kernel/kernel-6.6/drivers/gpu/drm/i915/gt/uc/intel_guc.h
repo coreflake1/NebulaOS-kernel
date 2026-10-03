@@ -278,9 +278,9 @@ struct intel_guc {
  * GuC version number components are only 8-bit, so converting to a 32bit 8.8.8
  * integer works.
  */
-#define MAKE_GUC_VER(maj, min, pat) (((maj) << 16) | ((min) << 8) | (pat))
-#define MAKE_GUC_VER_STRUCT(ver)    MAKE_GUC_VER((ver).major, (ver).minor, (ver).patch)
-#define GUC_SUBMIT_VER(guc)     MAKE_GUC_VER_STRUCT((guc)->submission_version)
+#define MAKE_GUC_VER(maj, min, pat)	(((maj) << 16) | ((min) << 8) | (pat))
+#define MAKE_GUC_VER_STRUCT(ver)	MAKE_GUC_VER((ver).major, (ver).minor, (ver).patch)
+#define GUC_SUBMIT_VER(guc)		MAKE_GUC_VER_STRUCT((guc)->submission_version)
 
 static inline struct intel_guc *log_to_guc(struct intel_guc_log *log)
 {
@@ -295,25 +295,25 @@ inline int intel_guc_send(struct intel_guc *guc, const u32 *action, u32 len)
 
 static
 inline int intel_guc_send_nb(struct intel_guc *guc, const u32 *action, u32 len,
-                             u32 g2h_len_dw)
+			     u32 g2h_len_dw)
 {
 	return intel_guc_ct_send(&guc->ct, action, len, NULL, 0,
-	                         MAKE_SEND_FLAGS(g2h_len_dw));
+				 MAKE_SEND_FLAGS(g2h_len_dw));
 }
 
 static inline int
 intel_guc_send_and_receive(struct intel_guc *guc, const u32 *action, u32 len,
-                           u32 *response_buf, u32 response_buf_size)
+			   u32 *response_buf, u32 response_buf_size)
 {
 	return intel_guc_ct_send(&guc->ct, action, len,
-	                         response_buf, response_buf_size, 0);
+				 response_buf, response_buf_size, 0);
 }
 
 static inline int intel_guc_send_busy_loop(struct intel_guc *guc,
-        const u32 *action,
-        u32 len,
-        u32 g2h_len_dw,
-        bool loop)
+					   const u32 *action,
+					   u32 len,
+					   u32 g2h_len_dw,
+					   bool loop)
 {
 	int err;
 	unsigned int sleep_period_ms = 1;
@@ -333,9 +333,8 @@ retry:
 	err = intel_guc_send_nb(guc, action, len, g2h_len_dw);
 	if (unlikely(err == -EBUSY && loop)) {
 		if (likely(not_atomic)) {
-			if (msleep_interruptible(sleep_period_ms)) {
+			if (msleep_interruptible(sleep_period_ms))
 				return -EINTR;
-			}
 			sleep_period_ms = sleep_period_ms << 1;
 		} else {
 			cpu_relax();
@@ -349,13 +348,12 @@ retry:
 /* Only call this from the interrupt handler code */
 static inline void intel_guc_to_host_event_handler(struct intel_guc *guc)
 {
-	if (guc->interrupts.enabled) {
+	if (guc->interrupts.enabled)
 		intel_guc_ct_event_handler(&guc->ct);
-	}
 }
 
 /* GuC addresses above GUC_GGTT_TOP also don't map through the GTT */
-#define GUC_GGTT_TOP    0xFEE00000
+#define GUC_GGTT_TOP	0xFEE00000
 
 /**
  * intel_guc_ggtt_offset() - Get and validate the GGTT offset of @vma
@@ -371,7 +369,7 @@ static inline void intel_guc_to_host_event_handler(struct intel_guc *guc)
  * Return: GGTT offset of the @vma.
  */
 static inline u32 intel_guc_ggtt_offset(struct intel_guc *guc,
-                                        struct i915_vma *vma)
+					struct i915_vma *vma)
 {
 	u32 offset = i915_ggtt_offset(vma);
 
@@ -389,15 +387,15 @@ int intel_guc_init(struct intel_guc *guc);
 void intel_guc_fini(struct intel_guc *guc);
 void intel_guc_notify(struct intel_guc *guc);
 int intel_guc_send_mmio(struct intel_guc *guc, const u32 *action, u32 len,
-                        u32 *response_buf, u32 response_buf_size);
+			u32 *response_buf, u32 response_buf_size);
 int intel_guc_to_host_process_recv_msg(struct intel_guc *guc,
-                                       const u32 *payload, u32 len);
+				       const u32 *payload, u32 len);
 int intel_guc_auth_huc(struct intel_guc *guc, u32 rsa_offset);
 int intel_guc_suspend(struct intel_guc *guc);
 int intel_guc_resume(struct intel_guc *guc);
 struct i915_vma *intel_guc_allocate_vma(struct intel_guc *guc, u32 size);
 int intel_guc_allocate_and_map_vma(struct intel_guc *guc, u32 size,
-                                   struct i915_vma **out_vma, void **out_vaddr);
+				   struct i915_vma **out_vma, void **out_vaddr);
 int intel_guc_self_cfg32(struct intel_guc *guc, u16 key, u32 value);
 int intel_guc_self_cfg64(struct intel_guc *guc, u16 key, u64 value);
 
@@ -469,15 +467,15 @@ static inline void intel_guc_disable_msg(struct intel_guc *guc, u32 mask)
 int intel_guc_wait_for_idle(struct intel_guc *guc, long timeout);
 
 int intel_guc_deregister_done_process_msg(struct intel_guc *guc,
-        const u32 *msg, u32 len);
+					  const u32 *msg, u32 len);
 int intel_guc_sched_done_process_msg(struct intel_guc *guc,
-                                     const u32 *msg, u32 len);
+				     const u32 *msg, u32 len);
 int intel_guc_context_reset_process_msg(struct intel_guc *guc,
-                                        const u32 *msg, u32 len);
+					const u32 *msg, u32 len);
 int intel_guc_engine_failure_process_msg(struct intel_guc *guc,
-        const u32 *msg, u32 len);
+					 const u32 *msg, u32 len);
 int intel_guc_error_capture_process_msg(struct intel_guc *guc,
-                                        const u32 *msg, u32 len);
+					const u32 *msg, u32 len);
 
 struct intel_engine_cs *
 intel_guc_lookup_engine(struct intel_guc *guc, u8 guc_class, u8 instance);

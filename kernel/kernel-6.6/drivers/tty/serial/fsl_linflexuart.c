@@ -19,106 +19,106 @@
 
 /* All registers are 32-bit width */
 
-#define LINCR1  0x0000  /* LIN control register             */
-#define LINIER  0x0004  /* LIN interrupt enable register        */
-#define LINSR   0x0008  /* LIN status register              */
-#define LINESR  0x000C  /* LIN error status register            */
-#define UARTCR  0x0010  /* UART mode control register           */
-#define UARTSR  0x0014  /* UART mode status register            */
-#define LINTCSR 0x0018  /* LIN timeout control status register      */
-#define LINOCR  0x001C  /* LIN output compare register          */
-#define LINTOCR 0x0020  /* LIN timeout control register         */
-#define LINFBRR 0x0024  /* LIN fractional baud rate register        */
-#define LINIBRR 0x0028  /* LIN integer baud rate register       */
-#define LINCFR  0x002C  /* LIN checksum field register          */
-#define LINCR2  0x0030  /* LIN control register 2           */
-#define BIDR    0x0034  /* Buffer identifier register           */
-#define BDRL    0x0038  /* Buffer data register least significant   */
-#define BDRM    0x003C  /* Buffer data register most significant    */
-#define IFER    0x0040  /* Identifier filter enable register        */
-#define IFMI    0x0044  /* Identifier filter match index        */
-#define IFMR    0x0048  /* Identifier filter mode register      */
-#define GCR 0x004C  /* Global control register          */
-#define UARTPTO 0x0050  /* UART preset timeout register         */
-#define UARTCTO 0x0054  /* UART current timeout register        */
+#define LINCR1	0x0000	/* LIN control register				*/
+#define LINIER	0x0004	/* LIN interrupt enable register		*/
+#define LINSR	0x0008	/* LIN status register				*/
+#define LINESR	0x000C	/* LIN error status register			*/
+#define UARTCR	0x0010	/* UART mode control register			*/
+#define UARTSR	0x0014	/* UART mode status register			*/
+#define LINTCSR	0x0018	/* LIN timeout control status register		*/
+#define LINOCR	0x001C	/* LIN output compare register			*/
+#define LINTOCR	0x0020	/* LIN timeout control register			*/
+#define LINFBRR	0x0024	/* LIN fractional baud rate register		*/
+#define LINIBRR	0x0028	/* LIN integer baud rate register		*/
+#define LINCFR	0x002C	/* LIN checksum field register			*/
+#define LINCR2	0x0030	/* LIN control register 2			*/
+#define BIDR	0x0034	/* Buffer identifier register			*/
+#define BDRL	0x0038	/* Buffer data register least significant	*/
+#define BDRM	0x003C	/* Buffer data register most significant	*/
+#define IFER	0x0040	/* Identifier filter enable register		*/
+#define IFMI	0x0044	/* Identifier filter match index		*/
+#define IFMR	0x0048	/* Identifier filter mode register		*/
+#define GCR	0x004C	/* Global control register			*/
+#define UARTPTO	0x0050	/* UART preset timeout register			*/
+#define UARTCTO	0x0054	/* UART current timeout register		*/
 
 /*
  * Register field definitions
  */
 
-#define LINFLEXD_LINCR1_INIT        BIT(0)
-#define LINFLEXD_LINCR1_MME     BIT(4)
-#define LINFLEXD_LINCR1_BF      BIT(7)
+#define LINFLEXD_LINCR1_INIT		BIT(0)
+#define LINFLEXD_LINCR1_MME		BIT(4)
+#define LINFLEXD_LINCR1_BF		BIT(7)
 
-#define LINFLEXD_LINSR_LINS_INITMODE    BIT(12)
-#define LINFLEXD_LINSR_LINS_MASK    (0xF << 12)
+#define LINFLEXD_LINSR_LINS_INITMODE	BIT(12)
+#define LINFLEXD_LINSR_LINS_MASK	(0xF << 12)
 
-#define LINFLEXD_LINIER_SZIE        BIT(15)
-#define LINFLEXD_LINIER_OCIE        BIT(14)
-#define LINFLEXD_LINIER_BEIE        BIT(13)
-#define LINFLEXD_LINIER_CEIE        BIT(12)
-#define LINFLEXD_LINIER_HEIE        BIT(11)
-#define LINFLEXD_LINIER_FEIE        BIT(8)
-#define LINFLEXD_LINIER_BOIE        BIT(7)
-#define LINFLEXD_LINIER_LSIE        BIT(6)
-#define LINFLEXD_LINIER_WUIE        BIT(5)
-#define LINFLEXD_LINIER_DBFIE       BIT(4)
-#define LINFLEXD_LINIER_DBEIETOIE   BIT(3)
-#define LINFLEXD_LINIER_DRIE        BIT(2)
-#define LINFLEXD_LINIER_DTIE        BIT(1)
-#define LINFLEXD_LINIER_HRIE        BIT(0)
+#define LINFLEXD_LINIER_SZIE		BIT(15)
+#define LINFLEXD_LINIER_OCIE		BIT(14)
+#define LINFLEXD_LINIER_BEIE		BIT(13)
+#define LINFLEXD_LINIER_CEIE		BIT(12)
+#define LINFLEXD_LINIER_HEIE		BIT(11)
+#define LINFLEXD_LINIER_FEIE		BIT(8)
+#define LINFLEXD_LINIER_BOIE		BIT(7)
+#define LINFLEXD_LINIER_LSIE		BIT(6)
+#define LINFLEXD_LINIER_WUIE		BIT(5)
+#define LINFLEXD_LINIER_DBFIE		BIT(4)
+#define LINFLEXD_LINIER_DBEIETOIE	BIT(3)
+#define LINFLEXD_LINIER_DRIE		BIT(2)
+#define LINFLEXD_LINIER_DTIE		BIT(1)
+#define LINFLEXD_LINIER_HRIE		BIT(0)
 
-#define LINFLEXD_UARTCR_OSR_MASK    (0xF << 24)
-#define LINFLEXD_UARTCR_OSR(uartcr) (((uartcr) \
-                                      & LINFLEXD_UARTCR_OSR_MASK) >> 24)
+#define LINFLEXD_UARTCR_OSR_MASK	(0xF << 24)
+#define LINFLEXD_UARTCR_OSR(uartcr)	(((uartcr) \
+					& LINFLEXD_UARTCR_OSR_MASK) >> 24)
 
-#define LINFLEXD_UARTCR_ROSE        BIT(23)
+#define LINFLEXD_UARTCR_ROSE		BIT(23)
 
-#define LINFLEXD_UARTCR_RFBM        BIT(9)
-#define LINFLEXD_UARTCR_TFBM        BIT(8)
-#define LINFLEXD_UARTCR_WL1     BIT(7)
-#define LINFLEXD_UARTCR_PC1     BIT(6)
+#define LINFLEXD_UARTCR_RFBM		BIT(9)
+#define LINFLEXD_UARTCR_TFBM		BIT(8)
+#define LINFLEXD_UARTCR_WL1		BIT(7)
+#define LINFLEXD_UARTCR_PC1		BIT(6)
 
-#define LINFLEXD_UARTCR_RXEN        BIT(5)
-#define LINFLEXD_UARTCR_TXEN        BIT(4)
-#define LINFLEXD_UARTCR_PC0     BIT(3)
+#define LINFLEXD_UARTCR_RXEN		BIT(5)
+#define LINFLEXD_UARTCR_TXEN		BIT(4)
+#define LINFLEXD_UARTCR_PC0		BIT(3)
 
-#define LINFLEXD_UARTCR_PCE     BIT(2)
-#define LINFLEXD_UARTCR_WL0     BIT(1)
-#define LINFLEXD_UARTCR_UART        BIT(0)
+#define LINFLEXD_UARTCR_PCE		BIT(2)
+#define LINFLEXD_UARTCR_WL0		BIT(1)
+#define LINFLEXD_UARTCR_UART		BIT(0)
 
-#define LINFLEXD_UARTSR_SZF     BIT(15)
-#define LINFLEXD_UARTSR_OCF     BIT(14)
-#define LINFLEXD_UARTSR_PE3     BIT(13)
-#define LINFLEXD_UARTSR_PE2     BIT(12)
-#define LINFLEXD_UARTSR_PE1     BIT(11)
-#define LINFLEXD_UARTSR_PE0     BIT(10)
-#define LINFLEXD_UARTSR_RMB     BIT(9)
-#define LINFLEXD_UARTSR_FEF     BIT(8)
-#define LINFLEXD_UARTSR_BOF     BIT(7)
-#define LINFLEXD_UARTSR_RPS     BIT(6)
-#define LINFLEXD_UARTSR_WUF     BIT(5)
-#define LINFLEXD_UARTSR_4       BIT(4)
+#define LINFLEXD_UARTSR_SZF		BIT(15)
+#define LINFLEXD_UARTSR_OCF		BIT(14)
+#define LINFLEXD_UARTSR_PE3		BIT(13)
+#define LINFLEXD_UARTSR_PE2		BIT(12)
+#define LINFLEXD_UARTSR_PE1		BIT(11)
+#define LINFLEXD_UARTSR_PE0		BIT(10)
+#define LINFLEXD_UARTSR_RMB		BIT(9)
+#define LINFLEXD_UARTSR_FEF		BIT(8)
+#define LINFLEXD_UARTSR_BOF		BIT(7)
+#define LINFLEXD_UARTSR_RPS		BIT(6)
+#define LINFLEXD_UARTSR_WUF		BIT(5)
+#define LINFLEXD_UARTSR_4		BIT(4)
 
-#define LINFLEXD_UARTSR_TO      BIT(3)
+#define LINFLEXD_UARTSR_TO		BIT(3)
 
-#define LINFLEXD_UARTSR_DRFRFE      BIT(2)
-#define LINFLEXD_UARTSR_DTFTFF      BIT(1)
-#define LINFLEXD_UARTSR_NF      BIT(0)
-#define LINFLEXD_UARTSR_PE      (LINFLEXD_UARTSR_PE0 |\
-                                 LINFLEXD_UARTSR_PE1 |\
-                                 LINFLEXD_UARTSR_PE2 |\
-                                 LINFLEXD_UARTSR_PE3)
+#define LINFLEXD_UARTSR_DRFRFE		BIT(2)
+#define LINFLEXD_UARTSR_DTFTFF		BIT(1)
+#define LINFLEXD_UARTSR_NF		BIT(0)
+#define LINFLEXD_UARTSR_PE		(LINFLEXD_UARTSR_PE0 |\
+					 LINFLEXD_UARTSR_PE1 |\
+					 LINFLEXD_UARTSR_PE2 |\
+					 LINFLEXD_UARTSR_PE3)
 
-#define LINFLEX_LDIV_MULTIPLIER     (16)
+#define LINFLEX_LDIV_MULTIPLIER		(16)
 
-#define DRIVER_NAME "fsl-linflexuart"
-#define DEV_NAME    "ttyLF"
-#define UART_NR     4
+#define DRIVER_NAME	"fsl-linflexuart"
+#define DEV_NAME	"ttyLF"
+#define UART_NR		4
 
-#define EARLYCON_BUFFER_INITIAL_CAP 8
+#define EARLYCON_BUFFER_INITIAL_CAP	8
 
-#define PREINIT_DELAY           2000 /* us */
+#define PREINIT_DELAY			2000 /* us */
 
 static const struct of_device_id linflex_dt_ids[] = {
 	{
@@ -165,8 +165,8 @@ static void linflex_put_char(struct uart_port *sport, unsigned char c)
 
 	/* Waiting for data transmission completed. */
 	while (((status = readl(sport->membase + UARTSR)) &
-	        LINFLEXD_UARTSR_DTFTFF) !=
-	       LINFLEXD_UARTSR_DTFTFF)
+				LINFLEXD_UARTSR_DTFTFF) !=
+				LINFLEXD_UARTSR_DTFTFF)
 		;
 
 	writel(status | LINFLEXD_UARTSR_DTFTFF, sport->membase + UARTSR);
@@ -181,13 +181,11 @@ static inline void linflex_transmit_buffer(struct uart_port *sport)
 		uart_xmit_advance(sport, 1);
 	}
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(sport);
-	}
 
-	if (uart_circ_empty(xmit)) {
+	if (uart_circ_empty(xmit))
 		linflex_stop_tx(sport);
-	}
 }
 
 static void linflex_start_tx(struct uart_port *port)
@@ -242,21 +240,18 @@ static irqreturn_t linflex_rxint(int irq, void *dev_id)
 		sport->icount.rx++;
 
 		if (status & (LINFLEXD_UARTSR_BOF | LINFLEXD_UARTSR_FEF |
-		              LINFLEXD_UARTSR_PE)) {
-			if (status & LINFLEXD_UARTSR_BOF) {
+				LINFLEXD_UARTSR_PE)) {
+			if (status & LINFLEXD_UARTSR_BOF)
 				sport->icount.overrun++;
-			}
 			if (status & LINFLEXD_UARTSR_FEF) {
 				if (!rx) {
 					brk = true;
 					sport->icount.brk++;
-				} else {
+				} else
 					sport->icount.frame++;
-				}
 			}
-			if (status & LINFLEXD_UARTSR_PE) {
+			if (status & LINFLEXD_UARTSR_PE)
 				sport->icount.parity++;
-			}
 		}
 
 		writel(status, sport->membase + UARTSR);
@@ -265,9 +260,8 @@ static irqreturn_t linflex_rxint(int irq, void *dev_id)
 		if (brk) {
 			uart_handle_break(sport);
 		} else {
-			if (uart_handle_sysrq_char(sport, (unsigned char)rx)) {
+			if (uart_handle_sysrq_char(sport, (unsigned char)rx))
 				continue;
-			}
 			tty_insert_flip_char(port, rx, flg);
 		}
 	}
@@ -286,12 +280,10 @@ static irqreturn_t linflex_int(int irq, void *dev_id)
 
 	status = readl(sport->membase + UARTSR);
 
-	if (status & LINFLEXD_UARTSR_DRFRFE) {
+	if (status & LINFLEXD_UARTSR_DRFRFE)
 		linflex_rxint(irq, dev_id);
-	}
-	if (status & LINFLEXD_UARTSR_DTFTFF) {
+	if (status & LINFLEXD_UARTSR_DTFTFF)
 		linflex_txint(irq, dev_id);
-	}
 
 	return IRQ_HANDLED;
 }
@@ -341,16 +333,16 @@ static void linflex_setup_watermark(struct uart_port *sport)
 
 	/* wait for init mode entry */
 	while ((readl(sport->membase + LINSR)
-	        & LINFLEXD_LINSR_LINS_MASK)
-	       != LINFLEXD_LINSR_LINS_INITMODE)
+		& LINFLEXD_LINSR_LINS_MASK)
+		!= LINFLEXD_LINSR_LINS_INITMODE)
 		;
 
 	/*
-	 *  UART = 0x1;     - Linflex working in UART mode
-	 *  TXEN = 0x1;     - Enable transmission of data now
-	 *  RXEn = 0x1;     - Receiver enabled
-	 *  WL0 = 0x1;      - 8 bit data
-	 *  PCE = 0x0;      - No parity
+	 *	UART = 0x1;		- Linflex working in UART mode
+	 *	TXEN = 0x1;		- Enable transmission of data now
+	 *	RXEn = 0x1;		- Receiver enabled
+	 *	WL0 = 0x1;		- 8 bit data
+	 *	PCE = 0x0;		- No parity
 	 */
 
 	/* set UART bit to allow writing other bits */
@@ -384,7 +376,7 @@ static int linflex_startup(struct uart_port *port)
 	uart_port_unlock_irqrestore(port, flags);
 
 	ret = devm_request_irq(port->dev, port->irq, linflex_int, 0,
-	                       DRIVER_NAME, port);
+			       DRIVER_NAME, port);
 
 	return ret;
 }
@@ -408,7 +400,7 @@ static void linflex_shutdown(struct uart_port *port)
 
 static void
 linflex_set_termios(struct uart_port *port, struct ktermios *termios,
-                    const struct ktermios *old)
+		    const struct ktermios *old)
 {
 	unsigned long flags;
 	unsigned long cr, old_cr, cr1;
@@ -424,16 +416,16 @@ linflex_set_termios(struct uart_port *port, struct ktermios *termios,
 
 	/* wait for init mode entry */
 	while ((readl(port->membase + LINSR)
-	        & LINFLEXD_LINSR_LINS_MASK)
-	       != LINFLEXD_LINSR_LINS_INITMODE)
+		& LINFLEXD_LINSR_LINS_MASK)
+		!= LINFLEXD_LINSR_LINS_INITMODE)
 		;
 
 	/*
 	 * only support CS8 and CS7, and for CS7 must enable PE.
 	 * supported mode:
-	 *  - (7,e/o,1)
-	 *  - (8,n,1)
-	 *  - (8,e/o,1)
+	 *	- (7,e/o,1)
+	 *	- (8,n,1)
+	 *	- (8,e/o,1)
 	 */
 	/* enter the UART into configuration mode */
 
@@ -463,14 +455,12 @@ linflex_set_termios(struct uart_port *port, struct ktermios *termios,
 		cr |= LINFLEXD_UARTCR_WL0;
 	}
 
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		termios->c_cflag &= ~CSTOPB;
-	}
 
 	/* parity must be enabled when CS7 to match 8-bits format */
-	if ((termios->c_cflag & CSIZE) == CS7) {
+	if ((termios->c_cflag & CSIZE) == CS7)
 		termios->c_cflag |= PARENB;
-	}
 
 	if ((termios->c_cflag & PARENB)) {
 		cr |= LINFLEXD_UARTCR_PCE;
@@ -479,7 +469,7 @@ linflex_set_termios(struct uart_port *port, struct ktermios *termios,
 			     (~LINFLEXD_UARTCR_PC1);
 		else
 			cr = cr & (~LINFLEXD_UARTCR_PC1 &
-			           ~LINFLEXD_UARTCR_PC0);
+				   ~LINFLEXD_UARTCR_PC0);
 	} else {
 		cr &= ~LINFLEXD_UARTCR_PCE;
 	}
@@ -489,29 +479,26 @@ linflex_set_termios(struct uart_port *port, struct ktermios *termios,
 	port->read_status_mask = 0;
 
 	if (termios->c_iflag & INPCK)
-		port->read_status_mask |= (LINFLEXD_UARTSR_FEF |
-		                           LINFLEXD_UARTSR_PE0 |
-		                           LINFLEXD_UARTSR_PE1 |
-		                           LINFLEXD_UARTSR_PE2 |
-		                           LINFLEXD_UARTSR_PE3);
-	if (termios->c_iflag & (IGNBRK | BRKINT | PARMRK)) {
+		port->read_status_mask |=	(LINFLEXD_UARTSR_FEF |
+						 LINFLEXD_UARTSR_PE0 |
+						 LINFLEXD_UARTSR_PE1 |
+						 LINFLEXD_UARTSR_PE2 |
+						 LINFLEXD_UARTSR_PE3);
+	if (termios->c_iflag & (IGNBRK | BRKINT | PARMRK))
 		port->read_status_mask |= LINFLEXD_UARTSR_FEF;
-	}
 
 	/* characters to ignore */
 	port->ignore_status_mask = 0;
-	if (termios->c_iflag & IGNPAR) {
+	if (termios->c_iflag & IGNPAR)
 		port->ignore_status_mask |= LINFLEXD_UARTSR_PE;
-	}
 	if (termios->c_iflag & IGNBRK) {
 		port->ignore_status_mask |= LINFLEXD_UARTSR_PE;
 		/*
 		 * if we're ignoring parity and break indicators,
 		 * ignore overruns too (for real raw support).
 		 */
-		if (termios->c_iflag & IGNPAR) {
+		if (termios->c_iflag & IGNPAR)
 			port->ignore_status_mask |= LINFLEXD_UARTSR_BOF;
-		}
 	}
 
 	writel(cr, port->membase + UARTCR);
@@ -541,26 +528,25 @@ static int linflex_request_port(struct uart_port *port)
 /* configure/auto-configure the port */
 static void linflex_config_port(struct uart_port *port, int flags)
 {
-	if (flags & UART_CONFIG_TYPE) {
+	if (flags & UART_CONFIG_TYPE)
 		port->type = PORT_LINFLEXUART;
-	}
 }
 
 static const struct uart_ops linflex_pops = {
-	.tx_empty   = linflex_tx_empty,
-	.set_mctrl  = linflex_set_mctrl,
-	.get_mctrl  = linflex_get_mctrl,
-	.stop_tx    = linflex_stop_tx,
-	.start_tx   = linflex_start_tx,
-	.stop_rx    = linflex_stop_rx,
-	.break_ctl  = linflex_break_ctl,
-	.startup    = linflex_startup,
-	.shutdown   = linflex_shutdown,
-	.set_termios    = linflex_set_termios,
-	.type       = linflex_type,
-	.request_port   = linflex_request_port,
-	.release_port   = linflex_release_port,
-	.config_port    = linflex_config_port,
+	.tx_empty	= linflex_tx_empty,
+	.set_mctrl	= linflex_set_mctrl,
+	.get_mctrl	= linflex_get_mctrl,
+	.stop_tx	= linflex_stop_tx,
+	.start_tx	= linflex_start_tx,
+	.stop_rx	= linflex_stop_rx,
+	.break_ctl	= linflex_break_ctl,
+	.startup	= linflex_startup,
+	.shutdown	= linflex_shutdown,
+	.set_termios	= linflex_set_termios,
+	.type		= linflex_type,
+	.request_port	= linflex_request_port,
+	.release_port	= linflex_release_port,
+	.config_port	= linflex_config_port,
 };
 
 static struct uart_port *linflex_ports[UART_NR];
@@ -576,18 +562,18 @@ static void linflex_console_putchar(struct uart_port *port, unsigned char ch)
 
 	if (!(cr & LINFLEXD_UARTCR_TFBM))
 		while ((readl(port->membase + UARTSR) &
-		        LINFLEXD_UARTSR_DTFTFF)
-		       != LINFLEXD_UARTSR_DTFTFF)
+					LINFLEXD_UARTSR_DTFTFF)
+				!= LINFLEXD_UARTSR_DTFTFF)
 			;
 	else
 		while (readl(port->membase + UARTSR) &
-		       LINFLEXD_UARTSR_DTFTFF)
+					LINFLEXD_UARTSR_DTFTFF)
 			;
 
 	if (!(cr & LINFLEXD_UARTCR_TFBM)) {
 		writel((readl(port->membase + UARTSR) |
-		        LINFLEXD_UARTSR_DTFTFF),
-		       port->membase + UARTSR);
+					LINFLEXD_UARTSR_DTFTFF),
+					port->membase + UARTSR);
 	}
 }
 
@@ -602,31 +588,28 @@ static void linflex_earlycon_putchar(struct uart_port *port, unsigned char ch)
 	}
 
 	spin_lock_irqsave(&init_lock, flags);
-	if (!during_init) {
+	if (!during_init)
 		goto outside_init;
-	}
 
-	if (earlycon_buf.len >= 1 << CONFIG_LOG_BUF_SHIFT) {
+	if (earlycon_buf.len >= 1 << CONFIG_LOG_BUF_SHIFT)
 		goto init_release;
-	}
 
 	if (!earlycon_buf.cap) {
 		earlycon_buf.content = kmalloc(EARLYCON_BUFFER_INITIAL_CAP,
-		                               GFP_ATOMIC);
+					       GFP_ATOMIC);
 		earlycon_buf.cap = earlycon_buf.content ?
-		                   EARLYCON_BUFFER_INITIAL_CAP : 0;
+				   EARLYCON_BUFFER_INITIAL_CAP : 0;
 	} else if (earlycon_buf.len == earlycon_buf.cap) {
 		ret = krealloc(earlycon_buf.content, earlycon_buf.cap << 1,
-		               GFP_ATOMIC);
+			       GFP_ATOMIC);
 		if (ret) {
 			earlycon_buf.content = ret;
 			earlycon_buf.cap <<= 1;
 		}
 	}
 
-	if (earlycon_buf.len < earlycon_buf.cap) {
+	if (earlycon_buf.len < earlycon_buf.cap)
 		earlycon_buf.content[earlycon_buf.len++] = ch;
-	}
 
 	goto init_release;
 
@@ -637,7 +620,7 @@ init_release:
 }
 
 static void linflex_string_write(struct uart_port *sport, const char *s,
-                                 unsigned int count)
+				 unsigned int count)
 {
 	unsigned long cr, ier = 0;
 
@@ -660,19 +643,17 @@ linflex_console_write(struct console *co, const char *s, unsigned int count)
 	unsigned long flags;
 	int locked = 1;
 
-	if (sport->sysrq) {
+	if (sport->sysrq)
 		locked = 0;
-	} else if (oops_in_progress) {
+	else if (oops_in_progress)
 		locked = uart_port_trylock_irqsave(sport, &flags);
-	} else {
+	else
 		uart_port_lock_irqsave(sport, &flags);
-	}
 
 	linflex_string_write(sport, s, count);
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock_irqrestore(sport, flags);
-	}
 }
 
 /*
@@ -687,27 +668,24 @@ linflex_console_get_options(struct uart_port *sport, int *parity, int *bits)
 	cr = readl(sport->membase + UARTCR);
 	cr &= LINFLEXD_UARTCR_RXEN | LINFLEXD_UARTCR_TXEN;
 
-	if (!cr) {
+	if (!cr)
 		return;
-	}
 
 	/* ok, the port was enabled */
 
 	*parity = 'n';
 	if (cr & LINFLEXD_UARTCR_PCE) {
-		if (cr & LINFLEXD_UARTCR_PC0) {
+		if (cr & LINFLEXD_UARTCR_PC0)
 			*parity = 'o';
-		} else {
+		else
 			*parity = 'e';
-		}
 	}
 
 	if ((cr & LINFLEXD_UARTCR_WL0) && ((cr & LINFLEXD_UARTCR_WL1) == 0)) {
-		if (cr & LINFLEXD_UARTCR_PCE) {
+		if (cr & LINFLEXD_UARTCR_PCE)
 			*bits = 9;
-		} else {
+		else
 			*bits = 8;
-		}
 	}
 }
 
@@ -726,20 +704,17 @@ static int __init linflex_console_setup(struct console *co, char *options)
 	 * if so, search for the first available port that does have
 	 * console support.
 	 */
-	if (co->index == -1 || co->index >= ARRAY_SIZE(linflex_ports)) {
+	if (co->index == -1 || co->index >= ARRAY_SIZE(linflex_ports))
 		co->index = 0;
-	}
 
 	sport = linflex_ports[co->index];
-	if (!sport) {
+	if (!sport)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	} else {
+	else
 		linflex_console_get_options(sport, &parity, &bits);
-	}
 
 	if (earlycon_port && sport->mapbase == earlycon_port->mapbase) {
 		linflex_earlycon_same_instance = true;
@@ -759,9 +734,8 @@ static int __init linflex_console_setup(struct console *co, char *options)
 
 	ret = uart_set_options(sport, co, baud, parity, bits, flow);
 
-	if (!linflex_earlycon_same_instance) {
+	if (!linflex_earlycon_same_instance)
 		goto done;
-	}
 
 	spin_lock_irqsave(&init_lock, flags);
 
@@ -769,7 +743,7 @@ static int __init linflex_console_setup(struct console *co, char *options)
 	if (earlycon_buf.len) {
 		for (i = 0; i < earlycon_buf.len; i++)
 			linflex_console_putchar(earlycon_port,
-			                        earlycon_buf.content[i]);
+				earlycon_buf.content[i]);
 
 		kfree(earlycon_buf.content);
 		earlycon_buf.len = 0;
@@ -784,17 +758,17 @@ done:
 
 static struct uart_driver linflex_reg;
 static struct console linflex_console = {
-	.name       = DEV_NAME,
-	.write      = linflex_console_write,
-	.device     = uart_console_device,
-	.setup      = linflex_console_setup,
-	.flags      = CON_PRINTBUFFER,
-	.index      = -1,
-	.data       = &linflex_reg,
+	.name		= DEV_NAME,
+	.write		= linflex_console_write,
+	.device		= uart_console_device,
+	.setup		= linflex_console_setup,
+	.flags		= CON_PRINTBUFFER,
+	.index		= -1,
+	.data		= &linflex_reg,
 };
 
 static void linflex_earlycon_write(struct console *con, const char *s,
-                                   unsigned int n)
+				   unsigned int n)
 {
 	struct earlycon_device *dev = con->data;
 
@@ -802,11 +776,10 @@ static void linflex_earlycon_write(struct console *con, const char *s,
 }
 
 static int __init linflex_early_console_setup(struct earlycon_device *device,
-        const char *options)
+					      const char *options)
 {
-	if (!device->port.membase) {
+	if (!device->port.membase)
 		return -ENODEV;
-	}
 
 	device->con->write = linflex_earlycon_write;
 	earlycon_port = &device->port;
@@ -815,19 +788,19 @@ static int __init linflex_early_console_setup(struct earlycon_device *device,
 }
 
 OF_EARLYCON_DECLARE(linflex, "fsl,s32v234-linflexuart",
-                    linflex_early_console_setup);
+		    linflex_early_console_setup);
 
-#define LINFLEX_CONSOLE (&linflex_console)
+#define LINFLEX_CONSOLE	(&linflex_console)
 #else
-#define LINFLEX_CONSOLE NULL
+#define LINFLEX_CONSOLE	NULL
 #endif
 
 static struct uart_driver linflex_reg = {
-	.owner      = THIS_MODULE,
-	.driver_name    = DRIVER_NAME,
-	.dev_name   = DEV_NAME,
-	.nr     = ARRAY_SIZE(linflex_ports),
-	.cons       = LINFLEX_CONSOLE,
+	.owner		= THIS_MODULE,
+	.driver_name	= DRIVER_NAME,
+	.dev_name	= DEV_NAME,
+	.nr		= ARRAY_SIZE(linflex_ports),
+	.cons		= LINFLEX_CONSOLE,
 };
 
 static int linflex_probe(struct platform_device *pdev)
@@ -838,9 +811,8 @@ static int linflex_probe(struct platform_device *pdev)
 	int ret;
 
 	sport = devm_kzalloc(&pdev->dev, sizeof(*sport), GFP_KERNEL);
-	if (!sport) {
+	if (!sport)
 		return -ENOMEM;
-	}
 
 	ret = of_alias_get_id(np, "serial");
 	if (ret < 0) {
@@ -849,16 +821,15 @@ static int linflex_probe(struct platform_device *pdev)
 	}
 	if (ret >= UART_NR) {
 		dev_err(&pdev->dev, "driver limited to %d serial ports\n",
-		        UART_NR);
+			UART_NR);
 		return -ENOMEM;
 	}
 
 	sport->line = ret;
 
 	sport->membase = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
-	if (IS_ERR(sport->membase)) {
+	if (IS_ERR(sport->membase))
 		return PTR_ERR(sport->membase);
-	}
 	sport->mapbase = res->start;
 
 	sport->dev = &pdev->dev;
@@ -908,12 +879,12 @@ static int linflex_resume(struct device *dev)
 static SIMPLE_DEV_PM_OPS(linflex_pm_ops, linflex_suspend, linflex_resume);
 
 static struct platform_driver linflex_driver = {
-	.probe      = linflex_probe,
-	.remove     = linflex_remove,
-	.driver     = {
-		.name   = DRIVER_NAME,
-		.of_match_table = linflex_dt_ids,
-		.pm = &linflex_pm_ops,
+	.probe		= linflex_probe,
+	.remove		= linflex_remove,
+	.driver		= {
+		.name	= DRIVER_NAME,
+		.of_match_table	= linflex_dt_ids,
+		.pm	= &linflex_pm_ops,
 	},
 };
 
@@ -922,14 +893,12 @@ static int __init linflex_serial_init(void)
 	int ret;
 
 	ret = uart_register_driver(&linflex_reg);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = platform_driver_register(&linflex_driver);
-	if (ret) {
+	if (ret)
 		uart_unregister_driver(&linflex_reg);
-	}
 
 	return ret;
 }

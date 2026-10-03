@@ -6,9 +6,9 @@
  *  Copyright (C) 2001, 2002 Paul Diefenbaugh <paul.s.diefenbaugh@intel.com>
  *  Copyright (C) 2004, 2005 Dominik Brodowski <linux@brodo.de>
  *  Copyright (C) 2004  Anil S Keshavamurthy <anil.s.keshavamurthy@intel.com>
- *              - Added processor hotplug support
+ *  			- Added processor hotplug support
  *  Copyright (C) 2005  Venkatesh Pallipadi <venkatesh.pallipadi@intel.com>
- *              - Added support for C3 on SMP
+ *  			- Added support for C3 on SMP
  */
 #define pr_fmt(fmt) "ACPI: " fmt
 
@@ -16,7 +16,6 @@
 #include <linux/acpi.h>
 #include <linux/dmi.h>
 #include <linux/sched.h>       /* need_resched() */
-#include <linux/sort.h>
 #include <linux/tick.h>
 #include <linux/cpuidle.h>
 #include <linux/cpu.h>
@@ -32,11 +31,11 @@
  * creating an empty asm-ia64/apic.h would just trade pest vs. cholera.
  */
 #ifdef CONFIG_X86
-	#include <asm/apic.h>
-	#include <asm/cpu.h>
+#include <asm/apic.h>
+#include <asm/cpu.h>
 #endif
 
-#define ACPI_IDLE_STATE_START   (IS_ENABLED(CONFIG_ARCH_HAS_CPU_RELAX) ? 1 : 0)
+#define ACPI_IDLE_STATE_START	(IS_ENABLED(CONFIG_ARCH_HAS_CPU_RELAX) ? 1 : 0)
 
 static unsigned int max_cstate __read_mostly = ACPI_PROCESSOR_MAX_POWER;
 module_param(max_cstate, uint, 0400);
@@ -51,17 +50,18 @@ module_param(latency_factor, uint, 0644);
 static DEFINE_PER_CPU(struct cpuidle_device *, acpi_cpuidle_device);
 
 struct cpuidle_driver acpi_idle_driver = {
-	.name =     "acpi_idle",
-	.owner =    THIS_MODULE,
+	.name =		"acpi_idle",
+	.owner =	THIS_MODULE,
 };
 
 #ifdef CONFIG_ACPI_PROCESSOR_CSTATE
-static DEFINE_PER_CPU(struct acpi_processor_cx * [CPUIDLE_STATE_MAX], acpi_cstate);
+static
+DEFINE_PER_CPU(struct acpi_processor_cx * [CPUIDLE_STATE_MAX], acpi_cstate);
 
 static int disabled_by_idle_boot_param(void)
 {
 	return boot_option_idle_override == IDLE_POLL ||
-	       boot_option_idle_override == IDLE_HALT;
+		boot_option_idle_override == IDLE_HALT;
 }
 
 /*
@@ -72,13 +72,12 @@ static int disabled_by_idle_boot_param(void)
  */
 static int set_max_cstate(const struct dmi_system_id *id)
 {
-	if (max_cstate > ACPI_PROCESSOR_MAX_POWER) {
+	if (max_cstate > ACPI_PROCESSOR_MAX_POWER)
 		return 0;
-	}
 
 	pr_notice("%s detected - limiting to C%ld max_cstate."
-	          " Override with \"processor.max_cstate=%d\"\n", id->ident,
-	          (long)id->driver_data, ACPI_PROCESSOR_MAX_POWER + 1);
+		  " Override with \"processor.max_cstate=%d\"\n", id->ident,
+		  (long)id->driver_data, ACPI_PROCESSOR_MAX_POWER + 1);
 
 	max_cstate = (long)id->driver_data;
 
@@ -86,27 +85,18 @@ static int set_max_cstate(const struct dmi_system_id *id)
 }
 
 static const struct dmi_system_id processor_power_dmi_table[] = {
-	{
-		set_max_cstate, "Clevo 5600D", {
-			DMI_MATCH(DMI_BIOS_VENDOR, "Phoenix Technologies LTD"),
-			DMI_MATCH(DMI_BIOS_VERSION, "SHE845M0.86C.0013.D.0302131307")
-		},
-		(void *)2
-	},
-	{
-		set_max_cstate, "Pavilion zv5000", {
-			DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
-			DMI_MATCH(DMI_PRODUCT_NAME, "Pavilion zv5000 (DS502A#ABA)")
-		},
-		(void *)1
-	},
-	{
-		set_max_cstate, "Asus L8400B", {
-			DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer Inc."),
-			DMI_MATCH(DMI_PRODUCT_NAME, "L8400B series Notebook PC")
-		},
-		(void *)1
-	},
+	{ set_max_cstate, "Clevo 5600D", {
+	  DMI_MATCH(DMI_BIOS_VENDOR,"Phoenix Technologies LTD"),
+	  DMI_MATCH(DMI_BIOS_VERSION,"SHE845M0.86C.0013.D.0302131307")},
+	 (void *)2},
+	{ set_max_cstate, "Pavilion zv5000", {
+	  DMI_MATCH(DMI_SYS_VENDOR, "Hewlett-Packard"),
+	  DMI_MATCH(DMI_PRODUCT_NAME,"Pavilion zv5000 (DS502A#ABA)")},
+	 (void *)1},
+	{ set_max_cstate, "Asus L8400B", {
+	  DMI_MATCH(DMI_SYS_VENDOR, "ASUSTeK Computer Inc."),
+	  DMI_MATCH(DMI_PRODUCT_NAME,"L8400B series Notebook PC")},
+	 (void *)1},
 	{},
 };
 
@@ -132,52 +122,47 @@ static void __cpuidle acpi_safe_halt(void)
  * that the local APIC stops in both C2 and C3.
  */
 static void lapic_timer_check_state(int state, struct acpi_processor *pr,
-                                    struct acpi_processor_cx *cx)
+				   struct acpi_processor_cx *cx)
 {
 	struct acpi_processor_power *pwr = &pr->power;
 	u8 type = local_apic_timer_c2_ok ? ACPI_STATE_C3 : ACPI_STATE_C2;
 
-	if (cpu_has(&cpu_data(pr->id), X86_FEATURE_ARAT)) {
+	if (cpu_has(&cpu_data(pr->id), X86_FEATURE_ARAT))
 		return;
-	}
 
-	if (boot_cpu_has_bug(X86_BUG_AMD_APIC_C1E)) {
+	if (boot_cpu_has_bug(X86_BUG_AMD_APIC_C1E))
 		type = ACPI_STATE_C1;
-	}
 
 	/*
 	 * Check, if one of the previous states already marked the lapic
 	 * unstable
 	 */
-	if (pwr->timer_broadcast_on_state < state) {
+	if (pwr->timer_broadcast_on_state < state)
 		return;
-	}
 
-	if (cx->type >= type) {
+	if (cx->type >= type)
 		pr->power.timer_broadcast_on_state = state;
-	}
 }
 
 static void __lapic_timer_propagate_broadcast(void *arg)
 {
 	struct acpi_processor *pr = arg;
 
-	if (pr->power.timer_broadcast_on_state < INT_MAX) {
+	if (pr->power.timer_broadcast_on_state < INT_MAX)
 		tick_broadcast_enable();
-	} else {
+	else
 		tick_broadcast_disable();
-	}
 }
 
 static void lapic_timer_propagate_broadcast(struct acpi_processor *pr)
 {
 	smp_call_function_single(pr->id, __lapic_timer_propagate_broadcast,
-	                         (void *)pr, 1);
+				 (void *)pr, 1);
 }
 
 /* Power(C) State timer broadcast control */
 static bool lapic_timer_needs_broadcast(struct acpi_processor *pr,
-                                        struct acpi_processor_cx *cx)
+					struct acpi_processor_cx *cx)
 {
 	return cx - pr->power.states >= pr->power.timer_broadcast_on_state;
 }
@@ -185,11 +170,11 @@ static bool lapic_timer_needs_broadcast(struct acpi_processor *pr,
 #else
 
 static void lapic_timer_check_state(int state, struct acpi_processor *pr,
-                                    struct acpi_processor_cx *cstate) { }
+				   struct acpi_processor_cx *cstate) { }
 static void lapic_timer_propagate_broadcast(struct acpi_processor *pr) { }
 
 static bool lapic_timer_needs_broadcast(struct acpi_processor *pr,
-                                        struct acpi_processor_cx *cx)
+					struct acpi_processor_cx *cx)
 {
 	return false;
 }
@@ -200,39 +185,33 @@ static bool lapic_timer_needs_broadcast(struct acpi_processor *pr,
 static void tsc_check_state(int state)
 {
 	switch (boot_cpu_data.x86_vendor) {
-		case X86_VENDOR_HYGON:
-		case X86_VENDOR_AMD:
-		case X86_VENDOR_INTEL:
-		case X86_VENDOR_CENTAUR:
-		case X86_VENDOR_ZHAOXIN:
-			/*
-			 * AMD Fam10h TSC will tick in all
-			 * C/P/S0/S1 states when this bit is set.
-			 */
-			if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC)) {
-				return;
-			}
-			fallthrough;
-		default:
-			/* TSC could halt in idle, so notify users */
-			if (state > ACPI_STATE_C1) {
-				mark_tsc_unstable("TSC halts in idle");
-			}
+	case X86_VENDOR_HYGON:
+	case X86_VENDOR_AMD:
+	case X86_VENDOR_INTEL:
+	case X86_VENDOR_CENTAUR:
+	case X86_VENDOR_ZHAOXIN:
+		/*
+		 * AMD Fam10h TSC will tick in all
+		 * C/P/S0/S1 states when this bit is set.
+		 */
+		if (boot_cpu_has(X86_FEATURE_NONSTOP_TSC))
+			return;
+		fallthrough;
+	default:
+		/* TSC could halt in idle, so notify users */
+		if (state > ACPI_STATE_C1)
+			mark_tsc_unstable("TSC halts in idle");
 	}
 }
 #else
-static void tsc_check_state(int state)
-{
-	return;
-}
+static void tsc_check_state(int state) { return; }
 #endif
 
 static int acpi_processor_get_power_info_fadt(struct acpi_processor *pr)
 {
 
-	if (!pr->pblk) {
+	if (!pr->pblk)
 		return -ENODEV;
-	}
 
 	/* if info is obtained from pblk/fadt, type equals state */
 	pr->power.states[ACPI_STATE_C2].type = ACPI_STATE_C2;
@@ -244,9 +223,8 @@ static int acpi_processor_get_power_info_fadt(struct acpi_processor *pr)
 	 * an SMP system.
 	 */
 	if ((num_online_cpus() > 1) &&
-	    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED)) {
+	    !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED))
 		return -ENODEV;
-	}
 #endif
 
 	/* determine C2 and C3 address from pblk */
@@ -263,7 +241,7 @@ static int acpi_processor_get_power_info_fadt(struct acpi_processor *pr)
 	 */
 	if (acpi_gbl_FADT.c2_latency > ACPI_PROCESSOR_MAX_C2_LATENCY) {
 		acpi_handle_debug(pr->handle, "C2 latency too large [%d]\n",
-		                  acpi_gbl_FADT.c2_latency);
+				  acpi_gbl_FADT.c2_latency);
 		/* invalidate C2 */
 		pr->power.states[ACPI_STATE_C2].address = 0;
 	}
@@ -274,21 +252,25 @@ static int acpi_processor_get_power_info_fadt(struct acpi_processor *pr)
 	 */
 	if (acpi_gbl_FADT.c3_latency > ACPI_PROCESSOR_MAX_C3_LATENCY) {
 		acpi_handle_debug(pr->handle, "C3 latency too large [%d]\n",
-		                  acpi_gbl_FADT.c3_latency);
+				  acpi_gbl_FADT.c3_latency);
 		/* invalidate C3 */
 		pr->power.states[ACPI_STATE_C3].address = 0;
 	}
 
 	acpi_handle_debug(pr->handle, "lvl2[0x%08x] lvl3[0x%08x]\n",
-	                  pr->power.states[ACPI_STATE_C2].address,
-	                  pr->power.states[ACPI_STATE_C3].address);
+			  pr->power.states[ACPI_STATE_C2].address,
+			  pr->power.states[ACPI_STATE_C3].address);
 
 	snprintf(pr->power.states[ACPI_STATE_C2].desc,
-	         ACPI_CX_DESC_LEN, "ACPI P_LVL2 IOPORT 0x%x",
-	         pr->power.states[ACPI_STATE_C2].address);
+			 ACPI_CX_DESC_LEN, "ACPI P_LVL2 IOPORT 0x%x",
+			 pr->power.states[ACPI_STATE_C2].address);
 	snprintf(pr->power.states[ACPI_STATE_C3].desc,
-	         ACPI_CX_DESC_LEN, "ACPI P_LVL3 IOPORT 0x%x",
-	         pr->power.states[ACPI_STATE_C3].address);
+			 ACPI_CX_DESC_LEN, "ACPI P_LVL3 IOPORT 0x%x",
+			 pr->power.states[ACPI_STATE_C3].address);
+
+	if (!pr->power.states[ACPI_STATE_C2].address &&
+	    !pr->power.states[ACPI_STATE_C3].address)
+		return -ENODEV;
 
 	return 0;
 }
@@ -303,7 +285,7 @@ static int acpi_processor_get_power_info_default(struct acpi_processor *pr)
 		pr->power.states[ACPI_STATE_C1].entry_method = ACPI_CSTATE_HALT;
 
 		snprintf(pr->power.states[ACPI_STATE_C1].desc,
-		         ACPI_CX_DESC_LEN, "ACPI HLT");
+			 ACPI_CX_DESC_LEN, "ACPI HLT");
 	}
 	/* the C0 state only exists as a filler in our array */
 	pr->power.states[ACPI_STATE_C0].valid = 1;
@@ -314,33 +296,29 @@ static int acpi_processor_get_power_info_cst(struct acpi_processor *pr)
 {
 	int ret;
 
-	if (nocst) {
+	if (nocst)
 		return -ENODEV;
-	}
 
 	ret = acpi_processor_evaluate_cst(pr->handle, pr->id, &pr->power);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
-	if (!pr->power.count) {
+	if (!pr->power.count)
 		return -EFAULT;
-	}
 
 	pr->flags.has_cst = 1;
 	return 0;
 }
 
 static void acpi_processor_power_verify_c3(struct acpi_processor *pr,
-        struct acpi_processor_cx *cx)
+					   struct acpi_processor_cx *cx)
 {
 	static int bm_check_flag = -1;
 	static int bm_control_flag = -1;
 
 
-	if (!cx->address) {
+	if (!cx->address)
 		return;
-	}
 
 	/*
 	 * PIIX4 Erratum #18: We don't support C3 when Type-F (fast)
@@ -351,7 +329,7 @@ static void acpi_processor_power_verify_c3(struct acpi_processor *pr,
 	 */
 	if (errata.piix4.fdma) {
 		acpi_handle_debug(pr->handle,
-		                  "C3 not supported on PIIX4 with Type-F DMA\n");
+				  "C3 not supported on PIIX4 with Type-F DMA\n");
 		return;
 	}
 
@@ -371,12 +349,12 @@ static void acpi_processor_power_verify_c3(struct acpi_processor *pr,
 			if (pr->flags.has_cst != 1) {
 				/* bus mastering control is necessary */
 				acpi_handle_debug(pr->handle,
-				                  "C3 support requires BM control\n");
+						  "C3 support requires BM control\n");
 				return;
 			} else {
 				/* Here we enter C3 without bus mastering */
 				acpi_handle_debug(pr->handle,
-				                  "C3 support without BM control\n");
+						  "C3 support without BM control\n");
 			}
 		}
 	} else {
@@ -386,8 +364,8 @@ static void acpi_processor_power_verify_c3(struct acpi_processor *pr,
 		 */
 		if (!(acpi_gbl_FADT.flags & ACPI_FADT_WBINVD)) {
 			acpi_handle_debug(pr->handle,
-			                  "Cache invalidation should work properly"
-			                  " for C3 to be enabled on SMP systems\n");
+					  "Cache invalidation should work properly"
+					  " for C3 to be enabled on SMP systems\n");
 			return;
 		}
 	}
@@ -411,29 +389,24 @@ static void acpi_processor_power_verify_c3(struct acpi_processor *pr,
 	acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_RLD, 1);
 }
 
-static int acpi_cst_latency_cmp(const void *a, const void *b)
+static void acpi_cst_latency_sort(struct acpi_processor_cx *states, size_t length)
 {
-	const struct acpi_processor_cx *x = a, *y = b;
+	int i, j, k;
 
-	if (!(x->valid && y->valid)) {
-		return 0;
-	}
-	if (x->latency > y->latency) {
-		return 1;
-	}
-	if (x->latency < y->latency) {
-		return -1;
-	}
-	return 0;
-}
-static void acpi_cst_latency_swap(void *a, void *b, int n)
-{
-	struct acpi_processor_cx *x = a, *y = b;
+	for (i = 1; i < length; i++) {
+		if (!states[i].valid)
+			continue;
 
-	if (!(x->valid && y->valid)) {
-		return;
+		for (j = i - 1, k = i; j >= 0; j--) {
+			if (!states[j].valid)
+				continue;
+
+			if (states[j].latency > states[k].latency)
+				swap(states[j].latency, states[k].latency);
+
+			k = j;
+		}
 	}
-	swap(x->latency, y->latency);
 }
 
 static int acpi_processor_power_verify(struct acpi_processor *pr)
@@ -450,27 +423,24 @@ static int acpi_processor_power_verify(struct acpi_processor *pr)
 		struct acpi_processor_cx *cx = &pr->power.states[i];
 
 		switch (cx->type) {
-			case ACPI_STATE_C1:
-				cx->valid = 1;
-				break;
+		case ACPI_STATE_C1:
+			cx->valid = 1;
+			break;
 
-			case ACPI_STATE_C2:
-				if (!cx->address) {
-					break;
-				}
-				cx->valid = 1;
+		case ACPI_STATE_C2:
+			if (!cx->address)
 				break;
+			cx->valid = 1;
+			break;
 
-			case ACPI_STATE_C3:
-				acpi_processor_power_verify_c3(pr, cx);
-				break;
+		case ACPI_STATE_C3:
+			acpi_processor_power_verify_c3(pr, cx);
+			break;
 		}
-		if (!cx->valid) {
+		if (!cx->valid)
 			continue;
-		}
-		if (cx->type >= last_type && cx->latency < last_latency) {
+		if (cx->type >= last_type && cx->latency < last_latency)
 			buggy_latency = true;
-		}
 		last_latency = cx->latency;
 		last_type = cx->type;
 
@@ -481,10 +451,7 @@ static int acpi_processor_power_verify(struct acpi_processor *pr)
 
 	if (buggy_latency) {
 		pr_notice("FW issue: working around C-state latencies out of order\n");
-		sort(&pr->power.states[1], max_cstate,
-		     sizeof(struct acpi_processor_cx),
-		     acpi_cst_latency_cmp,
-		     acpi_cst_latency_swap);
+		acpi_cst_latency_sort(&pr->power.states[1], max_cstate);
 	}
 
 	lapic_timer_propagate_broadcast(pr);
@@ -505,13 +472,11 @@ static int acpi_processor_get_cstate_info(struct acpi_processor *pr)
 	memset(pr->power.states, 0, sizeof(pr->power.states));
 
 	result = acpi_processor_get_power_info_cst(pr);
-	if (result == -ENODEV) {
+	if (result == -ENODEV)
 		result = acpi_processor_get_power_info_fadt(pr);
-	}
 
-	if (result) {
+	if (result)
 		return result;
-	}
 
 	acpi_processor_get_power_info_default(pr);
 
@@ -538,14 +503,12 @@ static int acpi_idle_bm_check(void)
 {
 	u32 bm_status = 0;
 
-	if (bm_check_disable) {
+	if (bm_check_disable)
 		return 0;
-	}
 
 	acpi_read_bit_register(ACPI_BITREG_BUS_MASTER_STATUS, &bm_status);
-	if (bm_status) {
+	if (bm_status)
 		acpi_write_bit_register(ACPI_BITREG_BUS_MASTER_STATUS, 1);
-	}
 	/*
 	 * PIIX4 Erratum #18: Note that BM_STS doesn't always reflect
 	 * the true state of bus mastering activity; forcing us to
@@ -553,9 +516,8 @@ static int acpi_idle_bm_check(void)
 	 */
 	else if (errata.piix4.bmisx) {
 		if ((inb_p(errata.piix4.bmisx + 0x02) & 0x01)
-		    || (inb_p(errata.piix4.bmisx + 0x0A) & 0x01)) {
+		    || (inb_p(errata.piix4.bmisx + 0x0A) & 0x01))
 			bm_status = 1;
-		}
 	}
 	return bm_status;
 }
@@ -565,20 +527,18 @@ static __cpuidle void io_idle(unsigned long addr)
 	/* IO port based C-state */
 	inb(addr);
 
-#ifdef  CONFIG_X86
+#ifdef	CONFIG_X86
 	/* No delay is needed if we are in guest */
-	if (boot_cpu_has(X86_FEATURE_HYPERVISOR)) {
+	if (boot_cpu_has(X86_FEATURE_HYPERVISOR))
 		return;
-	}
 	/*
 	 * Modern (>=Nehalem) Intel systems use ACPI via intel_idle,
 	 * not this code.  Assume that any Intel systems using this
 	 * are ancient and may need the dummy wait.  This also assumes
 	 * that the motivating chipset issue was Intel-only.
 	 */
-	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL) {
+	if (boot_cpu_data.x86_vendor != X86_VENDOR_INTEL)
 		return;
-	}
 #endif
 	/*
 	 * Dummy wait op - must do something useless after P_LVL2 read
@@ -630,13 +590,12 @@ static int acpi_idle_play_dead(struct cpuidle_device *dev, int index)
 
 	while (1) {
 
-		if (cx->entry_method == ACPI_CSTATE_HALT) {
+		if (cx->entry_method == ACPI_CSTATE_HALT)
 			raw_safe_halt();
-		} else if (cx->entry_method == ACPI_CSTATE_SYSTEMIO) {
+		else if (cx->entry_method == ACPI_CSTATE_SYSTEMIO) {
 			io_idle(cx->address);
-		} else {
+		} else
 			return -ENODEV;
-		}
 	}
 
 	/* Never reached */
@@ -646,7 +605,7 @@ static int acpi_idle_play_dead(struct cpuidle_device *dev, int index)
 static __always_inline bool acpi_idle_fallback_to_c1(struct acpi_processor *pr)
 {
 	return IS_ENABLED(CONFIG_HOTPLUG_CPU) && !pr->flags.has_cst &&
-	       !(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED);
+		!(acpi_gbl_FADT.flags & ACPI_FADT_C2_MP_SUPPORTED);
 }
 
 static int c3_cpu_count;
@@ -660,9 +619,9 @@ static DEFINE_RAW_SPINLOCK(c3_lock);
  * @index: index of target state
  */
 static int __cpuidle acpi_idle_enter_bm(struct cpuidle_driver *drv,
-                                        struct acpi_processor *pr,
-                                        struct acpi_processor_cx *cx,
-                                        int index)
+			       struct acpi_processor *pr,
+			       struct acpi_processor_cx *cx,
+			       int index)
 {
 	static struct acpi_processor_cx safe_cx = {
 		.entry_method = ACPI_CSTATE_HALT,
@@ -696,9 +655,8 @@ static int __cpuidle acpi_idle_enter_bm(struct cpuidle_driver *drv,
 		raw_spin_lock(&c3_lock);
 		c3_cpu_count++;
 		/* Disable bus master arbitration when all CPUs are in C3 */
-		if (c3_cpu_count == num_online_cpus()) {
+		if (c3_cpu_count == num_online_cpus())
 			acpi_write_bit_register(ACPI_BITREG_ARB_DISABLE, 1);
-		}
 		raw_spin_unlock(&c3_lock);
 	}
 
@@ -722,20 +680,18 @@ static int __cpuidle acpi_idle_enter_bm(struct cpuidle_driver *drv,
 }
 
 static int __cpuidle acpi_idle_enter(struct cpuidle_device *dev,
-                                     struct cpuidle_driver *drv, int index)
+			   struct cpuidle_driver *drv, int index)
 {
 	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
 	struct acpi_processor *pr;
 
 	pr = __this_cpu_read(processors);
-	if (unlikely(!pr)) {
+	if (unlikely(!pr))
 		return -EINVAL;
-	}
 
 	if (cx->type != ACPI_STATE_C1) {
-		if (cx->type == ACPI_STATE_C3 && pr->flags.bm_check) {
+		if (cx->type == ACPI_STATE_C3 && pr->flags.bm_check)
 			return acpi_idle_enter_bm(drv, pr, cx, index);
-		}
 
 		/* C2 to C1 demotion. */
 		if (acpi_idle_fallback_to_c1(pr) && num_online_cpus() > 1) {
@@ -744,9 +700,8 @@ static int __cpuidle acpi_idle_enter(struct cpuidle_device *dev,
 		}
 	}
 
-	if (cx->type == ACPI_STATE_C3) {
+	if (cx->type == ACPI_STATE_C3)
 		ACPI_FLUSH_CPU_CACHE();
-	}
 
 	acpi_idle_do_entry(cx);
 
@@ -754,16 +709,15 @@ static int __cpuidle acpi_idle_enter(struct cpuidle_device *dev,
 }
 
 static int __cpuidle acpi_idle_enter_s2idle(struct cpuidle_device *dev,
-        struct cpuidle_driver *drv, int index)
+				  struct cpuidle_driver *drv, int index)
 {
 	struct acpi_processor_cx *cx = per_cpu(acpi_cstate[index], dev->cpu);
 
 	if (cx->type == ACPI_STATE_C3) {
 		struct acpi_processor *pr = __this_cpu_read(processors);
 
-		if (unlikely(!pr)) {
+		if (unlikely(!pr))
 			return 0;
-		}
 
 		if (pr->flags.bm_check) {
 			u8 bm_sts_skip = cx->bm_sts_skip;
@@ -784,46 +738,40 @@ static int __cpuidle acpi_idle_enter_s2idle(struct cpuidle_device *dev,
 }
 
 static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
-        struct cpuidle_device *dev)
+					   struct cpuidle_device *dev)
 {
 	int i, count = ACPI_IDLE_STATE_START;
 	struct acpi_processor_cx *cx;
 	struct cpuidle_state *state;
 
-	if (max_cstate == 0) {
+	if (max_cstate == 0)
 		max_cstate = 1;
-	}
 
 	for (i = 1; i < ACPI_PROCESSOR_MAX_POWER && i <= max_cstate; i++) {
 		state = &acpi_idle_driver.states[count];
 		cx = &pr->power.states[i];
 
-		if (!cx->valid) {
+		if (!cx->valid)
 			continue;
-		}
 
 		per_cpu(acpi_cstate[count], dev->cpu) = cx;
 
-		if (lapic_timer_needs_broadcast(pr, cx)) {
+		if (lapic_timer_needs_broadcast(pr, cx))
 			state->flags |= CPUIDLE_FLAG_TIMER_STOP;
-		}
 
 		if (cx->type == ACPI_STATE_C3) {
 			state->flags |= CPUIDLE_FLAG_TLB_FLUSHED;
-			if (pr->flags.bm_check) {
+			if (pr->flags.bm_check)
 				state->flags |= CPUIDLE_FLAG_RCU_IDLE;
-			}
 		}
 
 		count++;
-		if (count == CPUIDLE_STATE_MAX) {
+		if (count == CPUIDLE_STATE_MAX)
 			break;
-		}
 	}
 
-	if (!count) {
+	if (!count)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -835,9 +783,8 @@ static int acpi_processor_setup_cstates(struct acpi_processor *pr)
 	struct cpuidle_state *state;
 	struct cpuidle_driver *drv = &acpi_idle_driver;
 
-	if (max_cstate == 0) {
+	if (max_cstate == 0)
 		max_cstate = 1;
-	}
 
 	if (IS_ENABLED(CONFIG_ARCH_HAS_CPU_RELAX)) {
 		cpuidle_poll_state_init(drv);
@@ -849,9 +796,8 @@ static int acpi_processor_setup_cstates(struct acpi_processor *pr)
 	for (i = 1; i < ACPI_PROCESSOR_MAX_POWER && i <= max_cstate; i++) {
 		cx = &pr->power.states[i];
 
-		if (!cx->valid) {
+		if (!cx->valid)
 			continue;
-		}
 
 		state = &drv->states[count];
 		snprintf(state->name, CPUIDLE_NAME_LEN, "C%d", i);
@@ -864,9 +810,8 @@ static int acpi_processor_setup_cstates(struct acpi_processor *pr)
 		if (cx->type == ACPI_STATE_C1 || cx->type == ACPI_STATE_C2 ||
 		    cx->type == ACPI_STATE_C3) {
 			state->enter_dead = acpi_idle_play_dead;
-			if (cx->type != ACPI_STATE_C3) {
+			if (cx->type != ACPI_STATE_C3)
 				drv->safe_state_index = count;
-			}
 		}
 		/*
 		 * Halt-induced C1 is not good for ->enter_s2idle, because it
@@ -875,60 +820,45 @@ static int acpi_processor_setup_cstates(struct acpi_processor *pr)
 		 * avoid C1 and the situations in which we may need to fall back
 		 * to it altogether.
 		 */
-		if (cx->type != ACPI_STATE_C1 && !acpi_idle_fallback_to_c1(pr)) {
+		if (cx->type != ACPI_STATE_C1 && !acpi_idle_fallback_to_c1(pr))
 			state->enter_s2idle = acpi_idle_enter_s2idle;
-		}
 
 		count++;
-		if (count == CPUIDLE_STATE_MAX) {
+		if (count == CPUIDLE_STATE_MAX)
 			break;
-		}
 	}
 
 	drv->state_count = count;
 
-	if (!count) {
+	if (!count)
 		return -EINVAL;
-	}
 
 	return 0;
 }
 
-static inline void acpi_processor_cstate_first_run_checks(void)
+static inline void acpi_processor_update_max_cstate(void)
 {
-	static int first_run;
-
-	if (first_run) {
-		return;
-	}
 	dmi_check_system(processor_power_dmi_table);
 	max_cstate = acpi_processor_cstate_check(max_cstate);
-	if (max_cstate < ACPI_C_STATES_MAX) {
+	if (max_cstate < ACPI_C_STATES_MAX)
 		pr_notice("processor limited to max C-state %d\n", max_cstate);
-	}
 
-	first_run++;
-
-	if (nocst) {
+	if (nocst)
 		return;
-	}
 
 	acpi_processor_claim_cst_control();
 }
 #else
 
-static inline int disabled_by_idle_boot_param(void)
-{
-	return 0;
-}
-static inline void acpi_processor_cstate_first_run_checks(void) { }
+static inline int disabled_by_idle_boot_param(void) { return 0; }
+static inline void acpi_processor_update_max_cstate(void) { }
 static int acpi_processor_get_cstate_info(struct acpi_processor *pr)
 {
 	return -ENODEV;
 }
 
 static int acpi_processor_setup_cpuidle_cx(struct acpi_processor *pr,
-        struct cpuidle_device *dev)
+					   struct cpuidle_device *dev)
 {
 	return -EINVAL;
 }
@@ -949,16 +879,15 @@ struct acpi_lpi_states_array {
 
 static int obj_get_integer(union acpi_object *obj, u32 *value)
 {
-	if (obj->type != ACPI_TYPE_INTEGER) {
+	if (obj->type != ACPI_TYPE_INTEGER)
 		return -EINVAL;
-	}
 
 	*value = obj->integer.value;
 	return 0;
 }
 
 static int acpi_processor_evaluate_lpi(acpi_handle handle,
-                                       struct acpi_lpi_states_array *info)
+				       struct acpi_lpi_states_array *info)
 {
 	acpi_status status;
 	int ret = 0;
@@ -1006,9 +935,8 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
 		union acpi_object *element, *pkg_elem, *obj;
 
 		element = &lpi_data->package.elements[loop];
-		if (element->type != ACPI_TYPE_PACKAGE || element->package.count < 7) {
+		if (element->type != ACPI_TYPE_PACKAGE || element->package.count < 7)
 			continue;
-		}
 
 		pkg_elem = element->package.elements;
 
@@ -1016,29 +944,28 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
 		if (obj->type == ACPI_TYPE_BUFFER) {
 			struct acpi_power_register *reg;
 
-			reg = (struct acpi_power_register *)obj->buffer.pointer;
-			if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO &&
-			    reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE) {
+			if (obj->buffer.length < sizeof(*reg)) {
+				acpi_handle_debug(handle,
+					"Invalid register data for _LPI state %d\n",
+					state_idx);
 				continue;
 			}
 
+			reg = (struct acpi_power_register *)obj->buffer.pointer;
+			if (reg->space_id != ACPI_ADR_SPACE_SYSTEM_IO &&
+			    reg->space_id != ACPI_ADR_SPACE_FIXED_HARDWARE)
+				continue;
+
 			lpi_state->address = reg->address;
 			lpi_state->entry_method =
-			    reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE ?
-			    ACPI_CSTATE_FFH : ACPI_CSTATE_SYSTEMIO;
+				reg->space_id == ACPI_ADR_SPACE_FIXED_HARDWARE ?
+				ACPI_CSTATE_FFH : ACPI_CSTATE_SYSTEMIO;
 		} else if (obj->type == ACPI_TYPE_INTEGER) {
 			lpi_state->entry_method = ACPI_CSTATE_INTEGER;
 			lpi_state->address = obj->integer.value;
 		} else {
 			continue;
 		}
-
-		/* elements[7,8] skipped for now i.e. Residency/Usage counter*/
-
-		obj = pkg_elem + 9;
-		if (obj->type == ACPI_TYPE_STRING)
-			strscpy(lpi_state->desc, obj->string.pointer,
-			        ACPI_CX_DESC_LEN);
 
 		lpi_state->index = state_idx;
 		if (obj_get_integer(pkg_elem + 0, &lpi_state->min_residency)) {
@@ -1051,21 +978,31 @@ static int acpi_processor_evaluate_lpi(acpi_handle handle,
 			lpi_state->wake_latency = 10;
 		}
 
-		if (obj_get_integer(pkg_elem + 2, &lpi_state->flags)) {
+		if (obj_get_integer(pkg_elem + 2, &lpi_state->flags))
 			lpi_state->flags = 0;
-		}
 
-		if (obj_get_integer(pkg_elem + 3, &lpi_state->arch_flags)) {
+		if (obj_get_integer(pkg_elem + 3, &lpi_state->arch_flags))
 			lpi_state->arch_flags = 0;
-		}
 
-		if (obj_get_integer(pkg_elem + 4, &lpi_state->res_cnt_freq)) {
+		if (obj_get_integer(pkg_elem + 4, &lpi_state->res_cnt_freq))
 			lpi_state->res_cnt_freq = 1;
-		}
 
-		if (obj_get_integer(pkg_elem + 5, &lpi_state->enable_parent_state)) {
+		if (obj_get_integer(pkg_elem + 5, &lpi_state->enable_parent_state))
 			lpi_state->enable_parent_state = 0;
-		}
+
+		/* Skip elements [7-8] i.e. Residency/Usage counters. */
+
+		/*
+		 * Avoid out-of-bounds access if the size of the package is less
+		 * than expected.
+		 */
+		if (element->package.count < 10)
+			continue;
+
+		obj = pkg_elem + 9;
+		if (obj->type == ACPI_TYPE_STRING)
+			strscpy(lpi_state->desc, obj->string.pointer,
+				ACPI_CX_DESC_LEN);
 	}
 
 	acpi_handle_debug(handle, "Found %d power states\n", state_idx);
@@ -1087,13 +1024,12 @@ static int flat_state_cnt;
  * @result: composite LPI state
  */
 static bool combine_lpi_states(struct acpi_lpi_state *local,
-                               struct acpi_lpi_state *parent,
-                               struct acpi_lpi_state *result)
+			       struct acpi_lpi_state *parent,
+			       struct acpi_lpi_state *result)
 {
 	if (parent->entry_method == ACPI_CSTATE_INTEGER) {
-		if (!parent->address) { /* 0 means autopromotable */
+		if (!parent->address) /* 0 means autopromotable */
 			return false;
-		}
 		result->address = local->address + parent->address;
 	} else {
 		result->address = parent->address;
@@ -1114,17 +1050,17 @@ static bool combine_lpi_states(struct acpi_lpi_state *local,
 	return true;
 }
 
-#define ACPI_LPI_STATE_FLAGS_ENABLED            BIT(0)
+#define ACPI_LPI_STATE_FLAGS_ENABLED			BIT(0)
 
 static void stash_composite_state(struct acpi_lpi_states_array *curr_level,
-                                  struct acpi_lpi_state *t)
+				  struct acpi_lpi_state *t)
 {
 	curr_level->composite_states[curr_level->composite_states_size++] = t;
 }
 
 static int flatten_lpi_states(struct acpi_processor *pr,
-                              struct acpi_lpi_states_array *curr_level,
-                              struct acpi_lpi_states_array *prev_level)
+			      struct acpi_lpi_states_array *curr_level,
+			      struct acpi_lpi_states_array *prev_level)
 {
 	int i, j, state_count = curr_level->size;
 	struct acpi_lpi_state *p, *t = curr_level->entries;
@@ -1133,13 +1069,12 @@ static int flatten_lpi_states(struct acpi_processor *pr,
 	for (j = 0; j < state_count; j++, t++) {
 		struct acpi_lpi_state *flpi;
 
-		if (!(t->flags & ACPI_LPI_STATE_FLAGS_ENABLED)) {
+		if (!(t->flags & ACPI_LPI_STATE_FLAGS_ENABLED))
 			continue;
-		}
 
 		if (flat_state_cnt >= ACPI_PROCESSOR_MAX_POWER) {
 			pr_warn("Limiting number of LPI states to max (%d)\n",
-			        ACPI_PROCESSOR_MAX_POWER);
+				ACPI_PROCESSOR_MAX_POWER);
 			pr_warn("Please increase ACPI_PROCESSOR_MAX_POWER if needed.\n");
 			break;
 		}
@@ -1183,50 +1118,42 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
 
 	/* make sure our architecture has support */
 	ret = acpi_processor_ffh_lpi_probe(pr->id);
-	if (ret == -EOPNOTSUPP) {
+	if (ret == -EOPNOTSUPP)
 		return ret;
-	}
 
-	if (!osc_pc_lpi_support_confirmed) {
+	if (!osc_pc_lpi_support_confirmed)
 		return -EOPNOTSUPP;
-	}
 
-	if (!acpi_has_method(handle, "_LPI")) {
+	if (!acpi_has_method(handle, "_LPI"))
 		return -EINVAL;
-	}
 
 	flat_state_cnt = 0;
 	prev = &info[0];
 	curr = &info[1];
 	handle = pr->handle;
 	ret = acpi_processor_evaluate_lpi(handle, prev);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 	flatten_lpi_states(pr, prev, NULL);
 
 	status = acpi_get_parent(handle, &pr_ahandle);
 	while (ACPI_SUCCESS(status)) {
 		d = acpi_fetch_acpi_dev(pr_ahandle);
-		if (!d) {
+		if (!d)
 			break;
-		}
 
 		handle = pr_ahandle;
 
-		if (strcmp(acpi_device_hid(d), ACPI_PROCESSOR_CONTAINER_HID)) {
+		if (strcmp(acpi_device_hid(d), ACPI_PROCESSOR_CONTAINER_HID))
 			break;
-		}
 
 		/* can be optional ? */
-		if (!acpi_has_method(handle, "_LPI")) {
+		if (!acpi_has_method(handle, "_LPI"))
 			break;
-		}
 
 		ret = acpi_processor_evaluate_lpi(handle, curr);
-		if (ret) {
+		if (ret)
 			break;
-		}
 
 		/* flatten all the LPI states in this level of hierarchy */
 		flatten_lpi_states(pr, curr, prev);
@@ -1238,9 +1165,8 @@ static int acpi_processor_get_lpi_info(struct acpi_processor *pr)
 
 	pr->power.count = flat_state_cnt;
 	/* reset the index after flattening */
-	for (i = 0; i < pr->power.count; i++) {
+	for (i = 0; i < pr->power.count; i++)
 		pr->power.lpi_states[i].index = i;
-	}
 
 	/* Tell driver that _LPI is supported. */
 	pr->flags.has_lpi = 1;
@@ -1263,21 +1189,19 @@ int __weak acpi_processor_ffh_lpi_enter(struct acpi_lpi_state *lpi)
  * Return: 0 for success or negative value for error
  */
 static int acpi_idle_lpi_enter(struct cpuidle_device *dev,
-                               struct cpuidle_driver *drv, int index)
+			       struct cpuidle_driver *drv, int index)
 {
 	struct acpi_processor *pr;
 	struct acpi_lpi_state *lpi;
 
 	pr = __this_cpu_read(processors);
 
-	if (unlikely(!pr)) {
+	if (unlikely(!pr))
 		return -EINVAL;
-	}
 
 	lpi = &pr->power.lpi_states[index];
-	if (lpi->entry_method == ACPI_CSTATE_FFH) {
+	if (lpi->entry_method == ACPI_CSTATE_FFH)
 		return acpi_processor_ffh_lpi_enter(lpi);
-	}
 
 	return -EINVAL;
 }
@@ -1289,9 +1213,8 @@ static int acpi_processor_setup_lpi_states(struct acpi_processor *pr)
 	struct cpuidle_state *state;
 	struct cpuidle_driver *drv = &acpi_idle_driver;
 
-	if (!pr->flags.has_lpi) {
+	if (!pr->flags.has_lpi)
 		return -EOPNOTSUPP;
-	}
 
 	for (i = 0; i < pr->power.count && i < CPUIDLE_STATE_MAX; i++) {
 		lpi = &pr->power.lpi_states[i];
@@ -1302,9 +1225,8 @@ static int acpi_processor_setup_lpi_states(struct acpi_processor *pr)
 		state->exit_latency = lpi->wake_latency;
 		state->target_residency = lpi->min_residency;
 		state->flags |= arch_get_idle_state_flags(lpi->arch_flags);
-		if (i != 0 && lpi->entry_method == ACPI_CSTATE_FFH) {
+		if (i != 0 && lpi->entry_method == ACPI_CSTATE_FFH)
 			state->flags |= CPUIDLE_FLAG_RCU_IDLE;
-		}
 		state->enter = acpi_idle_lpi_enter;
 		drv->safe_state_index = i;
 	}
@@ -1325,9 +1247,8 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
 	int i;
 	struct cpuidle_driver *drv = &acpi_idle_driver;
 
-	if (!pr->flags.power_setup_done || !pr->flags.power) {
+	if (!pr->flags.power_setup_done || !pr->flags.power)
 		return -EINVAL;
-	}
 
 	drv->safe_state_index = -1;
 	for (i = ACPI_IDLE_STATE_START; i < CPUIDLE_STATE_MAX; i++) {
@@ -1335,9 +1256,8 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
 		drv->states[i].desc[0] = '\0';
 	}
 
-	if (pr->flags.has_lpi) {
+	if (pr->flags.has_lpi)
 		return acpi_processor_setup_lpi_states(pr);
-	}
 
 	return acpi_processor_setup_cstates(pr);
 }
@@ -1350,16 +1270,14 @@ static int acpi_processor_setup_cpuidle_states(struct acpi_processor *pr)
  * @dev : the cpuidle device
  */
 static int acpi_processor_setup_cpuidle_dev(struct acpi_processor *pr,
-        struct cpuidle_device *dev)
+					    struct cpuidle_device *dev)
 {
-	if (!pr->flags.power_setup_done || !pr->flags.power || !dev) {
+	if (!pr->flags.power_setup_done || !pr->flags.power || !dev)
 		return -EINVAL;
-	}
 
 	dev->cpu = pr->id;
-	if (pr->flags.has_lpi) {
+	if (pr->flags.has_lpi)
 		return acpi_processor_ffh_lpi_probe(pr->id);
-	}
 
 	return acpi_processor_setup_cpuidle_cx(pr, dev);
 }
@@ -1369,9 +1287,8 @@ static int acpi_processor_get_power_info(struct acpi_processor *pr)
 	int ret;
 
 	ret = acpi_processor_get_lpi_info(pr);
-	if (ret) {
+	if (ret)
 		ret = acpi_processor_get_cstate_info(pr);
-	}
 
 	return ret;
 }
@@ -1381,13 +1298,11 @@ int acpi_processor_hotplug(struct acpi_processor *pr)
 	int ret = 0;
 	struct cpuidle_device *dev;
 
-	if (disabled_by_idle_boot_param()) {
+	if (disabled_by_idle_boot_param())
 		return 0;
-	}
 
-	if (!pr->flags.power_setup_done) {
+	if (!pr->flags.power_setup_done)
 		return -ENODEV;
-	}
 
 	dev = per_cpu(acpi_cpuidle_device, pr->id);
 	cpuidle_pause_and_lock();
@@ -1408,13 +1323,11 @@ int acpi_processor_power_state_has_changed(struct acpi_processor *pr)
 	struct acpi_processor *_pr;
 	struct cpuidle_device *dev;
 
-	if (disabled_by_idle_boot_param()) {
+	if (disabled_by_idle_boot_param())
 		return 0;
-	}
 
-	if (!pr->flags.power_setup_done) {
+	if (!pr->flags.power_setup_done)
 		return -ENODEV;
-	}
 
 	/*
 	 * FIXME:  Design the ACPI notification to make it once per
@@ -1431,9 +1344,8 @@ int acpi_processor_power_state_has_changed(struct acpi_processor *pr)
 		/* Disable all cpuidle devices */
 		for_each_online_cpu(cpu) {
 			_pr = per_cpu(processors, cpu);
-			if (!_pr || !_pr->flags.power_setup_done) {
+			if (!_pr || !_pr->flags.power_setup_done)
 				continue;
-			}
 			dev = per_cpu(acpi_cpuidle_device, cpu);
 			cpuidle_disable_device(dev);
 		}
@@ -1445,9 +1357,8 @@ int acpi_processor_power_state_has_changed(struct acpi_processor *pr)
 		/* Enable all cpuidle devices */
 		for_each_online_cpu(cpu) {
 			_pr = per_cpu(processors, cpu);
-			if (!_pr || !_pr->flags.power_setup_done) {
+			if (!_pr || !_pr->flags.power_setup_done)
 				continue;
-			}
 			acpi_processor_get_power_info(_pr);
 			if (_pr->flags.power) {
 				dev = per_cpu(acpi_cpuidle_device, cpu);
@@ -1462,44 +1373,75 @@ int acpi_processor_power_state_has_changed(struct acpi_processor *pr)
 	return 0;
 }
 
-static int acpi_processor_registered;
+void acpi_processor_register_idle_driver(void)
+{
+	struct acpi_processor *pr;
+	int ret = -ENODEV;
+	int cpu;
+
+	/*
+	 * If a cpuidle driver is already registered, there is no need to
+	 * evaluate _CST or attempt to register the ACPI idle driver.
+	 */
+	if (cpuidle_get_driver()) {
+		pr_debug("cpuidle driver %pS already registered.\n", cpuidle_get_driver());
+		return;
+	}
+
+	acpi_processor_update_max_cstate();
+
+	/*
+	 * ACPI idle driver is used by all possible CPUs.
+	 * Use the processor power info of one in them to set up idle states.
+	 * Note that the existing idle handler will be used on platforms that
+	 * only support C1.
+	 */
+	for_each_possible_cpu(cpu) {
+		pr = per_cpu(processors, cpu);
+		if (!pr)
+			continue;
+
+		ret = acpi_processor_get_power_info(pr);
+		if (!ret) {
+			pr->flags.power_setup_done = 1;
+			acpi_processor_setup_cpuidle_states(pr);
+			break;
+		}
+	}
+
+	if (ret) {
+		pr_debug("No ACPI power information from any CPUs.\n");
+		return;
+	}
+
+	ret = cpuidle_register_driver(&acpi_idle_driver);
+	if (ret) {
+		pr_debug("register %s failed.\n", acpi_idle_driver.name);
+		return;
+	}
+	pr_debug("%s registered with cpuidle.\n", acpi_idle_driver.name);
+}
+
+void acpi_processor_unregister_idle_driver(void)
+{
+	cpuidle_unregister_driver(&acpi_idle_driver);
+}
 
 int acpi_processor_power_init(struct acpi_processor *pr)
 {
 	int retval;
 	struct cpuidle_device *dev;
 
-	if (disabled_by_idle_boot_param()) {
+	if (disabled_by_idle_boot_param())
 		return 0;
-	}
 
-	acpi_processor_cstate_first_run_checks();
-
-	if (!acpi_processor_get_power_info(pr)) {
+	if (!acpi_processor_get_power_info(pr))
 		pr->flags.power_setup_done = 1;
-	}
 
-	/*
-	 * Install the idle handler if processor power management is supported.
-	 * Note that we use previously set idle handler will be used on
-	 * platforms that only support C1.
-	 */
 	if (pr->flags.power) {
-		/* Register acpi_idle_driver if not already registered */
-		if (!acpi_processor_registered) {
-			acpi_processor_setup_cpuidle_states(pr);
-			retval = cpuidle_register_driver(&acpi_idle_driver);
-			if (retval) {
-				return retval;
-			}
-			pr_debug("%s registered with cpuidle\n",
-			         acpi_idle_driver.name);
-		}
-
 		dev = kzalloc(sizeof(*dev), GFP_KERNEL);
-		if (!dev) {
+		if (!dev)
 			return -ENOMEM;
-		}
 		per_cpu(acpi_cpuidle_device, pr->id) = dev;
 
 		acpi_processor_setup_cpuidle_dev(pr, dev);
@@ -1509,12 +1451,11 @@ int acpi_processor_power_init(struct acpi_processor *pr)
 		 */
 		retval = cpuidle_register_device(dev);
 		if (retval) {
-			if (acpi_processor_registered == 0) {
-				cpuidle_unregister_driver(&acpi_idle_driver);
-			}
+
+			per_cpu(acpi_cpuidle_device, pr->id) = NULL;
+			kfree(dev);
 			return retval;
 		}
-		acpi_processor_registered++;
 	}
 	return 0;
 }
@@ -1523,16 +1464,12 @@ int acpi_processor_power_exit(struct acpi_processor *pr)
 {
 	struct cpuidle_device *dev = per_cpu(acpi_cpuidle_device, pr->id);
 
-	if (disabled_by_idle_boot_param()) {
+	if (disabled_by_idle_boot_param())
 		return 0;
-	}
 
 	if (pr->flags.power) {
 		cpuidle_unregister_device(dev);
-		acpi_processor_registered--;
-		if (acpi_processor_registered == 0) {
-			cpuidle_unregister_driver(&acpi_idle_driver);
-		}
+		kfree(dev);
 	}
 
 	pr->flags.power_setup_done = 0;

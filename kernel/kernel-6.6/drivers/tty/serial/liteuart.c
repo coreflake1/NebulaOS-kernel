@@ -31,16 +31,16 @@
  * For more details on how CSRs are defined and handled in LiteX, see comments
  * in the LiteX SoC Driver: drivers/soc/litex/litex_soc_ctrl.c
  */
-#define OFF_RXTX    0x00
-#define OFF_TXFULL  0x04
-#define OFF_RXEMPTY 0x08
-#define OFF_EV_STATUS   0x0c
-#define OFF_EV_PENDING  0x10
-#define OFF_EV_ENABLE   0x14
+#define OFF_RXTX	0x00
+#define OFF_TXFULL	0x04
+#define OFF_RXEMPTY	0x08
+#define OFF_EV_STATUS	0x0c
+#define OFF_EV_PENDING	0x10
+#define OFF_EV_ENABLE	0x14
 
 /* events */
-#define EV_TX       BIT(0)
-#define EV_RX       BIT(1)
+#define EV_TX		BIT(0)
+#define EV_RX		BIT(1)
 
 struct liteuart_port {
 	struct uart_port port;
@@ -48,12 +48,12 @@ struct liteuart_port {
 	u8 irq_reg;
 };
 
-#define to_liteuart_port(port)  container_of(port, struct liteuart_port, port)
+#define to_liteuart_port(port)	container_of(port, struct liteuart_port, port)
 
 static DEFINE_XARRAY_FLAGS(liteuart_array, XA_FLAGS_ALLOC);
 
 #ifdef CONFIG_SERIAL_LITEUART_CONSOLE
-	static struct console liteuart_console;
+static struct console liteuart_console;
 #endif
 
 static struct uart_driver liteuart_driver = {
@@ -72,15 +72,13 @@ static void liteuart_update_irq_reg(struct uart_port *port, bool set, u8 mask)
 {
 	struct liteuart_port *uart = to_liteuart_port(port);
 
-	if (set) {
+	if (set)
 		uart->irq_reg |= mask;
-	} else {
+	else
 		uart->irq_reg &= ~mask;
-	}
 
-	if (port->irq) {
+	if (port->irq)
 		litex_write8(port->membase + OFF_EV_ENABLE, uart->irq_reg);
-	}
 }
 
 static void liteuart_stop_tx(struct uart_port *port)
@@ -114,9 +112,8 @@ static void liteuart_rx_chars(struct uart_port *port)
 		litex_write8(membase + OFF_EV_PENDING, EV_RX);
 
 		/* no overflow bits in status */
-		if (!(uart_handle_sysrq_char(port, ch))) {
+		if (!(uart_handle_sysrq_char(port, ch)))
 			uart_insert_char(port, 1, 0, ch, TTY_NORMAL);
-		}
 	}
 
 	tty_flip_buffer_push(&port->state->port);
@@ -127,8 +124,8 @@ static void liteuart_tx_chars(struct uart_port *port)
 	u8 ch;
 
 	uart_port_tx(port, ch,
-	             !litex_read8(port->membase + OFF_TXFULL),
-	             litex_write8(port->membase + OFF_RXTX, ch));
+		!litex_read8(port->membase + OFF_TXFULL),
+		litex_write8(port->membase + OFF_RXTX, ch));
 }
 
 static irqreturn_t liteuart_interrupt(int irq, void *data)
@@ -144,12 +141,10 @@ static irqreturn_t liteuart_interrupt(int irq, void *data)
 	 */
 	uart_port_lock_irqsave(port, &flags);
 	isr = litex_read8(port->membase + OFF_EV_PENDING) & uart->irq_reg;
-	if (isr & EV_RX) {
+	if (isr & EV_RX)
 		liteuart_rx_chars(port);
-	}
-	if (isr & EV_TX) {
+	if (isr & EV_TX)
 		liteuart_tx_chars(port);
-	}
 	uart_port_unlock_irqrestore(port, flags);
 
 	return IRQ_RETVAL(isr);
@@ -167,9 +162,8 @@ static void liteuart_timer(struct timer_list *t)
 static unsigned int liteuart_tx_empty(struct uart_port *port)
 {
 	/* not really tx empty, just checking if tx is not full */
-	if (!litex_read8(port->membase + OFF_TXFULL)) {
+	if (!litex_read8(port->membase + OFF_TXFULL))
 		return TIOCSER_TEMT;
-	}
 
 	return 0;
 }
@@ -192,11 +186,11 @@ static int liteuart_startup(struct uart_port *port)
 
 	if (port->irq) {
 		ret = request_irq(port->irq, liteuart_interrupt, 0,
-		                  KBUILD_MODNAME, uart);
+				  KBUILD_MODNAME, uart);
 		if (ret) {
 			dev_warn(port->dev,
-			         "line %d irq %d failed: switch to polling\n",
-			         port->line, port->irq);
+				"line %d irq %d failed: switch to polling\n",
+				port->line, port->irq);
 			port->irq = 0;
 		}
 	}
@@ -223,15 +217,14 @@ static void liteuart_shutdown(struct uart_port *port)
 	liteuart_update_irq_reg(port, false, EV_RX | EV_TX);
 	uart_port_unlock_irqrestore(port, flags);
 
-	if (port->irq) {
+	if (port->irq)
 		free_irq(port->irq, port);
-	} else {
+	else
 		del_timer_sync(&uart->timer);
-	}
 }
 
 static void liteuart_set_termios(struct uart_port *port, struct ktermios *new,
-                                 const struct ktermios *old)
+				 const struct ktermios *old)
 {
 	unsigned int baud;
 	unsigned long flags;
@@ -261,28 +254,27 @@ static void liteuart_config_port(struct uart_port *port, int flags)
 }
 
 static int liteuart_verify_port(struct uart_port *port,
-                                struct serial_struct *ser)
+				struct serial_struct *ser)
 {
-	if (port->type != PORT_UNKNOWN && ser->type != 1) {
+	if (port->type != PORT_UNKNOWN && ser->type != 1)
 		return -EINVAL;
-	}
 
 	return 0;
 }
 
 static const struct uart_ops liteuart_ops = {
-	.tx_empty   = liteuart_tx_empty,
-	.set_mctrl  = liteuart_set_mctrl,
-	.get_mctrl  = liteuart_get_mctrl,
-	.stop_tx    = liteuart_stop_tx,
-	.start_tx   = liteuart_start_tx,
-	.stop_rx    = liteuart_stop_rx,
-	.startup    = liteuart_startup,
-	.shutdown   = liteuart_shutdown,
-	.set_termios    = liteuart_set_termios,
-	.type       = liteuart_type,
-	.config_port    = liteuart_config_port,
-	.verify_port    = liteuart_verify_port,
+	.tx_empty	= liteuart_tx_empty,
+	.set_mctrl	= liteuart_set_mctrl,
+	.get_mctrl	= liteuart_get_mctrl,
+	.stop_tx	= liteuart_stop_tx,
+	.start_tx	= liteuart_start_tx,
+	.stop_rx	= liteuart_stop_rx,
+	.startup	= liteuart_startup,
+	.shutdown	= liteuart_shutdown,
+	.set_termios	= liteuart_set_termios,
+	.type		= liteuart_type,
+	.config_port	= liteuart_config_port,
+	.verify_port	= liteuart_verify_port,
 };
 
 static int liteuart_probe(struct platform_device *pdev)
@@ -293,38 +285,32 @@ static int liteuart_probe(struct platform_device *pdev)
 	int dev_id, ret;
 
 	uart = devm_kzalloc(&pdev->dev, sizeof(struct liteuart_port), GFP_KERNEL);
-	if (!uart) {
+	if (!uart)
 		return -ENOMEM;
-	}
 
 	port = &uart->port;
 
 	/* get membase */
 	port->membase = devm_platform_get_and_ioremap_resource(pdev, 0, NULL);
-	if (IS_ERR(port->membase)) {
+	if (IS_ERR(port->membase))
 		return PTR_ERR(port->membase);
-	}
 
 	ret = platform_get_irq_optional(pdev, 0);
-	if (ret < 0 && ret != -ENXIO) {
+	if (ret < 0 && ret != -ENXIO)
 		return ret;
-	}
-	if (ret > 0) {
+	if (ret > 0)
 		port->irq = ret;
-	}
 
 	/* look for aliases; auto-enumerate for free index if not found */
 	dev_id = of_alias_get_id(pdev->dev.of_node, "serial");
-	if (dev_id < 0) {
+	if (dev_id < 0)
 		limit = XA_LIMIT(0, CONFIG_SERIAL_LITEUART_MAX_PORTS);
-	} else {
+	else
 		limit = XA_LIMIT(dev_id, dev_id);
-	}
 
 	ret = xa_alloc(&liteuart_array, &dev_id, uart, limit, GFP_KERNEL);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	/* values not from device tree */
 	port->dev = &pdev->dev;
@@ -339,9 +325,8 @@ static int liteuart_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, port);
 
 	ret = uart_add_one_port(&liteuart_driver, &uart->port);
-	if (ret) {
+	if (ret)
 		goto err_erase_id;
-	}
 
 	return 0;
 
@@ -381,15 +366,14 @@ static struct platform_driver liteuart_platform_driver = {
 
 static void liteuart_putchar(struct uart_port *port, unsigned char ch)
 {
-	while (litex_read8(port->membase + OFF_TXFULL)) {
+	while (litex_read8(port->membase + OFF_TXFULL))
 		cpu_relax();
-	}
 
 	litex_write8(port->membase + OFF_RXTX, ch);
 }
 
 static void liteuart_console_write(struct console *co, const char *s,
-                                   unsigned int count)
+	unsigned int count)
 {
 	struct liteuart_port *uart;
 	struct uart_port *port;
@@ -413,18 +397,15 @@ static int liteuart_console_setup(struct console *co, char *options)
 	int flow = 'n';
 
 	uart = (struct liteuart_port *)xa_load(&liteuart_array, co->index);
-	if (!uart) {
+	if (!uart)
 		return -ENODEV;
-	}
 
 	port = &uart->port;
-	if (!port->membase) {
+	if (!port->membase)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(port, co, baud, parity, bits, flow);
 }
@@ -448,7 +429,7 @@ static int __init liteuart_console_init(void)
 console_initcall(liteuart_console_init);
 
 static void early_liteuart_write(struct console *console, const char *s,
-                                 unsigned int count)
+				    unsigned int count)
 {
 	struct earlycon_device *device = console->data;
 	struct uart_port *port = &device->port;
@@ -457,11 +438,10 @@ static void early_liteuart_write(struct console *console, const char *s,
 }
 
 static int __init early_liteuart_setup(struct earlycon_device *device,
-                                       const char *options)
+				       const char *options)
 {
-	if (!device->port.membase) {
+	if (!device->port.membase)
 		return -ENODEV;
-	}
 
 	device->con->write = early_liteuart_write;
 	return 0;
@@ -475,14 +455,12 @@ static int __init liteuart_init(void)
 	int res;
 
 	res = uart_register_driver(&liteuart_driver);
-	if (res) {
+	if (res)
 		return res;
-	}
 
 	res = platform_driver_register(&liteuart_platform_driver);
-	if (res) {
+	if (res)
 		uart_unregister_driver(&liteuart_driver);
-	}
 
 	return res;
 }

@@ -32,4 +32,4 @@ static __always_inline void boot_init_stack_canary(void)
 #endif
 }
 
-#endif  /* _ASM_STACKPROTECTOR_H */
+#endif	/* _ASM_STACKPROTECTOR_H */

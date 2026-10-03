@@ -41,7 +41,7 @@ static bool have_vfp __ro_after_init;
 static unsigned int VFP_arch;
 
 #ifdef CONFIG_CPU_FEROCEON
-	extern unsigned int VFP_arch_feroceon __alias(VFP_arch);
+extern unsigned int VFP_arch_feroceon __alias(VFP_arch);
 #endif
 
 /*
@@ -69,20 +69,18 @@ union vfp_state *vfp_current_hw_state[NR_CPUS];
  */
 static void vfp_lock(void)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 		local_bh_disable();
-	} else {
+	else
 		preempt_disable();
-	}
 }
 
 static void vfp_unlock(void)
 {
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 		local_bh_enable();
-	} else {
+	else
 		preempt_enable();
-	}
 }
 
 /*
@@ -92,9 +90,8 @@ static void vfp_unlock(void)
 static bool vfp_state_in_hw(unsigned int cpu, struct thread_info *thread)
 {
 #ifdef CONFIG_SMP
-	if (thread->vfpstate.hard.cpu != cpu) {
+	if (thread->vfpstate.hard.cpu != cpu)
 		return false;
-	}
 #endif
 	return vfp_current_hw_state[cpu] == &thread->vfpstate;
 }
@@ -132,9 +129,8 @@ static void vfp_thread_flush(struct thread_info *thread)
 	 * state saving should access to the VFP be enabled at this point.
 	 */
 	cpu = get_cpu();
-	if (vfp_current_hw_state[cpu] == vfp) {
+	if (vfp_current_hw_state[cpu] == vfp)
 		vfp_current_hw_state[cpu] = NULL;
-	}
 	fmxr(FPEXC, fmrx(FPEXC) & ~FPEXC_EN);
 	put_cpu();
 
@@ -153,9 +149,8 @@ static void vfp_thread_exit(struct thread_info *thread)
 	union vfp_state *vfp = &thread->vfpstate;
 	unsigned int cpu = get_cpu();
 
-	if (vfp_current_hw_state[cpu] == vfp) {
+	if (vfp_current_hw_state[cpu] == vfp)
 		vfp_current_hw_state[cpu] = NULL;
-	}
 	put_cpu();
 }
 
@@ -180,14 +175,14 @@ static void vfp_thread_copy(struct thread_info *thread)
  *   - not preemptible as we're called in the middle of a thread switch
  *  THREAD_NOTIFY_FLUSH:
  *   - the thread (v) will be running on the local CPU, so
- *  v === current_thread_info()
+ *	v === current_thread_info()
  *   - thread->cpu is the local CPU number at the time it is accessed,
- *  but may change at any time.
+ *	but may change at any time.
  *   - we could be preempted if tree preempt rcu is enabled, so
- *  it is unsafe to use thread->cpu.
+ *	it is unsafe to use thread->cpu.
  *  THREAD_NOTIFY_EXIT
  *   - we could be preempted if tree preempt rcu is enabled, so
- *  it is unsafe to use thread->cpu.
+ *	it is unsafe to use thread->cpu.
  */
 static int vfp_notifier(struct notifier_block *self, unsigned long cmd, void *v)
 {
@@ -198,47 +193,46 @@ static int vfp_notifier(struct notifier_block *self, unsigned long cmd, void *v)
 #endif
 
 	switch (cmd) {
-		case THREAD_NOTIFY_SWITCH:
-			fpexc = fmrx(FPEXC);
+	case THREAD_NOTIFY_SWITCH:
+		fpexc = fmrx(FPEXC);
 
 #ifdef CONFIG_SMP
-			cpu = thread->cpu;
+		cpu = thread->cpu;
 
-			/*
-			 * On SMP, if VFP is enabled, save the old state in
-			 * case the thread migrates to a different CPU. The
-			 * restoring is done lazily.
-			 */
-			if ((fpexc & FPEXC_EN) && vfp_current_hw_state[cpu]) {
-				vfp_save_state(vfp_current_hw_state[cpu], fpexc);
-			}
+		/*
+		 * On SMP, if VFP is enabled, save the old state in
+		 * case the thread migrates to a different CPU. The
+		 * restoring is done lazily.
+		 */
+		if ((fpexc & FPEXC_EN) && vfp_current_hw_state[cpu])
+			vfp_save_state(vfp_current_hw_state[cpu], fpexc);
 #endif
 
-			/*
-			 * Always disable VFP so we can lazily save/restore the
-			 * old state.
-			 */
-			fmxr(FPEXC, fpexc & ~FPEXC_EN);
-			break;
+		/*
+		 * Always disable VFP so we can lazily save/restore the
+		 * old state.
+		 */
+		fmxr(FPEXC, fpexc & ~FPEXC_EN);
+		break;
 
-		case THREAD_NOTIFY_FLUSH:
-			vfp_thread_flush(thread);
-			break;
+	case THREAD_NOTIFY_FLUSH:
+		vfp_thread_flush(thread);
+		break;
 
-		case THREAD_NOTIFY_EXIT:
-			vfp_thread_exit(thread);
-			break;
+	case THREAD_NOTIFY_EXIT:
+		vfp_thread_exit(thread);
+		break;
 
-		case THREAD_NOTIFY_COPY:
-			vfp_thread_copy(thread);
-			break;
+	case THREAD_NOTIFY_COPY:
+		vfp_thread_copy(thread);
+		break;
 	}
 
 	return NOTIFY_DONE;
 }
 
 static struct notifier_block vfp_notifier_block = {
-	.notifier_call  = vfp_notifier,
+	.notifier_call	= vfp_notifier,
 };
 
 /*
@@ -255,8 +249,8 @@ static void vfp_raise_sigfpe(unsigned int sicode, struct pt_regs *regs)
 	current->thread.trap_no = 6;
 
 	send_sig_fault(SIGFPE, sicode,
-	               (void __user *)(instruction_pointer(regs) - 4),
-	               current);
+		       (void __user *)(instruction_pointer(regs) - 4),
+		       current);
 }
 
 static void vfp_panic(char *reason, u32 inst)
@@ -265,10 +259,10 @@ static void vfp_panic(char *reason, u32 inst)
 
 	pr_err("VFP: Error: %s\n", reason);
 	pr_err("VFP: EXC 0x%08x SCR 0x%08x INST 0x%08x\n",
-	       fmrx(FPEXC), fmrx(FPSCR), inst);
+		fmrx(FPEXC), fmrx(FPSCR), inst);
 	for (i = 0; i < 32; i += 2)
 		pr_err("VFP: s%2u: 0x%08x s%2u: 0x%08x\n",
-		       i, vfp_get_float(i), i + 1, vfp_get_float(i + 1));
+		       i, vfp_get_float(i), i+1, vfp_get_float(i+1));
 }
 
 /*
@@ -290,16 +284,15 @@ static int vfp_raise_exceptions(u32 exceptions, u32 inst, u32 fpscr)
 	 * Comparison instructions always return at least one of
 	 * these flags set.
 	 */
-	if (exceptions & (FPSCR_N | FPSCR_Z | FPSCR_C | FPSCR_V)) {
-		fpscr &= ~(FPSCR_N | FPSCR_Z | FPSCR_C | FPSCR_V);
-	}
+	if (exceptions & (FPSCR_N|FPSCR_Z|FPSCR_C|FPSCR_V))
+		fpscr &= ~(FPSCR_N|FPSCR_Z|FPSCR_C|FPSCR_V);
 
 	fpscr |= exceptions;
 
 	fmxr(FPSCR, fpscr);
 
-#define RAISE(stat,en,sig)              \
-	if (exceptions & stat && fpscr & en)        \
+#define RAISE(stat,en,sig)				\
+	if (exceptions & stat && fpscr & en)		\
 		si_code = sig;
 
 	/*
@@ -375,7 +368,7 @@ static void VFP_bounce(u32 trigger, u32 fpexc, struct pt_regs *regs)
 	 * Clear various bits and enable access to the VFP so we can
 	 * handle the bounce.
 	 */
-	fmxr(FPEXC, fpexc & ~(FPEXC_EX | FPEXC_DEX | FPEXC_FP2V | FPEXC_VV | FPEXC_TRAP_MASK));
+	fmxr(FPEXC, fpexc & ~(FPEXC_EX|FPEXC_DEX|FPEXC_FP2V|FPEXC_VV|FPEXC_TRAP_MASK));
 
 	fpsid = fmrx(FPSID);
 	orig_fpscr = fpscr = fmrx(FPSCR);
@@ -428,17 +421,15 @@ static void VFP_bounce(u32 trigger, u32 fpexc, struct pt_regs *regs)
 	 * Emulate the bounced instruction instead.
 	 */
 	exceptions = vfp_emulate_instruction(trigger, fpscr, regs);
-	if (exceptions) {
+	if (exceptions)
 		si_code2 = vfp_raise_exceptions(exceptions, trigger, orig_fpscr);
-	}
 
 	/*
 	 * If there isn't a second FP instruction, exit now. Note that
 	 * the FPEXC.FP2V bit is valid only if FPEXC.EX is 1.
 	 */
-	if ((fpexc & (FPEXC_EX | FPEXC_FP2V)) != (FPEXC_EX | FPEXC_FP2V)) {
+	if ((fpexc & (FPEXC_EX | FPEXC_FP2V)) != (FPEXC_EX | FPEXC_FP2V))
 		goto exit;
-	}
 
 	/*
 	 * The barrier() here prevents fpinst2 being read
@@ -447,19 +438,16 @@ static void VFP_bounce(u32 trigger, u32 fpexc, struct pt_regs *regs)
 	barrier();
 	trigger = fmrx(FPINST2);
 
-emulate:
+ emulate:
 	exceptions = vfp_emulate_instruction(trigger, orig_fpscr, regs);
-	if (exceptions) {
+	if (exceptions)
 		si_code = vfp_raise_exceptions(exceptions, trigger, orig_fpscr);
-	}
 exit:
 	vfp_unlock();
-	if (si_code2) {
+	if (si_code2)
 		vfp_raise_sigfpe(si_code2, regs);
-	}
-	if (si_code) {
+	if (si_code)
 		vfp_raise_sigfpe(si_code, regs);
-	}
 }
 
 static void vfp_enable(void *unused)
@@ -525,16 +513,16 @@ static void vfp_pm_resume(void)
 }
 
 static int vfp_cpu_pm_notifier(struct notifier_block *self, unsigned long cmd,
-                               void *v)
+	void *v)
 {
 	switch (cmd) {
-		case CPU_PM_ENTER:
-			vfp_pm_suspend();
-			break;
-		case CPU_PM_ENTER_FAILED:
-		case CPU_PM_EXIT:
-			vfp_pm_resume();
-			break;
+	case CPU_PM_ENTER:
+		vfp_pm_suspend();
+		break;
+	case CPU_PM_ENTER_FAILED:
+	case CPU_PM_EXIT:
+		vfp_pm_resume();
+		break;
 	}
 	return NOTIFY_OK;
 }
@@ -589,7 +577,7 @@ void vfp_flush_hwstate(struct thread_info *thread)
  * for entry into a new function (signal handler).
  */
 int vfp_preserve_user_clear_hwstate(struct user_vfp *ufp,
-                                    struct user_vfp_exc *ufp_exc)
+				    struct user_vfp_exc *ufp_exc)
 {
 	struct thread_info *thread = current_thread_info();
 	struct vfp_hard_struct *hwstate = &thread->vfpstate.hard;
@@ -699,11 +687,10 @@ static int vfp_kmode_exception(struct pt_regs *regs, unsigned int instr)
 	 * rebuilding and running with CONFIG_DEBUG_ATOMIC_SLEEP enabled should
 	 * be helpful in localizing the problem.
 	 */
-	if (fmrx(FPEXC) & FPEXC_EN) {
+	if (fmrx(FPEXC) & FPEXC_EN)
 		pr_crit("BUG: unsupported FP instruction in kernel mode\n");
-	} else {
+	else
 		pr_crit("BUG: FP instruction issued in kernel mode with FP unit disabled\n");
-	}
 	pr_crit("FPEXC == 0x%08x\n", fmrx(FPEXC));
 	return 1;
 }
@@ -711,8 +698,8 @@ static int vfp_kmode_exception(struct pt_regs *regs, unsigned int instr)
 /*
  * vfp_support_entry - Handle VFP exception
  *
- * @regs:   pt_regs structure holding the register state at exception entry
- * @trigger:    The opcode of the instruction that triggered the exception
+ * @regs:	pt_regs structure holding the register state at exception entry
+ * @trigger:	The opcode of the instruction that triggered the exception
  *
  * Returns 0 if the exception was handled, or an error code otherwise.
  */
@@ -721,13 +708,11 @@ static int vfp_support_entry(struct pt_regs *regs, u32 trigger)
 	struct thread_info *ti = current_thread_info();
 	u32 fpexc;
 
-	if (unlikely(!have_vfp)) {
+	if (unlikely(!have_vfp))
 		return -ENODEV;
-	}
 
-	if (!user_mode(regs)) {
+	if (!user_mode(regs))
 		return vfp_kmode_exception(regs, trigger);
-	}
 
 	vfp_lock();
 	fpexc = fmrx(FPEXC);
@@ -763,7 +748,7 @@ static int vfp_support_entry(struct pt_regs *regs, u32 trigger)
 				 * task, and we must save that to memory first.
 				 */
 				vfp_save_state(vfp_current_hw_state[ti->cpu],
-				               fpexc);
+					       fpexc);
 			}
 
 			/*
@@ -787,9 +772,7 @@ static int vfp_support_entry(struct pt_regs *regs, u32 trigger)
 			 * retrying branch out before setting an FPEXC that
 			 * stops us reading stuff.
 			 */
-		{
 			goto bounce;
-		}
 
 		/*
 		 * No FP exception is pending: just enable the VFP and
@@ -817,7 +800,7 @@ static int vfp_support_entry(struct pt_regs *regs, u32 trigger)
 				fpexc |= FPEXC_DEX;
 			}
 		}
-bounce:     regs->ARM_pc += 4;
+bounce:		regs->ARM_pc += 4;
 		/* VFP_bounce() will invoke vfp_unlock() */
 		VFP_bounce(trigger, fpexc, regs);
 	}
@@ -826,36 +809,35 @@ bounce:     regs->ARM_pc += 4;
 }
 
 static struct undef_hook neon_support_hook[] = {{
-		.instr_mask = 0xfe000000,
-		.instr_val  = 0xf2000000,
-		.cpsr_mask  = PSR_T_BIT,
-		.cpsr_val   = 0,
-		.fn     = vfp_support_entry,
-	}, {
-		.instr_mask = 0xff100000,
-		.instr_val  = 0xf4000000,
-		.cpsr_mask  = PSR_T_BIT,
-		.cpsr_val   = 0,
-		.fn     = vfp_support_entry,
-	}, {
-		.instr_mask = 0xef000000,
-		.instr_val  = 0xef000000,
-		.cpsr_mask  = PSR_T_BIT,
-		.cpsr_val   = PSR_T_BIT,
-		.fn     = vfp_support_entry,
-	}, {
-		.instr_mask = 0xff100000,
-		.instr_val  = 0xf9000000,
-		.cpsr_mask  = PSR_T_BIT,
-		.cpsr_val   = PSR_T_BIT,
-		.fn     = vfp_support_entry,
-	}
-};
+	.instr_mask	= 0xfe000000,
+	.instr_val	= 0xf2000000,
+	.cpsr_mask	= PSR_T_BIT,
+	.cpsr_val	= 0,
+	.fn		= vfp_support_entry,
+}, {
+	.instr_mask	= 0xff100000,
+	.instr_val	= 0xf4000000,
+	.cpsr_mask	= PSR_T_BIT,
+	.cpsr_val	= 0,
+	.fn		= vfp_support_entry,
+}, {
+	.instr_mask	= 0xef000000,
+	.instr_val	= 0xef000000,
+	.cpsr_mask	= PSR_T_BIT,
+	.cpsr_val	= PSR_T_BIT,
+	.fn		= vfp_support_entry,
+}, {
+	.instr_mask	= 0xff100000,
+	.instr_val	= 0xf9000000,
+	.cpsr_mask	= PSR_T_BIT,
+	.cpsr_val	= PSR_T_BIT,
+	.fn		= vfp_support_entry,
+}};
 
 static struct undef_hook vfp_support_hook = {
-	.instr_mask = 0x0c000e00,
-	.instr_val  = 0x0c000a00,
-	.fn     = vfp_support_entry,
+	.instr_mask	= 0x0c000e00,
+	.instr_val	= 0x0c000a00,
+	.fn		= vfp_support_entry,
 };
 
 #ifdef CONFIG_KERNEL_MODE_NEON
@@ -886,13 +868,11 @@ void kernel_neon_begin(void)
 	 * Save the userland NEON/VFP state. Under UP,
 	 * the owner could be a task other than 'current'
 	 */
-	if (vfp_state_in_hw(cpu, thread)) {
+	if (vfp_state_in_hw(cpu, thread))
 		vfp_save_state(&thread->vfpstate, fpexc);
-	}
 #ifndef CONFIG_SMP
-	else if (vfp_current_hw_state[cpu] != NULL) {
+	else if (vfp_current_hw_state[cpu] != NULL)
 		vfp_save_state(vfp_current_hw_state[cpu], fpexc);
-	}
 #endif
 	vfp_current_hw_state[cpu] = NULL;
 }
@@ -910,17 +890,17 @@ EXPORT_SYMBOL(kernel_neon_end);
 
 static int __init vfp_detect(struct pt_regs *regs, unsigned int instr)
 {
-	VFP_arch = UINT_MAX;    /* mark as not present */
+	VFP_arch = UINT_MAX;	/* mark as not present */
 	regs->ARM_pc += 4;
 	return 0;
 }
 
 static struct undef_hook vfp_detect_hook __initdata = {
-	.instr_mask = 0x0c000e00,
-	.instr_val  = 0x0c000a00,
-	.cpsr_mask  = MODE_MASK,
-	.cpsr_val   = SVC_MODE,
-	.fn     = vfp_detect,
+	.instr_mask	= 0x0c000e00,
+	.instr_val	= 0x0c000a00,
+	.cpsr_mask	= MODE_MASK,
+	.cpsr_val	= SVC_MODE,
+	.fn		= vfp_detect,
 };
 
 /*
@@ -936,9 +916,8 @@ static int __init vfp_init(void)
 	 * Enable the access to the VFP on all online CPUs so the
 	 * following test on FPSID will succeed.
 	 */
-	if (cpu_arch >= CPU_ARCH_ARMv6) {
+	if (cpu_arch >= CPU_ARCH_ARMv6)
 		on_each_cpu(vfp_enable, NULL, 1);
-	}
 
 	/*
 	 * First check that there is a VFP that we can use.
@@ -955,7 +934,7 @@ static int __init vfp_init(void)
 	if (VFP_arch) {
 		pr_cont("not present\n");
 		return 0;
-		/* Extract the architecture on CPUID scheme */
+	/* Extract the architecture on CPUID scheme */
 	} else if ((read_cpuid_id() & 0x000f0000) == 0x000f0000) {
 		VFP_arch = vfpsid & FPSID_CPUID_ARCH_MASK;
 		VFP_arch >>= FPSID_ARCH_BIT;
@@ -968,9 +947,8 @@ static int __init vfp_init(void)
 		if (IS_ENABLED(CONFIG_NEON) &&
 		    (fmrx(MVFR1) & 0x000fff00) == 0x00011100) {
 			elf_hwcap |= HWCAP_NEON;
-			for (int i = 0; i < ARRAY_SIZE(neon_support_hook); i++) {
+			for (int i = 0; i < ARRAY_SIZE(neon_support_hook); i++)
 				register_undef_hook(&neon_support_hook[i]);
-			}
 		}
 
 		if (IS_ENABLED(CONFIG_VFPv3)) {
@@ -985,22 +963,17 @@ static int __init vfp_init(void)
 				 */
 				if ((mvfr0 & MVFR0_A_SIMD_MASK) == 1)
 					/* also v4-D16 */
-				{
 					elf_hwcap |= HWCAP_VFPv3D16;
-				} else {
+				else
 					elf_hwcap |= HWCAP_VFPD32;
-				}
 			}
 
-			if ((fmrx(MVFR1) & 0xf0000000) == 0x10000000) {
+			if ((fmrx(MVFR1) & 0xf0000000) == 0x10000000)
 				elf_hwcap |= HWCAP_VFPv4;
-			}
-			if (((fmrx(MVFR1) & MVFR1_ASIMDHP_MASK) >> MVFR1_ASIMDHP_BIT) == 0x2) {
+			if (((fmrx(MVFR1) & MVFR1_ASIMDHP_MASK) >> MVFR1_ASIMDHP_BIT) == 0x2)
 				elf_hwcap |= HWCAP_ASIMDHP;
-			}
-			if (((fmrx(MVFR1) & MVFR1_FPHP_MASK) >> MVFR1_FPHP_BIT) == 0x3) {
+			if (((fmrx(MVFR1) & MVFR1_FPHP_MASK) >> MVFR1_FPHP_BIT) == 0x3)
 				elf_hwcap |= HWCAP_FPHP;
-			}
 		}
 
 		/*
@@ -1008,32 +981,28 @@ static int __init vfp_init(void)
 		 * instructions.
 		 */
 		isar6 = read_cpuid_ext(CPUID_EXT_ISAR6);
-		if (cpuid_feature_extract_field(isar6, 4) == 0x1) {
+		if (cpuid_feature_extract_field(isar6, 4) == 0x1)
 			elf_hwcap |= HWCAP_ASIMDDP;
-		}
 		/*
 		 * Check for the presence of Advanced SIMD Floating point
 		 * half-precision multiplication instructions.
 		 */
-		if (cpuid_feature_extract_field(isar6, 8) == 0x1) {
+		if (cpuid_feature_extract_field(isar6, 8) == 0x1)
 			elf_hwcap |= HWCAP_ASIMDFHM;
-		}
 		/*
 		 * Check for the presence of Advanced SIMD Bfloat16
 		 * floating point instructions.
 		 */
-		if (cpuid_feature_extract_field(isar6, 20) == 0x1) {
+		if (cpuid_feature_extract_field(isar6, 20) == 0x1)
 			elf_hwcap |= HWCAP_ASIMDBF16;
-		}
 		/*
 		 * Check for the presence of Advanced SIMD and floating point
 		 * Int8 matrix multiplication instructions instructions.
 		 */
-		if (cpuid_feature_extract_field(isar6, 24) == 0x1) {
+		if (cpuid_feature_extract_field(isar6, 24) == 0x1)
 			elf_hwcap |= HWCAP_I8MM;
-		}
 
-		/* Extract the architecture version on pre-cpuid scheme */
+	/* Extract the architecture version on pre-cpuid scheme */
 	} else {
 		if (vfpsid & FPSID_NODOUBLE) {
 			pr_cont("no double precision support\n");
@@ -1044,8 +1013,8 @@ static int __init vfp_init(void)
 	}
 
 	cpuhp_setup_state_nocalls(CPUHP_AP_ARM_VFP_STARTING,
-	                          "arm/vfp:starting", vfp_starting_cpu,
-	                          vfp_dying_cpu);
+				  "arm/vfp:starting", vfp_starting_cpu,
+				  vfp_dying_cpu);
 
 	have_vfp = true;
 
@@ -1060,11 +1029,11 @@ static int __init vfp_init(void)
 	elf_hwcap |= HWCAP_VFP;
 
 	pr_cont("implementor %02x architecture %d part %02x variant %x rev %x\n",
-	        (vfpsid & FPSID_IMPLEMENTER_MASK) >> FPSID_IMPLEMENTER_BIT,
-	        VFP_arch,
-	        (vfpsid & FPSID_PART_MASK) >> FPSID_PART_BIT,
-	        (vfpsid & FPSID_VARIANT_MASK) >> FPSID_VARIANT_BIT,
-	        (vfpsid & FPSID_REV_MASK) >> FPSID_REV_BIT);
+		(vfpsid & FPSID_IMPLEMENTER_MASK) >> FPSID_IMPLEMENTER_BIT,
+		VFP_arch,
+		(vfpsid & FPSID_PART_MASK) >> FPSID_PART_BIT,
+		(vfpsid & FPSID_VARIANT_MASK) >> FPSID_VARIANT_BIT,
+		(vfpsid & FPSID_REV_MASK) >> FPSID_REV_BIT);
 
 	return 0;
 }

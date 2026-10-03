@@ -8,9 +8,8 @@ struct task_struct;
 
 static inline int rt_prio(int prio)
 {
-	if (unlikely(prio < MAX_RT_PRIO)) {
+	if (unlikely(prio < MAX_RT_PRIO))
 		return 1;
-	}
 	return 0;
 }
 
@@ -23,12 +22,10 @@ static inline bool task_is_realtime(struct task_struct *tsk)
 {
 	int policy = tsk->policy;
 
-	if (policy == SCHED_FIFO || policy == SCHED_RR) {
+	if (policy == SCHED_FIFO || policy == SCHED_RR)
 		return true;
-	}
-	if (policy == SCHED_DEADLINE) {
+	if (policy == SCHED_DEADLINE)
 		return true;
-	}
 	return false;
 }
 
@@ -51,7 +48,7 @@ static inline struct task_struct *rt_mutex_get_top_task(struct task_struct *task
 {
 	return NULL;
 }
-# define rt_mutex_adjust_pi(p)      do { } while (0)
+# define rt_mutex_adjust_pi(p)		do { } while (0)
 #endif
 
 extern void normalize_rt_tasks(void);
@@ -61,6 +58,6 @@ extern void normalize_rt_tasks(void);
  * default timeslice is 100 msecs (used only for SCHED_RR tasks).
  * Timeslices get refilled after they expire.
  */
-#define RR_TIMESLICE        (100 * HZ / 1000)
+#define RR_TIMESLICE		(100 * HZ / 1000)
 
 #endif /* _LINUX_SCHED_RT_H */

@@ -29,19 +29,18 @@
  * preserving. Take RCU nesting into account as spin/read/write_lock() can
  * legitimately nest into an RCU read side critical section.
  */
-#define RTLOCK_RESCHED_OFFSETS                      \
+#define RTLOCK_RESCHED_OFFSETS						\
 	(rcu_preempt_depth() << MIGHT_RESCHED_RCU_SHIFT)
 
-#define rtlock_might_resched()                      \
+#define rtlock_might_resched()						\
 	__might_resched(__FILE__, __LINE__, RTLOCK_RESCHED_OFFSETS)
 
 static __always_inline void rtlock_lock(struct rt_mutex_base *rtm)
 {
 	lockdep_assert(!current->pi_blocked_on);
 
-	if (unlikely(!rt_mutex_cmpxchg_acquire(rtm, NULL, current))) {
+	if (unlikely(!rt_mutex_cmpxchg_acquire(rtm, NULL, current)))
 		rtlock_slowlock(rtm);
-	}
 }
 
 static __always_inline void __rt_spin_lock(spinlock_t *lock)
@@ -68,7 +67,7 @@ void __sched rt_spin_lock_nested(spinlock_t *lock, int subclass)
 EXPORT_SYMBOL(rt_spin_lock_nested);
 
 void __sched rt_spin_lock_nest_lock(spinlock_t *lock,
-                                    struct lockdep_map *nest_lock)
+				    struct lockdep_map *nest_lock)
 {
 	spin_acquire_nest(&lock->dep_map, 0, 0, nest_lock, _RET_IP_);
 	__rt_spin_lock(lock);
@@ -81,9 +80,8 @@ void __sched rt_spin_unlock(spinlock_t *lock)
 	spin_release(&lock->dep_map, _RET_IP_);
 	migrate_enable();
 
-	if (unlikely(!rt_mutex_cmpxchg_release(&lock->lock, current, NULL))) {
+	if (unlikely(!rt_mutex_cmpxchg_release(&lock->lock, current, NULL)))
 		rt_mutex_slowunlock(&lock->lock);
-	}
 
 	/*
 	 * This must be last to prevent the following UAF:
@@ -121,9 +119,8 @@ static __always_inline int __rt_spin_trylock(spinlock_t *lock)
 {
 	int ret = 1;
 
-	if (unlikely(!rt_mutex_cmpxchg_acquire(&lock->lock, NULL, current))) {
+	if (unlikely(!rt_mutex_cmpxchg_acquire(&lock->lock, NULL, current)))
 		ret = rt_mutex_slowtrylock(&lock->lock);
-	}
 
 	if (ret) {
 		spin_acquire(&lock->dep_map, 0, 1, _RET_IP_);
@@ -145,22 +142,21 @@ int __sched rt_spin_trylock_bh(spinlock_t *lock)
 
 	local_bh_disable();
 	ret = __rt_spin_trylock(lock);
-	if (!ret) {
+	if (!ret)
 		local_bh_enable();
-	}
 	return ret;
 }
 EXPORT_SYMBOL(rt_spin_trylock_bh);
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 void __rt_spin_lock_init(spinlock_t *lock, const char *name,
-                         struct lock_class_key *key, bool percpu)
+			 struct lock_class_key *key, bool percpu)
 {
 	u8 type = percpu ? LD_LOCK_PERCPU : LD_LOCK_NORMAL;
 
 	debug_check_no_locks_freed((void *)lock, sizeof(*lock));
 	lockdep_init_map_type(&lock->dep_map, name, key, 0, LD_WAIT_CONFIG,
-	                      LD_WAIT_INV, type);
+			      LD_WAIT_INV, type);
 }
 EXPORT_SYMBOL(__rt_spin_lock_init);
 #endif
@@ -168,18 +164,17 @@ EXPORT_SYMBOL(__rt_spin_lock_init);
 /*
  * RT-specific reader/writer locks
  */
-#define rwbase_set_and_save_current_state(state)    \
+#define rwbase_set_and_save_current_state(state)	\
 	current_save_and_set_rtlock_wait_state()
 
-#define rwbase_restore_current_state()          \
+#define rwbase_restore_current_state()			\
 	current_restore_rtlock_saved_state()
 
 static __always_inline int
 rwbase_rtmutex_lock_state(struct rt_mutex_base *rtm, unsigned int state)
 {
-	if (unlikely(!rt_mutex_cmpxchg_acquire(rtm, NULL, current))) {
+	if (unlikely(!rt_mutex_cmpxchg_acquire(rtm, NULL, current)))
 		rtlock_slowlock(rtm);
-	}
 	return 0;
 }
 
@@ -192,27 +187,25 @@ rwbase_rtmutex_slowlock_locked(struct rt_mutex_base *rtm, unsigned int state)
 
 static __always_inline void rwbase_rtmutex_unlock(struct rt_mutex_base *rtm)
 {
-	if (likely(rt_mutex_cmpxchg_acquire(rtm, current, NULL))) {
+	if (likely(rt_mutex_cmpxchg_acquire(rtm, current, NULL)))
 		return;
-	}
 
 	rt_mutex_slowunlock(rtm);
 }
 
 static __always_inline int  rwbase_rtmutex_trylock(struct rt_mutex_base *rtm)
 {
-	if (likely(rt_mutex_cmpxchg_acquire(rtm, NULL, current))) {
+	if (likely(rt_mutex_cmpxchg_acquire(rtm, NULL, current)))
 		return 1;
-	}
 
 	return rt_mutex_slowtrylock(rtm);
 }
 
-#define rwbase_signal_pending_state(state, current) (0)
+#define rwbase_signal_pending_state(state, current)	(0)
 
 #define rwbase_pre_schedule()
 
-#define rwbase_schedule()               \
+#define rwbase_schedule()				\
 	schedule_rtlock()
 
 #define rwbase_post_schedule()
@@ -305,7 +298,7 @@ EXPORT_SYMBOL(rt_write_unlock);
 
 #ifdef CONFIG_DEBUG_LOCK_ALLOC
 void __rt_rwlock_init(rwlock_t *rwlock, const char *name,
-                      struct lock_class_key *key)
+		      struct lock_class_key *key)
 {
 	debug_check_no_locks_freed((void *)rwlock, sizeof(*rwlock));
 	lockdep_init_map_wait(&rwlock->dep_map, name, key, 0, LD_WAIT_CONFIG);

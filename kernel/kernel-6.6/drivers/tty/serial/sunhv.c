@@ -28,11 +28,11 @@
 #include <linux/serial_core.h>
 #include <linux/sunserialcore.h>
 
-#define CON_BREAK   ((long)-1)
-#define CON_HUP     ((long)-2)
+#define CON_BREAK	((long)-1)
+#define CON_HUP		((long)-2)
 
-#define IGNORE_BREAK    0x1
-#define IGNORE_ALL  0x2
+#define IGNORE_BREAK	0x1
+#define IGNORE_ALL	0x2
 
 static char *con_write_page;
 static char *con_read_page;
@@ -44,9 +44,8 @@ static void transmit_chars_putchar(struct uart_port *port, struct circ_buf *xmit
 	while (!uart_circ_empty(xmit)) {
 		long status = sun4v_con_putchar(xmit->buf[xmit->tail]);
 
-		if (status != HV_EOK) {
+		if (status != HV_EOK)
 			break;
-		}
 
 		uart_xmit_advance(port, 1);
 	}
@@ -59,11 +58,10 @@ static void transmit_chars_write(struct uart_port *port, struct circ_buf *xmit)
 		unsigned long len, status, sent;
 
 		len = CIRC_CNT_TO_END(xmit->head, xmit->tail,
-		                      UART_XMIT_SIZE);
+				      UART_XMIT_SIZE);
 		status = sun4v_con_write(ra, len, &sent);
-		if (status != HV_EOK) {
+		if (status != HV_EOK)
 			break;
-		}
 		uart_xmit_advance(port, sent);
 	}
 }
@@ -77,14 +75,12 @@ static int receive_chars_getchar(struct uart_port *port)
 		long status;
 		long c = sun4v_con_getchar(&status);
 
-		if (status == HV_EWOULDBLOCK) {
+		if (status == HV_EWOULDBLOCK)
 			break;
-		}
 
 		if (c == CON_BREAK) {
-			if (uart_handle_break(port)) {
+			if (uart_handle_break(port))
 				continue;
-			}
 			saw_console_brk = 1;
 			c = 0;
 		}
@@ -104,9 +100,8 @@ static int receive_chars_getchar(struct uart_port *port)
 
 		port->icount.rx++;
 
-		if (uart_handle_sysrq_char(port, c)) {
+		if (uart_handle_sysrq_char(port, c))
 			continue;
-		}
 
 		tty_insert_flip_char(&port->state->port, c, TTY_NORMAL);
 	}
@@ -128,13 +123,11 @@ static int receive_chars_read(struct uart_port *port)
 			bytes_read = 0;
 
 			if (stat == CON_BREAK) {
-				if (saw_console_brk) {
+				if (saw_console_brk)
 					sun_do_break();
-				}
 
-				if (uart_handle_break(port)) {
+				if (uart_handle_break(port))
 					continue;
-				}
 				saw_console_brk = 1;
 				*con_read_page = 0;
 				bytes_read = 1;
@@ -154,20 +147,18 @@ static int receive_chars_read(struct uart_port *port)
 		}
 
 		if (port->sysrq != 0 &&  *con_read_page) {
-			for (i = 0; i < bytes_read; i++) {
+			for (i = 0; i < bytes_read; i++)
 				uart_handle_sysrq_char(port, con_read_page[i]);
-			}
 			saw_console_brk = 0;
 		}
 
-		if (port->state == NULL) {
+		if (port->state == NULL)
 			continue;
-		}
 
 		port->icount.rx += bytes_read;
 
 		tty_insert_flip_string(&port->state->port, con_read_page,
-		                       bytes_read);
+				bytes_read);
 	}
 
 	return saw_console_brk;
@@ -194,13 +185,11 @@ static struct tty_port *receive_chars(struct uart_port *port)
 {
 	struct tty_port *tport = NULL;
 
-	if (port->state != NULL) {      /* Unopened serial console */
+	if (port->state != NULL)		/* Unopened serial console */
 		tport = &port->state->port;
-	}
 
-	if (sunhv_ops->receive_chars(port)) {
+	if (sunhv_ops->receive_chars(port))
 		sun_do_break();
-	}
 
 	return tport;
 }
@@ -209,20 +198,17 @@ static void transmit_chars(struct uart_port *port)
 {
 	struct circ_buf *xmit;
 
-	if (!port->state) {
+	if (!port->state)
 		return;
-	}
 
 	xmit = &port->state->xmit;
-	if (uart_circ_empty(xmit) || uart_tx_stopped(port)) {
+	if (uart_circ_empty(xmit) || uart_tx_stopped(port))
 		return;
-	}
 
 	sunhv_ops->transmit_chars(port, xmit);
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
-	}
 }
 
 static irqreturn_t sunhv_interrupt(int irq, void *dev_id)
@@ -236,9 +222,8 @@ static irqreturn_t sunhv_interrupt(int irq, void *dev_id)
 	transmit_chars(port);
 	uart_port_unlock_irqrestore(port, flags);
 
-	if (tport) {
+	if (tport)
 		tty_flip_buffer_push(tport);
-	}
 
 	return IRQ_HANDLED;
 }
@@ -283,17 +268,15 @@ static void sunhv_send_xchar(struct uart_port *port, char ch)
 	unsigned long flags;
 	int limit = 10000;
 
-	if (ch == __DISABLED_CHAR) {
+	if (ch == __DISABLED_CHAR)
 		return;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
 	while (limit-- > 0) {
 		long status = sun4v_con_putchar(ch);
-		if (status == HV_EOK) {
+		if (status == HV_EOK)
 			break;
-		}
 		udelay(1);
 	}
 
@@ -316,9 +299,8 @@ static void sunhv_break_ctl(struct uart_port *port, int break_state)
 
 		while (limit-- > 0) {
 			long status = sun4v_con_putchar(CON_BREAK);
-			if (status == HV_EOK) {
+			if (status == HV_EOK)
 				break;
-			}
 			udelay(1);
 		}
 
@@ -339,7 +321,7 @@ static void sunhv_shutdown(struct uart_port *port)
 
 /* port->lock is not held.  */
 static void sunhv_set_termios(struct uart_port *port, struct ktermios *termios,
-                              const struct ktermios *old)
+			      const struct ktermios *old)
 {
 	unsigned int baud = uart_get_baud_rate(port, termios, old, 0, 4000000);
 	unsigned int quot = uart_get_divisor(port, baud);
@@ -352,16 +334,14 @@ static void sunhv_set_termios(struct uart_port *port, struct ktermios *termios,
 	cflag = termios->c_cflag;
 
 	port->ignore_status_mask = 0;
-	if (iflag & IGNBRK) {
+	if (iflag & IGNBRK)
 		port->ignore_status_mask |= IGNORE_BREAK;
-	}
-	if ((cflag & CREAD) == 0) {
+	if ((cflag & CREAD) == 0)
 		port->ignore_status_mask |= IGNORE_ALL;
-	}
 
 	/* XXX */
 	uart_update_timeout(port, cflag,
-	                    (port->uartclk / (16 * quot)));
+			    (port->uartclk / (16 * quot)));
 
 	uart_port_unlock_irqrestore(port, flags);
 }
@@ -390,29 +370,29 @@ static int sunhv_verify_port(struct uart_port *port, struct serial_struct *ser)
 }
 
 static const struct uart_ops sunhv_pops = {
-	.tx_empty   = sunhv_tx_empty,
-	.set_mctrl  = sunhv_set_mctrl,
-	.get_mctrl  = sunhv_get_mctrl,
-	.stop_tx    = sunhv_stop_tx,
-	.start_tx   = sunhv_start_tx,
-	.send_xchar = sunhv_send_xchar,
-	.stop_rx    = sunhv_stop_rx,
-	.break_ctl  = sunhv_break_ctl,
-	.startup    = sunhv_startup,
-	.shutdown   = sunhv_shutdown,
-	.set_termios    = sunhv_set_termios,
-	.type       = sunhv_type,
-	.release_port   = sunhv_release_port,
-	.request_port   = sunhv_request_port,
-	.config_port    = sunhv_config_port,
-	.verify_port    = sunhv_verify_port,
+	.tx_empty	= sunhv_tx_empty,
+	.set_mctrl	= sunhv_set_mctrl,
+	.get_mctrl	= sunhv_get_mctrl,
+	.stop_tx	= sunhv_stop_tx,
+	.start_tx	= sunhv_start_tx,
+	.send_xchar	= sunhv_send_xchar,
+	.stop_rx	= sunhv_stop_rx,
+	.break_ctl	= sunhv_break_ctl,
+	.startup	= sunhv_startup,
+	.shutdown	= sunhv_shutdown,
+	.set_termios	= sunhv_set_termios,
+	.type		= sunhv_type,
+	.release_port	= sunhv_release_port,
+	.request_port	= sunhv_request_port,
+	.config_port	= sunhv_config_port,
+	.verify_port	= sunhv_verify_port,
 };
 
 static struct uart_driver sunhv_reg = {
-	.owner          = THIS_MODULE,
-	.driver_name        = "sunhv",
-	.dev_name       = "ttyHV",
-	.major          = TTY_MAJOR,
+	.owner			= THIS_MODULE,
+	.driver_name		= "sunhv",
+	.dev_name		= "ttyHV",
+	.major			= TTY_MAJOR,
 };
 
 static struct uart_port *sunhv_port;
@@ -429,7 +409,7 @@ void sunhv_migrate_hvcons_irq(int cpu)
  * 's' and also how many bytes to output via con_write_page.
  */
 static int fill_con_write_page(const char *s, unsigned int n,
-                               unsigned long *page_bytes)
+			       unsigned long *page_bytes)
 {
 	const char *orig_s = s;
 	char *p = con_write_page;
@@ -437,14 +417,12 @@ static int fill_con_write_page(const char *s, unsigned int n,
 
 	while (n--) {
 		if (*s == '\n') {
-			if (left < 2) {
+			if (left < 2)
 				break;
-			}
 			*p++ = '\r';
 			left--;
-		} else if (left < 1) {
+		} else if (left < 1)
 			break;
-		}
 		*p++ = *s++;
 		left--;
 	}
@@ -458,17 +436,16 @@ static void sunhv_console_write_paged(struct console *con, const char *s, unsign
 	unsigned long flags;
 	int locked = 1;
 
-	if (port->sysrq || oops_in_progress) {
+	if (port->sysrq || oops_in_progress)
 		locked = uart_port_trylock_irqsave(port, &flags);
-	} else {
+	else
 		uart_port_lock_irqsave(port, &flags);
-	}
 
 	while (n > 0) {
 		unsigned long ra = __pa(con_write_page);
 		unsigned long page_bytes;
 		unsigned int cpy = fill_con_write_page(s, n,
-		                                       &page_bytes);
+						       &page_bytes);
 
 		n -= cpy;
 		s += cpy;
@@ -480,23 +457,20 @@ static void sunhv_console_write_paged(struct console *con, const char *s, unsign
 				unsigned long stat;
 
 				stat = sun4v_con_write(ra, page_bytes,
-				                       &written);
-				if (stat == HV_EOK) {
+						       &written);
+				if (stat == HV_EOK)
 					break;
-				}
 				udelay(1);
 			}
-			if (limit < 0) {
+			if (limit < 0)
 				break;
-			}
 			page_bytes -= written;
 			ra += written;
 		}
 	}
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock_irqrestore(port, flags);
-	}
 }
 
 static inline void sunhv_console_putchar(struct uart_port *port, char c)
@@ -505,9 +479,8 @@ static inline void sunhv_console_putchar(struct uart_port *port, char c)
 
 	while (limit-- > 0) {
 		long status = sun4v_con_putchar(c);
-		if (status == HV_EOK) {
+		if (status == HV_EOK)
 			break;
-		}
 		udelay(1);
 	}
 }
@@ -518,31 +491,28 @@ static void sunhv_console_write_bychar(struct console *con, const char *s, unsig
 	unsigned long flags;
 	int i, locked = 1;
 
-	if (port->sysrq || oops_in_progress) {
+	if (port->sysrq || oops_in_progress)
 		locked = uart_port_trylock_irqsave(port, &flags);
-	} else {
+	else
 		uart_port_lock_irqsave(port, &flags);
-	}
 
 	for (i = 0; i < n; i++) {
-		if (*s == '\n') {
+		if (*s == '\n')
 			sunhv_console_putchar(port, '\r');
-		}
 		sunhv_console_putchar(port, *s++);
 	}
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock_irqrestore(port, flags);
-	}
 }
 
 static struct console sunhv_console = {
-	.name   =   "ttyHV",
-	.write  =   sunhv_console_write_bychar,
-	.device =   uart_console_device,
-	.flags  =   CON_PRINTBUFFER,
-	.index  =   -1,
-	.data   =   &sunhv_reg,
+	.name	=	"ttyHV",
+	.write	=	sunhv_console_write_bychar,
+	.device	=	uart_console_device,
+	.flags	=	CON_PRINTBUFFER,
+	.index	=	-1,
+	.data	=	&sunhv_reg,
 };
 
 static int hv_probe(struct platform_device *op)
@@ -551,28 +521,24 @@ static int hv_probe(struct platform_device *op)
 	unsigned long minor;
 	int err;
 
-	if (op->archdata.irqs[0] == 0xffffffff) {
+	if (op->archdata.irqs[0] == 0xffffffff)
 		return -ENODEV;
-	}
 
 	port = kzalloc(sizeof(struct uart_port), GFP_KERNEL);
-	if (unlikely(!port)) {
+	if (unlikely(!port))
 		return -ENOMEM;
-	}
 
 	minor = 1;
 	if (sun4v_hvapi_register(HV_GRP_CORE, 1, &minor) == 0 &&
 	    minor >= 1) {
 		err = -ENOMEM;
 		con_write_page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-		if (!con_write_page) {
+		if (!con_write_page)
 			goto out_free_port;
-		}
 
 		con_read_page = kzalloc(PAGE_SIZE, GFP_KERNEL);
-		if (!con_read_page) {
+		if (!con_read_page)
 			goto out_free_con_write_page;
-		}
 
 		sunhv_console.write = sunhv_console_write_paged;
 		sunhv_ops = &bywrite_ops;
@@ -584,7 +550,7 @@ static int hv_probe(struct platform_device *op)
 	port->line = 0;
 	port->ops = &sunhv_pops;
 	port->type = PORT_SUNHV;
-	port->uartclk = (29491200 / 16);   /* arbitrary */
+	port->uartclk = ( 29491200 / 16 ); /* arbitrary */
 
 	port->membase = (unsigned char __iomem *) __pa(port);
 
@@ -593,22 +559,19 @@ static int hv_probe(struct platform_device *op)
 	port->dev = &op->dev;
 
 	err = sunserial_register_minors(&sunhv_reg, 1);
-	if (err) {
+	if (err)
 		goto out_free_con_read_page;
-	}
 
 	sunserial_console_match(&sunhv_console, op->dev.of_node,
-	                        &sunhv_reg, port->line, false);
+				&sunhv_reg, port->line, false);
 
 	err = uart_add_one_port(&sunhv_reg, port);
-	if (err) {
+	if (err)
 		goto out_unregister_driver;
-	}
 
 	err = request_irq(port->irq, sunhv_interrupt, 0, "hvcons", port);
-	if (err) {
+	if (err)
 		goto out_remove_port;
-	}
 
 	platform_set_drvdata(op, port);
 
@@ -666,23 +629,22 @@ static struct platform_driver hv_driver = {
 		.name = "hv",
 		.of_match_table = hv_match,
 	},
-	.probe      = hv_probe,
-	.remove     = hv_remove,
+	.probe		= hv_probe,
+	.remove		= hv_remove,
 };
 
 static int __init sunhv_init(void)
 {
-	if (tlb_type != hypervisor) {
+	if (tlb_type != hypervisor)
 		return -ENODEV;
-	}
 
 	return platform_driver_register(&hv_driver);
 }
 device_initcall(sunhv_init);
 
 #if 0 /* ...def MODULE ; never supported as such */
-	MODULE_AUTHOR("David S. Miller");
-	MODULE_DESCRIPTION("SUN4V Hypervisor console driver");
-	MODULE_VERSION("2.0");
-	MODULE_LICENSE("GPL");
+MODULE_AUTHOR("David S. Miller");
+MODULE_DESCRIPTION("SUN4V Hypervisor console driver");
+MODULE_VERSION("2.0");
+MODULE_LICENSE("GPL");
 #endif

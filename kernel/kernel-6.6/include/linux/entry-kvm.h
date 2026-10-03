@@ -13,30 +13,30 @@
 #ifdef CONFIG_KVM_XFER_TO_GUEST_WORK
 
 #ifndef ARCH_XFER_TO_GUEST_MODE_WORK
-	#define ARCH_XFER_TO_GUEST_MODE_WORK    (0)
+# define ARCH_XFER_TO_GUEST_MODE_WORK	(0)
 #endif
 
-#define XFER_TO_GUEST_MODE_WORK                     \
-	(_TIF_NEED_RESCHED | _TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL | \
+#define XFER_TO_GUEST_MODE_WORK						\
+	(_TIF_NEED_RESCHED | _TIF_SIGPENDING | _TIF_NOTIFY_SIGNAL |	\
 	 _TIF_NOTIFY_RESUME | _TIF_NEED_RESCHED_LAZY | ARCH_XFER_TO_GUEST_MODE_WORK)
 
 struct kvm_vcpu;
 
 /**
  * arch_xfer_to_guest_mode_handle_work - Architecture specific xfer to guest
- *                   mode work handling function.
- * @vcpu:   Pointer to current's VCPU data
- * @ti_work:    Cached TIF flags gathered in xfer_to_guest_mode_handle_work()
+ *					 mode work handling function.
+ * @vcpu:	Pointer to current's VCPU data
+ * @ti_work:	Cached TIF flags gathered in xfer_to_guest_mode_handle_work()
  *
  * Invoked from xfer_to_guest_mode_handle_work(). Defaults to NOOP. Can be
  * replaced by architecture specific code.
  */
 static inline int arch_xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu,
-        unsigned long ti_work);
+						      unsigned long ti_work);
 
 #ifndef arch_xfer_to_guest_mode_work
 static inline int arch_xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu,
-        unsigned long ti_work)
+						      unsigned long ti_work)
 {
 	return 0;
 }
@@ -44,8 +44,8 @@ static inline int arch_xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu,
 
 /**
  * xfer_to_guest_mode_handle_work - Check and handle pending work which needs
- *                  to be handled before going to guest mode
- * @vcpu:   Pointer to current's VCPU data
+ *				    to be handled before going to guest mode
+ * @vcpu:	Pointer to current's VCPU data
  *
  * Returns: 0 or an error code
  */
@@ -53,8 +53,8 @@ int xfer_to_guest_mode_handle_work(struct kvm_vcpu *vcpu);
 
 /**
  * xfer_to_guest_mode_prepare - Perform last minute preparation work that
- *              need to be handled while IRQs are disabled
- *              upon entering to guest.
+ *				need to be handled while IRQs are disabled
+ *				upon entering to guest.
  *
  * Has to be invoked with interrupts disabled before the last call
  * to xfer_to_guest_mode_work_pending().
@@ -82,7 +82,7 @@ static inline bool __xfer_to_guest_mode_work_pending(void)
 
 /**
  * xfer_to_guest_mode_work_pending - Check if work is pending which needs to be
- *                   handled before returning to guest mode
+ *				     handled before returning to guest mode
  *
  * Returns: True if work pending, False otherwise.
  *

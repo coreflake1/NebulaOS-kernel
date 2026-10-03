@@ -24,47 +24,47 @@
 #define OWL_UART_PORT_NUM 7
 #define OWL_UART_DEV_NAME "ttyOWL"
 
-#define OWL_UART_CTL    0x000
-#define OWL_UART_RXDAT  0x004
-#define OWL_UART_TXDAT  0x008
-#define OWL_UART_STAT   0x00c
+#define OWL_UART_CTL	0x000
+#define OWL_UART_RXDAT	0x004
+#define OWL_UART_TXDAT	0x008
+#define OWL_UART_STAT	0x00c
 
-#define OWL_UART_CTL_DWLS_MASK      GENMASK(1, 0)
-#define OWL_UART_CTL_DWLS_5BITS     (0x0 << 0)
-#define OWL_UART_CTL_DWLS_6BITS     (0x1 << 0)
-#define OWL_UART_CTL_DWLS_7BITS     (0x2 << 0)
-#define OWL_UART_CTL_DWLS_8BITS     (0x3 << 0)
-#define OWL_UART_CTL_STPS_2BITS     BIT(2)
-#define OWL_UART_CTL_PRS_MASK       GENMASK(6, 4)
-#define OWL_UART_CTL_PRS_NONE       (0x0 << 4)
-#define OWL_UART_CTL_PRS_ODD        (0x4 << 4)
-#define OWL_UART_CTL_PRS_MARK       (0x5 << 4)
-#define OWL_UART_CTL_PRS_EVEN       (0x6 << 4)
-#define OWL_UART_CTL_PRS_SPACE      (0x7 << 4)
-#define OWL_UART_CTL_AFE        BIT(12)
-#define OWL_UART_CTL_TRFS_TX        BIT(14)
-#define OWL_UART_CTL_EN         BIT(15)
-#define OWL_UART_CTL_RXDE       BIT(16)
-#define OWL_UART_CTL_TXDE       BIT(17)
-#define OWL_UART_CTL_RXIE       BIT(18)
-#define OWL_UART_CTL_TXIE       BIT(19)
-#define OWL_UART_CTL_LBEN       BIT(20)
+#define OWL_UART_CTL_DWLS_MASK		GENMASK(1, 0)
+#define OWL_UART_CTL_DWLS_5BITS		(0x0 << 0)
+#define OWL_UART_CTL_DWLS_6BITS		(0x1 << 0)
+#define OWL_UART_CTL_DWLS_7BITS		(0x2 << 0)
+#define OWL_UART_CTL_DWLS_8BITS		(0x3 << 0)
+#define OWL_UART_CTL_STPS_2BITS		BIT(2)
+#define OWL_UART_CTL_PRS_MASK		GENMASK(6, 4)
+#define OWL_UART_CTL_PRS_NONE		(0x0 << 4)
+#define OWL_UART_CTL_PRS_ODD		(0x4 << 4)
+#define OWL_UART_CTL_PRS_MARK		(0x5 << 4)
+#define OWL_UART_CTL_PRS_EVEN		(0x6 << 4)
+#define OWL_UART_CTL_PRS_SPACE		(0x7 << 4)
+#define OWL_UART_CTL_AFE		BIT(12)
+#define OWL_UART_CTL_TRFS_TX		BIT(14)
+#define OWL_UART_CTL_EN			BIT(15)
+#define OWL_UART_CTL_RXDE		BIT(16)
+#define OWL_UART_CTL_TXDE		BIT(17)
+#define OWL_UART_CTL_RXIE		BIT(18)
+#define OWL_UART_CTL_TXIE		BIT(19)
+#define OWL_UART_CTL_LBEN		BIT(20)
 
-#define OWL_UART_STAT_RIP       BIT(0)
-#define OWL_UART_STAT_TIP       BIT(1)
-#define OWL_UART_STAT_RXER      BIT(2)
-#define OWL_UART_STAT_TFER      BIT(3)
-#define OWL_UART_STAT_RXST      BIT(4)
-#define OWL_UART_STAT_RFEM      BIT(5)
-#define OWL_UART_STAT_TFFU      BIT(6)
-#define OWL_UART_STAT_CTSS      BIT(7)
-#define OWL_UART_STAT_RTSS      BIT(8)
-#define OWL_UART_STAT_TFES      BIT(10)
-#define OWL_UART_STAT_TRFL_MASK     GENMASK(16, 11)
-#define OWL_UART_STAT_UTBB      BIT(17)
+#define OWL_UART_STAT_RIP		BIT(0)
+#define OWL_UART_STAT_TIP		BIT(1)
+#define OWL_UART_STAT_RXER		BIT(2)
+#define OWL_UART_STAT_TFER		BIT(3)
+#define OWL_UART_STAT_RXST		BIT(4)
+#define OWL_UART_STAT_RFEM		BIT(5)
+#define OWL_UART_STAT_TFFU		BIT(6)
+#define OWL_UART_STAT_CTSS		BIT(7)
+#define OWL_UART_STAT_RTSS		BIT(8)
+#define OWL_UART_STAT_TFES		BIT(10)
+#define OWL_UART_STAT_TRFL_MASK		GENMASK(16, 11)
+#define OWL_UART_STAT_UTBB		BIT(17)
 
-#define OWL_UART_POLL_USEC      5
-#define OWL_UART_TIMEOUT_USEC       10000
+#define OWL_UART_POLL_USEC		5
+#define OWL_UART_TIMEOUT_USEC		10000
 
 static struct uart_driver owl_uart_driver;
 
@@ -97,11 +97,10 @@ static void owl_uart_set_mctrl(struct uart_port *port, unsigned int mctrl)
 
 	ctl = owl_uart_read(port, OWL_UART_CTL);
 
-	if (mctrl & TIOCM_LOOP) {
+	if (mctrl & TIOCM_LOOP)
 		ctl |= OWL_UART_CTL_LBEN;
-	} else {
+	else
 		ctl &= ~OWL_UART_CTL_LBEN;
-	}
 
 	owl_uart_write(port, ctl, OWL_UART_CTL);
 }
@@ -113,12 +112,10 @@ static unsigned int owl_uart_get_mctrl(struct uart_port *port)
 
 	ctl = owl_uart_read(port, OWL_UART_CTL);
 	stat = owl_uart_read(port, OWL_UART_STAT);
-	if (stat & OWL_UART_STAT_RTSS) {
+	if (stat & OWL_UART_STAT_RTSS)
 		mctrl |= TIOCM_RTS;
-	}
-	if ((stat & OWL_UART_STAT_CTSS) || !(ctl & OWL_UART_CTL_AFE)) {
+	if ((stat & OWL_UART_STAT_CTSS) || !(ctl & OWL_UART_CTL_AFE))
 		mctrl |= TIOCM_CTS;
-	}
 	return mctrl;
 }
 
@@ -187,8 +184,8 @@ static void owl_uart_send_chars(struct uart_port *port)
 	u8 ch;
 
 	uart_port_tx(port, ch,
-	             !(owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_TFFU),
-	             owl_uart_write(port, ch, OWL_UART_TXDAT));
+		!(owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_TFFU),
+		owl_uart_write(port, ch, OWL_UART_TXDAT));
 }
 
 static void owl_uart_receive_chars(struct uart_port *port)
@@ -203,9 +200,8 @@ static void owl_uart_receive_chars(struct uart_port *port)
 	while (!(stat & OWL_UART_STAT_RFEM)) {
 		char flag = TTY_NORMAL;
 
-		if (stat & OWL_UART_STAT_RXER) {
+		if (stat & OWL_UART_STAT_RXER)
 			port->icount.overrun++;
-		}
 
 		if (stat & OWL_UART_STAT_RXST) {
 			/* We are not able to distinguish the error type. */
@@ -213,19 +209,16 @@ static void owl_uart_receive_chars(struct uart_port *port)
 			port->icount.frame++;
 
 			stat &= port->read_status_mask;
-			if (stat & OWL_UART_STAT_RXST) {
+			if (stat & OWL_UART_STAT_RXST)
 				flag = TTY_PARITY;
-			}
-		} else {
+		} else
 			port->icount.rx++;
-		}
 
 		val = owl_uart_read(port, OWL_UART_RXDAT);
 		val &= 0xff;
 
-		if ((stat & port->ignore_status_mask) == 0) {
+		if ((stat & port->ignore_status_mask) == 0)
 			tty_insert_flip_char(&port->state->port, val, flag);
-		}
 
 		stat = owl_uart_read(port, OWL_UART_STAT);
 	}
@@ -243,13 +236,11 @@ static irqreturn_t owl_uart_irq(int irq, void *dev_id)
 
 	stat = owl_uart_read(port, OWL_UART_STAT);
 
-	if (stat & OWL_UART_STAT_RIP) {
+	if (stat & OWL_UART_STAT_RIP)
 		owl_uart_receive_chars(port);
-	}
 
-	if (stat & OWL_UART_STAT_TIP) {
+	if (stat & OWL_UART_STAT_TIP)
 		owl_uart_send_chars(port);
-	}
 
 	stat = owl_uart_read(port, OWL_UART_STAT);
 	stat |= OWL_UART_STAT_RIP | OWL_UART_STAT_TIP;
@@ -269,7 +260,7 @@ static void owl_uart_shutdown(struct uart_port *port)
 
 	val = owl_uart_read(port, OWL_UART_CTL);
 	val &= ~(OWL_UART_CTL_TXIE | OWL_UART_CTL_RXIE
-	         | OWL_UART_CTL_TXDE | OWL_UART_CTL_RXDE | OWL_UART_CTL_EN);
+		| OWL_UART_CTL_TXDE | OWL_UART_CTL_RXDE | OWL_UART_CTL_EN);
 	owl_uart_write(port, val, OWL_UART_CTL);
 
 	uart_port_unlock_irqrestore(port, flags);
@@ -284,16 +275,15 @@ static int owl_uart_startup(struct uart_port *port)
 	int ret;
 
 	ret = request_irq(port->irq, owl_uart_irq, IRQF_TRIGGER_HIGH,
-	                  "owl-uart", port);
-	if (ret) {
+			"owl-uart", port);
+	if (ret)
 		return ret;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
 	val = owl_uart_read(port, OWL_UART_STAT);
 	val |= OWL_UART_STAT_RIP | OWL_UART_STAT_TIP
-	       | OWL_UART_STAT_RXER | OWL_UART_STAT_TFER | OWL_UART_STAT_RXST;
+		| OWL_UART_STAT_RXER | OWL_UART_STAT_TFER | OWL_UART_STAT_RXST;
 	owl_uart_write(port, val, OWL_UART_STAT);
 
 	val = owl_uart_read(port, OWL_UART_CTL);
@@ -307,14 +297,14 @@ static int owl_uart_startup(struct uart_port *port)
 }
 
 static void owl_uart_change_baudrate(struct owl_uart_port *owl_port,
-                                     unsigned long baud)
+				     unsigned long baud)
 {
 	clk_set_rate(owl_port->clk, baud * 8);
 }
 
 static void owl_uart_set_termios(struct uart_port *port,
-                                 struct ktermios *termios,
-                                 const struct ktermios *old)
+				 struct ktermios *termios,
+				 const struct ktermios *old)
 {
 	struct owl_uart_port *owl_port = to_owl_uart_port(port);
 	unsigned int baud;
@@ -327,49 +317,44 @@ static void owl_uart_set_termios(struct uart_port *port,
 
 	ctl &= ~OWL_UART_CTL_DWLS_MASK;
 	switch (termios->c_cflag & CSIZE) {
-		case CS5:
-			ctl |= OWL_UART_CTL_DWLS_5BITS;
-			break;
-		case CS6:
-			ctl |= OWL_UART_CTL_DWLS_6BITS;
-			break;
-		case CS7:
-			ctl |= OWL_UART_CTL_DWLS_7BITS;
-			break;
-		case CS8:
-		default:
-			ctl |= OWL_UART_CTL_DWLS_8BITS;
-			break;
+	case CS5:
+		ctl |= OWL_UART_CTL_DWLS_5BITS;
+		break;
+	case CS6:
+		ctl |= OWL_UART_CTL_DWLS_6BITS;
+		break;
+	case CS7:
+		ctl |= OWL_UART_CTL_DWLS_7BITS;
+		break;
+	case CS8:
+	default:
+		ctl |= OWL_UART_CTL_DWLS_8BITS;
+		break;
 	}
 
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		ctl |= OWL_UART_CTL_STPS_2BITS;
-	} else {
+	else
 		ctl &= ~OWL_UART_CTL_STPS_2BITS;
-	}
 
 	ctl &= ~OWL_UART_CTL_PRS_MASK;
 	if (termios->c_cflag & PARENB) {
 		if (termios->c_cflag & CMSPAR) {
-			if (termios->c_cflag & PARODD) {
+			if (termios->c_cflag & PARODD)
 				ctl |= OWL_UART_CTL_PRS_MARK;
-			} else {
+			else
 				ctl |= OWL_UART_CTL_PRS_SPACE;
-			}
-		} else if (termios->c_cflag & PARODD) {
+		} else if (termios->c_cflag & PARODD)
 			ctl |= OWL_UART_CTL_PRS_ODD;
-		} else {
+		else
 			ctl |= OWL_UART_CTL_PRS_EVEN;
-		}
-	} else {
+	} else
 		ctl |= OWL_UART_CTL_PRS_NONE;
-	}
 
-	if (termios->c_cflag & CRTSCTS) {
+	if (termios->c_cflag & CRTSCTS)
 		ctl |= OWL_UART_CTL_AFE;
-	} else {
+	else
 		ctl &= ~OWL_UART_CTL_AFE;
-	}
 
 	owl_uart_write(port, ctl, OWL_UART_CTL);
 
@@ -377,14 +362,12 @@ static void owl_uart_set_termios(struct uart_port *port,
 	owl_uart_change_baudrate(owl_port, baud);
 
 	/* Don't rewrite B0 */
-	if (tty_termios_baud_rate(termios)) {
+	if (tty_termios_baud_rate(termios))
 		tty_termios_encode_baud_rate(termios, baud, baud);
-	}
 
 	port->read_status_mask |= OWL_UART_STAT_RXER;
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		port->read_status_mask |= OWL_UART_STAT_RXST;
-	}
 
 	uart_update_timeout(port, termios->c_cflag, baud);
 
@@ -397,13 +380,12 @@ static void owl_uart_release_port(struct uart_port *port)
 	struct resource *res;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!res) {
+	if (!res)
 		return;
-	}
 
 	if (port->flags & UPF_IOREMAP) {
 		devm_release_mem_region(port->dev, port->mapbase,
-		                        resource_size(res));
+			resource_size(res));
 		devm_iounmap(port->dev, port->membase);
 		port->membase = NULL;
 	}
@@ -415,21 +397,18 @@ static int owl_uart_request_port(struct uart_port *port)
 	struct resource *res;
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (!res) {
+	if (!res)
 		return -ENXIO;
-	}
 
 	if (!devm_request_mem_region(port->dev, port->mapbase,
-	                             resource_size(res), dev_name(port->dev))) {
+			resource_size(res), dev_name(port->dev)))
 		return -EBUSY;
-	}
 
 	if (port->flags & UPF_IOREMAP) {
 		port->membase = devm_ioremap(port->dev, port->mapbase,
-		                             resource_size(res));
-		if (!port->membase) {
+				resource_size(res));
+		if (!port->membase)
 			return -EBUSY;
-		}
 	}
 
 	return 0;
@@ -441,15 +420,13 @@ static const char *owl_uart_type(struct uart_port *port)
 }
 
 static int owl_uart_verify_port(struct uart_port *port,
-                                struct serial_struct *ser)
+				struct serial_struct *ser)
 {
-	if (port->type != PORT_OWL) {
+	if (port->type != PORT_OWL)
 		return -EINVAL;
-	}
 
-	if (port->irq != ser->irq) {
+	if (port->irq != ser->irq)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -466,9 +443,8 @@ static void owl_uart_config_port(struct uart_port *port, int flags)
 
 static int owl_uart_poll_get_char(struct uart_port *port)
 {
-	if (owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_RFEM) {
+	if (owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_RFEM)
 		return NO_POLL_CHAR;
-	}
 
 	return owl_uart_read(port, OWL_UART_RXDAT);
 }
@@ -480,9 +456,9 @@ static void owl_uart_poll_put_char(struct uart_port *port, unsigned char ch)
 
 	/* Wait while FIFO is full or timeout */
 	ret = readl_poll_timeout_atomic(port->membase + OWL_UART_STAT, reg,
-	                                !(reg & OWL_UART_STAT_TFFU),
-	                                OWL_UART_POLL_USEC,
-	                                OWL_UART_TIMEOUT_USEC);
+					!(reg & OWL_UART_STAT_TFFU),
+					OWL_UART_POLL_USEC,
+					OWL_UART_TIMEOUT_USEC);
 	if (ret == -ETIMEDOUT) {
 		dev_err(port->dev, "Timeout waiting while UART TX FULL\n");
 		return;
@@ -518,19 +494,17 @@ static const struct uart_ops owl_uart_ops = {
 
 static void owl_console_putchar(struct uart_port *port, unsigned char ch)
 {
-	if (!port->membase) {
+	if (!port->membase)
 		return;
-	}
 
-	while (owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_TFFU) {
+	while (owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_TFFU)
 		cpu_relax();
-	}
 
 	owl_uart_write(port, ch, OWL_UART_TXDAT);
 }
 
 static void owl_uart_port_write(struct uart_port *port, const char *s,
-                                u_int count)
+				u_int count)
 {
 	u32 old_ctl, val;
 	unsigned long flags;
@@ -538,11 +512,11 @@ static void owl_uart_port_write(struct uart_port *port, const char *s,
 
 	local_irq_save(flags);
 
-	if (port->sysrq) {
+	if (port->sysrq)
 		locked = 0;
-	} else if (oops_in_progress) {
+	else if (oops_in_progress)
 		locked = uart_port_trylock(port);
-	} else {
+	else {
 		uart_port_lock(port);
 		locked = 1;
 	}
@@ -556,9 +530,8 @@ static void owl_uart_port_write(struct uart_port *port, const char *s,
 	uart_console_write(port, s, count, owl_console_putchar);
 
 	/* wait until all contents have been sent out */
-	while (owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_TRFL_MASK) {
+	while (owl_uart_read(port, OWL_UART_STAT) & OWL_UART_STAT_TRFL_MASK)
 		cpu_relax();
-	}
 
 	/* clear IRQ pending */
 	val = owl_uart_read(port, OWL_UART_STAT);
@@ -567,22 +540,20 @@ static void owl_uart_port_write(struct uart_port *port, const char *s,
 
 	owl_uart_write(port, old_ctl, OWL_UART_CTL);
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock(port);
-	}
 
 	local_irq_restore(flags);
 }
 
 static void owl_uart_console_write(struct console *co, const char *s,
-                                   u_int count)
+				   u_int count)
 {
 	struct owl_uart_port *owl_port;
 
 	owl_port = owl_uart_ports[co->index];
-	if (!owl_port) {
+	if (!owl_port)
 		return;
-	}
 
 	owl_uart_port_write(&owl_port->port, s, count);
 }
@@ -595,18 +566,15 @@ static int owl_uart_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if (co->index < 0 || co->index >= OWL_UART_PORT_NUM) {
+	if (co->index < 0 || co->index >= OWL_UART_PORT_NUM)
 		return -EINVAL;
-	}
 
 	owl_port = owl_uart_ports[co->index];
-	if (!owl_port || !owl_port->port.membase) {
+	if (!owl_port || !owl_port->port.membase)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(&owl_port->port, co, baud, parity, bits, flow);
 }
@@ -630,8 +598,8 @@ static int __init owl_uart_console_init(void)
 console_initcall(owl_uart_console_init);
 
 static void owl_uart_early_console_write(struct console *co,
-        const char *s,
-        u_int count)
+					 const char *s,
+					 u_int count)
 {
 	struct earlycon_device *dev = co->data;
 
@@ -641,16 +609,15 @@ static void owl_uart_early_console_write(struct console *co,
 static int __init
 owl_uart_early_console_setup(struct earlycon_device *device, const char *opt)
 {
-	if (!device->port.membase) {
+	if (!device->port.membase)
 		return -ENODEV;
-	}
 
 	device->con->write = owl_uart_early_console_write;
 
 	return 0;
 }
 OF_EARLYCON_DECLARE(owl, "actions,owl-uart",
-                    owl_uart_early_console_setup);
+		    owl_uart_early_console_setup);
 
 #define OWL_UART_CONSOLE (&owl_uart_console)
 #else
@@ -691,9 +658,8 @@ static int owl_uart_probe(struct platform_device *pdev)
 	if (pdev->dev.of_node) {
 		pdev->id = of_alias_get_id(pdev->dev.of_node, "serial");
 		match = of_match_node(owl_uart_dt_matches, pdev->dev.of_node);
-		if (match) {
+		if (match)
 			info = match->data;
-		}
 	}
 
 	if (pdev->id < 0 || pdev->id >= OWL_UART_PORT_NUM) {
@@ -708,9 +674,8 @@ static int owl_uart_probe(struct platform_device *pdev)
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return irq;
-	}
 
 	if (owl_uart_ports[pdev->id]) {
 		dev_err(&pdev->dev, "port %d already allocated\n", pdev->id);
@@ -718,9 +683,8 @@ static int owl_uart_probe(struct platform_device *pdev)
 	}
 
 	owl_port = devm_kzalloc(&pdev->dev, sizeof(*owl_port), GFP_KERNEL);
-	if (!owl_port) {
+	if (!owl_port)
 		return -ENOMEM;
-	}
 
 	owl_port->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(owl_port->clk)) {
@@ -755,9 +719,8 @@ static int owl_uart_probe(struct platform_device *pdev)
 	platform_set_drvdata(pdev, owl_port);
 
 	ret = uart_add_one_port(&owl_uart_driver, &owl_port->port);
-	if (ret) {
+	if (ret)
 		owl_uart_ports[pdev->id] = NULL;
-	}
 
 	return ret;
 }
@@ -787,14 +750,12 @@ static int __init owl_uart_init(void)
 	int ret;
 
 	ret = uart_register_driver(&owl_uart_driver);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = platform_driver_register(&owl_uart_platform_driver);
-	if (ret) {
+	if (ret)
 		uart_unregister_driver(&owl_uart_driver);
-	}
 
 	return ret;
 }

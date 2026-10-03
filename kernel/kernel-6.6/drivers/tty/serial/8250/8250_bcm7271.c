@@ -26,157 +26,157 @@
 #include "8250.h"
 
 /* Register definitions for UART DMA block. Version 1.1 or later. */
-#define UDMA_ARB_RX     0x00
-#define UDMA_ARB_TX     0x04
-#define     UDMA_ARB_REQ                0x00000001
-#define     UDMA_ARB_GRANT              0x00000002
+#define UDMA_ARB_RX		0x00
+#define UDMA_ARB_TX		0x04
+#define		UDMA_ARB_REQ				0x00000001
+#define		UDMA_ARB_GRANT				0x00000002
 
-#define UDMA_RX_REVISION    0x00
-#define UDMA_RX_REVISION_REQUIRED           0x00000101
-#define UDMA_RX_CTRL        0x04
-#define     UDMA_RX_CTRL_BUF_CLOSE_MODE     0x00010000
-#define     UDMA_RX_CTRL_MASK_WR_DONE       0x00008000
-#define     UDMA_RX_CTRL_ENDIAN_OVERRIDE        0x00004000
-#define     UDMA_RX_CTRL_ENDIAN         0x00002000
-#define     UDMA_RX_CTRL_OE_IS_ERR          0x00001000
-#define     UDMA_RX_CTRL_PE_IS_ERR          0x00000800
-#define     UDMA_RX_CTRL_FE_IS_ERR          0x00000400
-#define     UDMA_RX_CTRL_NUM_BUF_USED_MASK      0x000003c0
-#define     UDMA_RX_CTRL_NUM_BUF_USED_SHIFT 6
-#define     UDMA_RX_CTRL_BUF_CLOSE_CLK_SEL_SYS  0x00000020
-#define     UDMA_RX_CTRL_BUF_CLOSE_ENA      0x00000010
-#define     UDMA_RX_CTRL_TIMEOUT_CLK_SEL_SYS    0x00000008
-#define     UDMA_RX_CTRL_TIMEOUT_ENA        0x00000004
-#define     UDMA_RX_CTRL_ABORT          0x00000002
-#define     UDMA_RX_CTRL_ENA            0x00000001
-#define UDMA_RX_STATUS      0x08
-#define     UDMA_RX_STATUS_ACTIVE_BUF_MASK      0x0000000f
-#define UDMA_RX_TRANSFER_LEN    0x0c
-#define UDMA_RX_TRANSFER_TOTAL  0x10
-#define UDMA_RX_BUFFER_SIZE 0x14
-#define UDMA_RX_SRC_ADDR    0x18
-#define UDMA_RX_TIMEOUT     0x1c
-#define UDMA_RX_BUFFER_CLOSE    0x20
+#define UDMA_RX_REVISION	0x00
+#define UDMA_RX_REVISION_REQUIRED			0x00000101
+#define UDMA_RX_CTRL		0x04
+#define		UDMA_RX_CTRL_BUF_CLOSE_MODE		0x00010000
+#define		UDMA_RX_CTRL_MASK_WR_DONE		0x00008000
+#define		UDMA_RX_CTRL_ENDIAN_OVERRIDE		0x00004000
+#define		UDMA_RX_CTRL_ENDIAN			0x00002000
+#define		UDMA_RX_CTRL_OE_IS_ERR			0x00001000
+#define		UDMA_RX_CTRL_PE_IS_ERR			0x00000800
+#define		UDMA_RX_CTRL_FE_IS_ERR			0x00000400
+#define		UDMA_RX_CTRL_NUM_BUF_USED_MASK		0x000003c0
+#define		UDMA_RX_CTRL_NUM_BUF_USED_SHIFT	6
+#define		UDMA_RX_CTRL_BUF_CLOSE_CLK_SEL_SYS	0x00000020
+#define		UDMA_RX_CTRL_BUF_CLOSE_ENA		0x00000010
+#define		UDMA_RX_CTRL_TIMEOUT_CLK_SEL_SYS	0x00000008
+#define		UDMA_RX_CTRL_TIMEOUT_ENA		0x00000004
+#define		UDMA_RX_CTRL_ABORT			0x00000002
+#define		UDMA_RX_CTRL_ENA			0x00000001
+#define UDMA_RX_STATUS		0x08
+#define		UDMA_RX_STATUS_ACTIVE_BUF_MASK		0x0000000f
+#define UDMA_RX_TRANSFER_LEN	0x0c
+#define UDMA_RX_TRANSFER_TOTAL	0x10
+#define UDMA_RX_BUFFER_SIZE	0x14
+#define UDMA_RX_SRC_ADDR	0x18
+#define UDMA_RX_TIMEOUT		0x1c
+#define UDMA_RX_BUFFER_CLOSE	0x20
 #define UDMA_RX_BLOCKOUT_COUNTER 0x24
-#define UDMA_RX_BUF0_PTR_LO 0x28
-#define UDMA_RX_BUF0_PTR_HI 0x2c
-#define UDMA_RX_BUF0_STATUS 0x30
-#define     UDMA_RX_BUFX_STATUS_OVERRUN_ERR     0x00000010
-#define     UDMA_RX_BUFX_STATUS_FRAME_ERR       0x00000008
-#define     UDMA_RX_BUFX_STATUS_PARITY_ERR      0x00000004
-#define     UDMA_RX_BUFX_STATUS_CLOSE_EXPIRED   0x00000002
-#define     UDMA_RX_BUFX_STATUS_DATA_RDY        0x00000001
-#define UDMA_RX_BUF0_DATA_LEN   0x34
-#define UDMA_RX_BUF1_PTR_LO 0x38
-#define UDMA_RX_BUF1_PTR_HI 0x3c
-#define UDMA_RX_BUF1_STATUS 0x40
-#define UDMA_RX_BUF1_DATA_LEN   0x44
+#define UDMA_RX_BUF0_PTR_LO	0x28
+#define UDMA_RX_BUF0_PTR_HI	0x2c
+#define UDMA_RX_BUF0_STATUS	0x30
+#define		UDMA_RX_BUFX_STATUS_OVERRUN_ERR		0x00000010
+#define		UDMA_RX_BUFX_STATUS_FRAME_ERR		0x00000008
+#define		UDMA_RX_BUFX_STATUS_PARITY_ERR		0x00000004
+#define		UDMA_RX_BUFX_STATUS_CLOSE_EXPIRED	0x00000002
+#define		UDMA_RX_BUFX_STATUS_DATA_RDY		0x00000001
+#define UDMA_RX_BUF0_DATA_LEN	0x34
+#define UDMA_RX_BUF1_PTR_LO	0x38
+#define UDMA_RX_BUF1_PTR_HI	0x3c
+#define UDMA_RX_BUF1_STATUS	0x40
+#define UDMA_RX_BUF1_DATA_LEN	0x44
 
-#define UDMA_TX_REVISION    0x00
-#define UDMA_TX_REVISION_REQUIRED           0x00000101
-#define UDMA_TX_CTRL        0x04
-#define     UDMA_TX_CTRL_ENDIAN_OVERRIDE        0x00000080
-#define     UDMA_TX_CTRL_ENDIAN         0x00000040
-#define     UDMA_TX_CTRL_NUM_BUF_USED_MASK      0x00000030
-#define     UDMA_TX_CTRL_NUM_BUF_USED_1     0x00000010
-#define     UDMA_TX_CTRL_ABORT          0x00000002
-#define     UDMA_TX_CTRL_ENA            0x00000001
-#define UDMA_TX_DST_ADDR    0x08
+#define UDMA_TX_REVISION	0x00
+#define UDMA_TX_REVISION_REQUIRED			0x00000101
+#define UDMA_TX_CTRL		0x04
+#define		UDMA_TX_CTRL_ENDIAN_OVERRIDE		0x00000080
+#define		UDMA_TX_CTRL_ENDIAN			0x00000040
+#define		UDMA_TX_CTRL_NUM_BUF_USED_MASK		0x00000030
+#define		UDMA_TX_CTRL_NUM_BUF_USED_1		0x00000010
+#define		UDMA_TX_CTRL_ABORT			0x00000002
+#define		UDMA_TX_CTRL_ENA			0x00000001
+#define UDMA_TX_DST_ADDR	0x08
 #define UDMA_TX_BLOCKOUT_COUNTER 0x10
-#define UDMA_TX_TRANSFER_LEN    0x14
-#define UDMA_TX_TRANSFER_TOTAL  0x18
-#define UDMA_TX_STATUS      0x20
-#define UDMA_TX_BUF0_PTR_LO 0x24
-#define UDMA_TX_BUF0_PTR_HI 0x28
-#define UDMA_TX_BUF0_STATUS 0x2c
-#define     UDMA_TX_BUFX_LAST           0x00000002
-#define     UDMA_TX_BUFX_EMPTY          0x00000001
-#define UDMA_TX_BUF0_DATA_LEN   0x30
-#define UDMA_TX_BUF0_DATA_SENT  0x34
-#define UDMA_TX_BUF1_PTR_LO 0x38
+#define UDMA_TX_TRANSFER_LEN	0x14
+#define UDMA_TX_TRANSFER_TOTAL	0x18
+#define UDMA_TX_STATUS		0x20
+#define UDMA_TX_BUF0_PTR_LO	0x24
+#define UDMA_TX_BUF0_PTR_HI	0x28
+#define UDMA_TX_BUF0_STATUS	0x2c
+#define		UDMA_TX_BUFX_LAST			0x00000002
+#define		UDMA_TX_BUFX_EMPTY			0x00000001
+#define UDMA_TX_BUF0_DATA_LEN	0x30
+#define UDMA_TX_BUF0_DATA_SENT	0x34
+#define UDMA_TX_BUF1_PTR_LO	0x38
 
-#define UDMA_INTR_STATUS    0x00
-#define     UDMA_INTR_ARB_TX_GRANT          0x00040000
-#define     UDMA_INTR_ARB_RX_GRANT          0x00020000
-#define     UDMA_INTR_TX_ALL_EMPTY          0x00010000
-#define     UDMA_INTR_TX_EMPTY_BUF1         0x00008000
-#define     UDMA_INTR_TX_EMPTY_BUF0         0x00004000
-#define     UDMA_INTR_TX_ABORT          0x00002000
-#define     UDMA_INTR_TX_DONE           0x00001000
-#define     UDMA_INTR_RX_ERROR          0x00000800
-#define     UDMA_INTR_RX_TIMEOUT            0x00000400
-#define     UDMA_INTR_RX_READY_BUF7         0x00000200
-#define     UDMA_INTR_RX_READY_BUF6         0x00000100
-#define     UDMA_INTR_RX_READY_BUF5         0x00000080
-#define     UDMA_INTR_RX_READY_BUF4         0x00000040
-#define     UDMA_INTR_RX_READY_BUF3         0x00000020
-#define     UDMA_INTR_RX_READY_BUF2         0x00000010
-#define     UDMA_INTR_RX_READY_BUF1         0x00000008
-#define     UDMA_INTR_RX_READY_BUF0         0x00000004
-#define     UDMA_INTR_RX_READY_MASK         0x000003fc
-#define     UDMA_INTR_RX_READY_SHIFT        2
-#define     UDMA_INTR_RX_ABORT          0x00000002
-#define     UDMA_INTR_RX_DONE           0x00000001
-#define UDMA_INTR_SET       0x04
-#define UDMA_INTR_CLEAR     0x08
-#define UDMA_INTR_MASK_STATUS   0x0c
-#define UDMA_INTR_MASK_SET  0x10
-#define UDMA_INTR_MASK_CLEAR    0x14
+#define UDMA_INTR_STATUS	0x00
+#define		UDMA_INTR_ARB_TX_GRANT			0x00040000
+#define		UDMA_INTR_ARB_RX_GRANT			0x00020000
+#define		UDMA_INTR_TX_ALL_EMPTY			0x00010000
+#define		UDMA_INTR_TX_EMPTY_BUF1			0x00008000
+#define		UDMA_INTR_TX_EMPTY_BUF0			0x00004000
+#define		UDMA_INTR_TX_ABORT			0x00002000
+#define		UDMA_INTR_TX_DONE			0x00001000
+#define		UDMA_INTR_RX_ERROR			0x00000800
+#define		UDMA_INTR_RX_TIMEOUT			0x00000400
+#define		UDMA_INTR_RX_READY_BUF7			0x00000200
+#define		UDMA_INTR_RX_READY_BUF6			0x00000100
+#define		UDMA_INTR_RX_READY_BUF5			0x00000080
+#define		UDMA_INTR_RX_READY_BUF4			0x00000040
+#define		UDMA_INTR_RX_READY_BUF3			0x00000020
+#define		UDMA_INTR_RX_READY_BUF2			0x00000010
+#define		UDMA_INTR_RX_READY_BUF1			0x00000008
+#define		UDMA_INTR_RX_READY_BUF0			0x00000004
+#define		UDMA_INTR_RX_READY_MASK			0x000003fc
+#define		UDMA_INTR_RX_READY_SHIFT		2
+#define		UDMA_INTR_RX_ABORT			0x00000002
+#define		UDMA_INTR_RX_DONE			0x00000001
+#define UDMA_INTR_SET		0x04
+#define UDMA_INTR_CLEAR		0x08
+#define UDMA_INTR_MASK_STATUS	0x0c
+#define UDMA_INTR_MASK_SET	0x10
+#define UDMA_INTR_MASK_CLEAR	0x14
 
 
 #define UDMA_RX_INTERRUPTS ( \
-                             UDMA_INTR_RX_ERROR | \
-                             UDMA_INTR_RX_TIMEOUT | \
-                             UDMA_INTR_RX_READY_BUF0 | \
-                             UDMA_INTR_RX_READY_BUF1 | \
-                             UDMA_INTR_RX_READY_BUF2 | \
-                             UDMA_INTR_RX_READY_BUF3 | \
-                             UDMA_INTR_RX_READY_BUF4 | \
-                             UDMA_INTR_RX_READY_BUF5 | \
-                             UDMA_INTR_RX_READY_BUF6 | \
-                             UDMA_INTR_RX_READY_BUF7 | \
-                             UDMA_INTR_RX_ABORT | \
-                             UDMA_INTR_RX_DONE)
+	UDMA_INTR_RX_ERROR | \
+	UDMA_INTR_RX_TIMEOUT | \
+	UDMA_INTR_RX_READY_BUF0 | \
+	UDMA_INTR_RX_READY_BUF1 | \
+	UDMA_INTR_RX_READY_BUF2 | \
+	UDMA_INTR_RX_READY_BUF3 | \
+	UDMA_INTR_RX_READY_BUF4 | \
+	UDMA_INTR_RX_READY_BUF5 | \
+	UDMA_INTR_RX_READY_BUF6 | \
+	UDMA_INTR_RX_READY_BUF7 | \
+	UDMA_INTR_RX_ABORT | \
+	UDMA_INTR_RX_DONE)
 
 #define UDMA_RX_ERR_INTERRUPTS ( \
-                                 UDMA_INTR_RX_ERROR | \
-                                 UDMA_INTR_RX_TIMEOUT | \
-                                 UDMA_INTR_RX_ABORT | \
-                                 UDMA_INTR_RX_DONE)
+	UDMA_INTR_RX_ERROR | \
+	UDMA_INTR_RX_TIMEOUT | \
+	UDMA_INTR_RX_ABORT | \
+	UDMA_INTR_RX_DONE)
 
 #define UDMA_TX_INTERRUPTS ( \
-                             UDMA_INTR_TX_ABORT | \
-                             UDMA_INTR_TX_DONE)
+	UDMA_INTR_TX_ABORT | \
+	UDMA_INTR_TX_DONE)
 
 #define UDMA_IS_RX_INTERRUPT(status) ((status) & UDMA_RX_INTERRUPTS)
 #define UDMA_IS_TX_INTERRUPT(status) ((status) & UDMA_TX_INTERRUPTS)
 
 
 /* Current devices have 8 sets of RX buffer registers */
-#define UDMA_RX_BUFS_COUNT  8
+#define UDMA_RX_BUFS_COUNT	8
 #define UDMA_RX_BUFS_REG_OFFSET (UDMA_RX_BUF1_PTR_LO - UDMA_RX_BUF0_PTR_LO)
-#define UDMA_RX_BUFx_PTR_LO(x)  (UDMA_RX_BUF0_PTR_LO + \
-                                 ((x) * UDMA_RX_BUFS_REG_OFFSET))
-#define UDMA_RX_BUFx_PTR_HI(x)  (UDMA_RX_BUF0_PTR_HI + \
-                                 ((x) * UDMA_RX_BUFS_REG_OFFSET))
-#define UDMA_RX_BUFx_STATUS(x)  (UDMA_RX_BUF0_STATUS + \
-                                 ((x) * UDMA_RX_BUFS_REG_OFFSET))
+#define UDMA_RX_BUFx_PTR_LO(x)	(UDMA_RX_BUF0_PTR_LO + \
+				 ((x) * UDMA_RX_BUFS_REG_OFFSET))
+#define UDMA_RX_BUFx_PTR_HI(x)	(UDMA_RX_BUF0_PTR_HI + \
+				 ((x) * UDMA_RX_BUFS_REG_OFFSET))
+#define UDMA_RX_BUFx_STATUS(x)	(UDMA_RX_BUF0_STATUS + \
+				 ((x) * UDMA_RX_BUFS_REG_OFFSET))
 #define UDMA_RX_BUFx_DATA_LEN(x) (UDMA_RX_BUF0_DATA_LEN + \
-                                  ((x) * UDMA_RX_BUFS_REG_OFFSET))
+				  ((x) * UDMA_RX_BUFS_REG_OFFSET))
 
 /* Current devices have 2 sets of TX buffer registers */
-#define UDMA_TX_BUFS_COUNT  2
+#define UDMA_TX_BUFS_COUNT	2
 #define UDMA_TX_BUFS_REG_OFFSET (UDMA_TX_BUF1_PTR_LO - UDMA_TX_BUF0_PTR_LO)
-#define UDMA_TX_BUFx_PTR_LO(x)  (UDMA_TX_BUF0_PTR_LO + \
-                                 ((x) * UDMA_TX_BUFS_REG_OFFSET))
-#define UDMA_TX_BUFx_PTR_HI(x)  (UDMA_TX_BUF0_PTR_HI + \
-                                 ((x) * UDMA_TX_BUFS_REG_OFFSET))
-#define UDMA_TX_BUFx_STATUS(x)  (UDMA_TX_BUF0_STATUS + \
-                                 ((x) * UDMA_TX_BUFS_REG_OFFSET))
+#define UDMA_TX_BUFx_PTR_LO(x)	(UDMA_TX_BUF0_PTR_LO + \
+				 ((x) * UDMA_TX_BUFS_REG_OFFSET))
+#define UDMA_TX_BUFx_PTR_HI(x)	(UDMA_TX_BUF0_PTR_HI + \
+				 ((x) * UDMA_TX_BUFS_REG_OFFSET))
+#define UDMA_TX_BUFx_STATUS(x)	(UDMA_TX_BUF0_STATUS + \
+				 ((x) * UDMA_TX_BUFS_REG_OFFSET))
 #define UDMA_TX_BUFx_DATA_LEN(x) (UDMA_TX_BUF0_DATA_LEN + \
-                                  ((x) * UDMA_TX_BUFS_REG_OFFSET))
+				  ((x) * UDMA_TX_BUFS_REG_OFFSET))
 #define UDMA_TX_BUFx_DATA_SENT(x) (UDMA_TX_BUF0_DATA_SENT + \
-                                   ((x) * UDMA_TX_BUFS_REG_OFFSET))
+				   ((x) * UDMA_TX_BUFS_REG_OFFSET))
 #define REGS_8250 0
 #define REGS_DMA_RX 1
 #define REGS_DMA_TX 2
@@ -193,7 +193,7 @@
 static const u32 brcmstb_rate_table[] = {
 	MHZ(81),
 	MHZ(108),
-	MHZ(64),        /* Actually 64285715 for some chips */
+	MHZ(64),		/* Actually 64285715 for some chips */
 	MHZ(48),
 };
 
@@ -205,39 +205,39 @@ static const u32 brcmstb_rate_table_7278[] = {
 };
 
 struct brcmuart_priv {
-	int     line;
-	struct clk  *baud_mux_clk;
-	unsigned long   default_mux_rate;
-	u32     real_rates[ARRAY_SIZE(brcmstb_rate_table)];
-	const u32   *rate_table;
-	ktime_t     char_wait;
+	int		line;
+	struct clk	*baud_mux_clk;
+	unsigned long	default_mux_rate;
+	u32		real_rates[ARRAY_SIZE(brcmstb_rate_table)];
+	const u32	*rate_table;
+	ktime_t		char_wait;
 	struct uart_port *up;
-	struct hrtimer  hrt;
-	bool        shutdown;
-	bool        dma_enabled;
+	struct hrtimer	hrt;
+	bool		shutdown;
+	bool		dma_enabled;
 	struct uart_8250_dma dma;
-	void __iomem    *regs[REGS_MAX];
-	dma_addr_t  rx_addr;
-	void        *rx_bufs;
-	size_t      rx_size;
-	int     rx_next_buf;
-	dma_addr_t  tx_addr;
-	void        *tx_buf;
-	size_t      tx_size;
-	bool        tx_running;
-	bool        rx_running;
-	struct dentry   *debugfs_dir;
+	void __iomem	*regs[REGS_MAX];
+	dma_addr_t	rx_addr;
+	void		*rx_bufs;
+	size_t		rx_size;
+	int		rx_next_buf;
+	dma_addr_t	tx_addr;
+	void		*tx_buf;
+	size_t		tx_size;
+	bool		tx_running;
+	bool		rx_running;
+	struct dentry	*debugfs_dir;
 
 	/* stats exposed through debugfs */
-	u64     dma_rx_partial_buf;
-	u64     dma_rx_full_buf;
-	u32     rx_bad_timeout_late_char;
-	u32     rx_bad_timeout_no_char;
-	u32     rx_missing_close_timeout;
-	u32     rx_err;
-	u32     rx_timeout;
-	u32     rx_abort;
-	u32     saved_mctrl;
+	u64		dma_rx_partial_buf;
+	u64		dma_rx_full_buf;
+	u32		rx_bad_timeout_late_char;
+	u32		rx_bad_timeout_no_char;
+	u32		rx_missing_close_timeout;
+	u32		rx_err;
+	u32		rx_timeout;
+	u32		rx_abort;
+	u32		saved_mctrl;
 };
 
 static struct dentry *brcmuart_debugfs_root;
@@ -246,19 +246,19 @@ static struct dentry *brcmuart_debugfs_root;
  * Register access routines
  */
 static u32 udma_readl(struct brcmuart_priv *priv,
-                      int reg_type, int offset)
+		int reg_type, int offset)
 {
 	return readl(priv->regs[reg_type] + offset);
 }
 
 static void udma_writel(struct brcmuart_priv *priv,
-                        int reg_type, int offset, u32 value)
+			int reg_type, int offset, u32 value)
 {
 	writel(value, priv->regs[reg_type] + offset);
 }
 
 static void udma_set(struct brcmuart_priv *priv,
-                     int reg_type, int offset, u32 bits)
+		int reg_type, int offset, u32 bits)
 {
 	void __iomem *reg = priv->regs[reg_type] + offset;
 	u32 value;
@@ -269,7 +269,7 @@ static void udma_set(struct brcmuart_priv *priv,
 }
 
 static void udma_unset(struct brcmuart_priv *priv,
-                       int reg_type, int offset, u32 bits)
+		int reg_type, int offset, u32 bits)
 {
 	void __iomem *reg = priv->regs[reg_type] + offset;
 	u32 value;
@@ -300,12 +300,10 @@ static int brcmuart_arbitration(struct brcmuart_priv *priv, bool acquire)
 		while (1) {
 			rx_grant = udma_readl(priv, REGS_DMA_ARB, UDMA_ARB_RX);
 			tx_grant = udma_readl(priv, REGS_DMA_ARB, UDMA_ARB_TX);
-			if (rx_grant & tx_grant & UDMA_ARB_GRANT) {
+			if (rx_grant & tx_grant & UDMA_ARB_GRANT)
 				return 0;
-			}
-			if (waits-- == 0) {
+			if (waits-- == 0)
 				break;
-			}
 			msleep(1);
 		}
 		ret = 1;
@@ -331,10 +329,10 @@ static void brcmuart_init_dma_hardware(struct brcmuart_priv *priv)
 	 * Setup buffer close to happen when 32 character times have
 	 * elapsed since the last character was received.
 	 */
-	udma_writel(priv, REGS_DMA_RX, UDMA_RX_BUFFER_CLOSE, 16 * 10 * 32);
+	udma_writel(priv, REGS_DMA_RX, UDMA_RX_BUFFER_CLOSE, 16*10*32);
 	value = (RX_BUFS_COUNT << UDMA_RX_CTRL_NUM_BUF_USED_SHIFT)
-	        | UDMA_RX_CTRL_BUF_CLOSE_MODE
-	        | UDMA_RX_CTRL_BUF_CLOSE_ENA;
+		| UDMA_RX_CTRL_BUF_CLOSE_MODE
+		| UDMA_RX_CTRL_BUF_CLOSE_ENA;
 	udma_writel(priv, REGS_DMA_RX, UDMA_RX_CTRL, value);
 
 	udma_writel(priv, REGS_DMA_RX, UDMA_RX_BLOCKOUT_COUNTER, 0);
@@ -345,24 +343,24 @@ static void brcmuart_init_dma_hardware(struct brcmuart_priv *priv)
 		udma_writel(priv, REGS_DMA_RX, UDMA_RX_TRANSFER_LEN, 0);
 
 		udma_writel(priv, REGS_DMA_RX, UDMA_RX_BUFx_PTR_LO(x),
-		            lower_32_bits(daddr));
+			    lower_32_bits(daddr));
 		udma_writel(priv, REGS_DMA_RX, UDMA_RX_BUFx_PTR_HI(x),
-		            upper_32_bits(daddr));
+			    upper_32_bits(daddr));
 		daddr += RX_BUF_SIZE;
 	}
 
 	daddr = priv->tx_addr;
 	udma_writel(priv, REGS_DMA_TX, UDMA_TX_BUFx_PTR_LO(0),
-	            lower_32_bits(daddr));
+		    lower_32_bits(daddr));
 	udma_writel(priv, REGS_DMA_TX, UDMA_TX_BUFx_PTR_HI(0),
-	            upper_32_bits(daddr));
+		    upper_32_bits(daddr));
 	udma_writel(priv, REGS_DMA_TX, UDMA_TX_CTRL,
-	            UDMA_TX_CTRL_NUM_BUF_USED_1);
+		    UDMA_TX_CTRL_NUM_BUF_USED_1);
 
 	/* clear all interrupts then enable them */
 	udma_writel(priv, REGS_DMA_ISR, UDMA_INTR_CLEAR, 0xffffffff);
 	udma_writel(priv, REGS_DMA_ISR, UDMA_INTR_MASK_CLEAR,
-	            UDMA_RX_INTERRUPTS | UDMA_TX_INTERRUPTS);
+		UDMA_RX_INTERRUPTS | UDMA_TX_INTERRUPTS);
 
 }
 
@@ -376,11 +374,11 @@ static void start_rx_dma(struct uart_8250_port *p)
 	/* Clear the RX ready bit for all buffers */
 	for (x = 0; x < RX_BUFS_COUNT; x++)
 		udma_unset(priv, REGS_DMA_RX, UDMA_RX_BUFx_STATUS(x),
-		           UDMA_RX_BUFX_STATUS_DATA_RDY);
+			UDMA_RX_BUFX_STATUS_DATA_RDY);
 
 	/* always start with buffer 0 */
 	udma_unset(priv, REGS_DMA_RX, UDMA_RX_STATUS,
-	           UDMA_RX_STATUS_ACTIVE_BUF_MASK);
+		   UDMA_RX_STATUS_ACTIVE_BUF_MASK);
 	priv->rx_next_buf = 0;
 
 	udma_set(priv, REGS_DMA_RX, UDMA_RX_CTRL, UDMA_RX_CTRL_ENA);
@@ -392,9 +390,8 @@ static void stop_rx_dma(struct uart_8250_port *p)
 	struct brcmuart_priv *priv = p->port.private_data;
 
 	/* If RX is running, set the RX ABORT */
-	if (priv->rx_running) {
+	if (priv->rx_running)
 		udma_set(priv, REGS_DMA_RX, UDMA_RX_CTRL, UDMA_RX_CTRL_ABORT);
-	}
 }
 
 static int stop_tx_dma(struct uart_8250_port *p)
@@ -404,9 +401,8 @@ static int stop_tx_dma(struct uart_8250_port *p)
 
 	/* If TX is running, set the TX ABORT */
 	value = udma_readl(priv, REGS_DMA_TX, UDMA_TX_CTRL);
-	if (value & UDMA_TX_CTRL_ENA) {
+	if (value & UDMA_TX_CTRL_ENA)
 		udma_set(priv, REGS_DMA_TX, UDMA_TX_CTRL, UDMA_TX_CTRL_ABORT);
-	}
 	priv->tx_running = false;
 	return 0;
 }
@@ -422,7 +418,7 @@ static int brcmuart_tx_dma(struct uart_8250_port *p)
 	u32 tx_size;
 
 	if (uart_tx_stopped(&p->port) || priv->tx_running ||
-	    uart_circ_empty(xmit)) {
+		uart_circ_empty(xmit)) {
 		return 0;
 	}
 	tx_size = CIRC_CNT_TO_END(xmit->head, xmit->tail, UART_XMIT_SIZE);
@@ -431,9 +427,8 @@ static int brcmuart_tx_dma(struct uart_8250_port *p)
 	memcpy(priv->tx_buf, &xmit->buf[xmit->tail], tx_size);
 	uart_xmit_advance(&p->port, tx_size);
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(&p->port);
-	}
 
 	udma_writel(priv, REGS_DMA_TX, UDMA_TX_TRANSFER_LEN, tx_size);
 	udma_writel(priv, REGS_DMA_TX, UDMA_TX_BUF0_DATA_LEN, tx_size);
@@ -461,8 +456,8 @@ static void brcmuart_rx_buf_done_isr(struct uart_port *up, int index)
 		return;
 	}
 	if (status & (UDMA_RX_BUFX_STATUS_OVERRUN_ERR |
-	              UDMA_RX_BUFX_STATUS_FRAME_ERR |
-	              UDMA_RX_BUFX_STATUS_PARITY_ERR)) {
+		      UDMA_RX_BUFX_STATUS_FRAME_ERR |
+		      UDMA_RX_BUFX_STATUS_PARITY_ERR)) {
 		if (status & UDMA_RX_BUFX_STATUS_OVERRUN_ERR) {
 			up->icount.overrun++;
 			dev_warn(up->dev, "RX OVERRUN Error\n");
@@ -477,27 +472,25 @@ static void brcmuart_rx_buf_done_isr(struct uart_port *up, int index)
 		}
 	}
 	copied = (u32)tty_insert_flip_string(
-	             tty_port,
-	             priv->rx_bufs + (index * RX_BUF_SIZE),
-	             length);
+		tty_port,
+		priv->rx_bufs + (index * RX_BUF_SIZE),
+		length);
 	if (copied != length) {
 		dev_warn(up->dev, "Flip buffer overrun of %d bytes\n",
-		         length - copied);
+			 length - copied);
 		up->icount.overrun += length - copied;
 	}
 	up->icount.rx += length;
-	if (status & UDMA_RX_BUFX_STATUS_CLOSE_EXPIRED) {
+	if (status & UDMA_RX_BUFX_STATUS_CLOSE_EXPIRED)
 		priv->dma_rx_partial_buf++;
-	} else if (length != RX_BUF_SIZE)
+	else if (length != RX_BUF_SIZE)
 		/*
 		 * This is a bug in the controller that doesn't cause
 		 * any problems but will be fixed in the future.
 		 */
-	{
 		priv->rx_missing_close_timeout++;
-	} else {
+	else
 		priv->dma_rx_full_buf++;
-	}
 
 	tty_flip_buffer_push(tty_port);
 }
@@ -516,33 +509,30 @@ static void brcmuart_rx_isr(struct uart_port *up, u32 rx_isr)
 			brcmuart_rx_buf_done_isr(up, priv->rx_next_buf);
 		} else {
 			dev_err(dev,
-			        "RX buffer ready out of sequence, restarting RX DMA\n");
+				"RX buffer ready out of sequence, restarting RX DMA\n");
 			start_rx_dma(up_to_u8250p(up));
 			break;
 		}
 		if (rx_isr & UDMA_RX_ERR_INTERRUPTS) {
-			if (rx_isr & UDMA_INTR_RX_ERROR) {
+			if (rx_isr & UDMA_INTR_RX_ERROR)
 				priv->rx_err++;
-			}
 			if (rx_isr & UDMA_INTR_RX_TIMEOUT) {
 				priv->rx_timeout++;
 				dev_err(dev, "RX TIMEOUT Error\n");
 			}
-			if (rx_isr & UDMA_INTR_RX_ABORT) {
+			if (rx_isr & UDMA_INTR_RX_ABORT)
 				priv->rx_abort++;
-			}
 			priv->rx_running = false;
 		}
 		/* If not ABORT, re-enable RX buffer */
 		if (!(rx_isr & UDMA_INTR_RX_ABORT))
 			udma_unset(priv, REGS_DMA_RX,
-			           UDMA_RX_BUFx_STATUS(priv->rx_next_buf),
-			           UDMA_RX_BUFX_STATUS_DATA_RDY);
+				   UDMA_RX_BUFx_STATUS(priv->rx_next_buf),
+				   UDMA_RX_BUFX_STATUS_DATA_RDY);
 		rx_done_isr &= ~check_isr;
 		priv->rx_next_buf++;
-		if (priv->rx_next_buf == RX_BUFS_COUNT) {
+		if (priv->rx_next_buf == RX_BUFS_COUNT)
 			priv->rx_next_buf = 0;
-		}
 	}
 }
 
@@ -551,18 +541,16 @@ static void brcmuart_tx_isr(struct uart_port *up, u32 isr)
 	struct brcmuart_priv *priv = up->private_data;
 	struct device *dev = up->dev;
 	struct uart_8250_port *port_8250 = up_to_u8250p(up);
-	struct circ_buf *xmit = &port_8250->port.state->xmit;
+	struct circ_buf	*xmit = &port_8250->port.state->xmit;
 
 	if (isr & UDMA_INTR_TX_ABORT) {
-		if (priv->tx_running) {
+		if (priv->tx_running)
 			dev_err(dev, "Unexpected TX_ABORT interrupt\n");
-		}
 		return;
 	}
 	priv->tx_running = false;
-	if (!uart_circ_empty(xmit) && !uart_tx_stopped(up)) {
+	if (!uart_circ_empty(xmit) && !uart_tx_stopped(up))
 		brcmuart_tx_dma(port_8250);
-	}
 }
 
 static irqreturn_t brcmuart_isr(int irq, void *dev_id)
@@ -576,9 +564,8 @@ static irqreturn_t brcmuart_isr(int irq, void *dev_id)
 	u32 tval;
 
 	interrupts = udma_readl(priv, REGS_DMA_ISR, UDMA_INTR_STATUS);
-	if (interrupts == 0) {
+	if (interrupts == 0)
 		return IRQ_NONE;
-	}
 
 	uart_port_lock_irqsave(up, &flags);
 
@@ -586,16 +573,13 @@ static irqreturn_t brcmuart_isr(int irq, void *dev_id)
 	udma_writel(priv, REGS_DMA_ISR, UDMA_INTR_CLEAR, interrupts);
 
 	rval = UDMA_IS_RX_INTERRUPT(interrupts);
-	if (rval) {
+	if (rval)
 		brcmuart_rx_isr(up, rval);
-	}
 	tval = UDMA_IS_TX_INTERRUPT(interrupts);
-	if (tval) {
+	if (tval)
 		brcmuart_tx_isr(up, tval);
-	}
-	if ((rval | tval) == 0) {
+	if ((rval | tval) == 0)
 		dev_warn(dev, "Spurious interrupt: 0x%x\n", interrupts);
-	}
 
 	uart_port_unlock_irqrestore(up, flags);
 	return IRQ_HANDLED;
@@ -616,9 +600,8 @@ static int brcmuart_startup(struct uart_port *port)
 	up->dma = NULL;
 
 	res = serial8250_do_startup(port);
-	if (!priv->dma_enabled) {
+	if (!priv->dma_enabled)
 		return res;
-	}
 	/*
 	 * Disable the Receive Data Interrupt because the DMA engine
 	 * will handle this.
@@ -653,7 +636,7 @@ static void brcmuart_shutdown(struct uart_port *port)
 		stop_tx_dma(up);
 		/* disable all interrupts */
 		udma_writel(priv, REGS_DMA_ISR, UDMA_INTR_MASK_SET,
-		            UDMA_RX_INTERRUPTS | UDMA_TX_INTERRUPTS);
+			UDMA_RX_INTERRUPTS | UDMA_TX_INTERRUPTS);
 	}
 
 	/*
@@ -684,7 +667,7 @@ static void init_real_clk_rates(struct device *dev, struct brcmuart_priv *priv)
 		rc = clk_set_rate(priv->baud_mux_clk, priv->rate_table[x]);
 		if (rc) {
 			dev_err(dev, "Error selecting BAUD MUX clock for %u\n",
-			        priv->rate_table[x]);
+				priv->rate_table[x]);
 			priv->real_rates[x] = priv->rate_table[x];
 		} else {
 			priv->real_rates[x] = clk_get_rate(priv->baud_mux_clk);
@@ -693,108 +676,119 @@ static void init_real_clk_rates(struct device *dev, struct brcmuart_priv *priv)
 	clk_set_rate(priv->baud_mux_clk, priv->default_mux_rate);
 }
 
+static u32 find_quot(struct device *dev, u32 freq, u32 baud, u32 *percent)
+{
+	u32 quot;
+	u32 rate;
+	u64 hires_rate;
+	u64 hires_baud;
+	u64 hires_err;
+
+	rate = freq / 16;
+	quot = DIV_ROUND_CLOSEST(rate, baud);
+	if (!quot)
+		return 0;
+
+	/* increase resolution to get xx.xx percent */
+	hires_rate = div_u64((u64)rate * 10000, (u64)quot);
+	hires_baud = (u64)baud * 10000;
+
+	/* get the delta */
+	if (hires_rate > hires_baud)
+		hires_err = (hires_rate - hires_baud);
+	else
+		hires_err = (hires_baud - hires_rate);
+
+	*percent = (unsigned long)DIV_ROUND_CLOSEST_ULL(hires_err, baud);
+
+	dev_dbg(dev, "Baud rate: %u, MUX Clk: %u, Error: %u.%u%%\n",
+		baud, freq, *percent / 100, *percent % 100);
+
+	return quot;
+}
+
 static void set_clock_mux(struct uart_port *up, struct brcmuart_priv *priv,
-                          u32 baud)
+			u32 baud)
 {
 	u32 percent;
 	u32 best_percent = UINT_MAX;
 	u32 quot;
+	u32 freq;
 	u32 best_quot = 1;
-	u32 rate;
-	int best_index = -1;
-	u64 hires_rate;
-	u64 hires_baud;
-	u64 hires_err;
+	u32 best_freq = 0;
 	int rc;
 	int i;
 	int real_baud;
 
 	/* If the Baud Mux Clock was not specified, just return */
-	if (priv->baud_mux_clk == NULL) {
+	if (priv->baud_mux_clk == NULL)
 		return;
+
+	/* Try default_mux_rate first */
+	quot = find_quot(up->dev, priv->default_mux_rate, baud, &percent);
+	if (quot) {
+		best_percent = percent;
+		best_freq = priv->default_mux_rate;
+		best_quot = quot;
 	}
+	/* If more than 1% error, find the closest match for specified baud */
+	if (best_percent > 100) {
+		for (i = 0; i < ARRAY_SIZE(priv->real_rates); i++) {
+			freq = priv->real_rates[i];
+			if (freq == 0 || freq == priv->default_mux_rate)
+				continue;
+			quot = find_quot(up->dev, freq, baud, &percent);
+			if (!quot)
+				continue;
 
-	/* Find the closest match for specified baud */
-	for (i = 0; i < ARRAY_SIZE(priv->real_rates); i++) {
-		if (priv->real_rates[i] == 0) {
-			continue;
-		}
-		rate = priv->real_rates[i] / 16;
-		quot = DIV_ROUND_CLOSEST(rate, baud);
-		if (!quot) {
-			continue;
-		}
-
-		/* increase resolution to get xx.xx percent */
-		hires_rate = (u64)rate * 10000;
-		hires_baud = (u64)baud * 10000;
-
-		hires_err = div_u64(hires_rate, (u64)quot);
-
-		/* get the delta */
-		if (hires_err > hires_baud) {
-			hires_err = (hires_err - hires_baud);
-		} else {
-			hires_err = (hires_baud - hires_err);
-		}
-
-		percent = (unsigned long)DIV_ROUND_CLOSEST_ULL(hires_err, baud);
-		dev_dbg(up->dev,
-		        "Baud rate: %u, MUX Clk: %u, Error: %u.%u%%\n",
-		        baud, priv->real_rates[i], percent / 100,
-		        percent % 100);
-		if (percent < best_percent) {
-			best_percent = percent;
-			best_index = i;
-			best_quot = quot;
+			if (percent < best_percent) {
+				best_percent = percent;
+				best_freq = freq;
+				best_quot = quot;
+			}
 		}
 	}
-	if (best_index == -1) {
+	if (!best_freq) {
 		dev_err(up->dev, "Error, %d BAUD rate is too fast.\n", baud);
 		return;
 	}
-	rate = priv->real_rates[best_index];
-	rc = clk_set_rate(priv->baud_mux_clk, rate);
-	if (rc) {
+	rc = clk_set_rate(priv->baud_mux_clk, best_freq);
+	if (rc)
 		dev_err(up->dev, "Error selecting BAUD MUX clock\n");
-	}
 
 	/* Error over 3 percent will cause data errors */
 	if (best_percent > 300)
 		dev_err(up->dev, "Error, baud: %d has %u.%u%% error\n",
-		        baud, percent / 100, percent % 100);
+			baud, percent / 100, percent % 100);
 
-	real_baud = rate / 16 / best_quot;
-	dev_dbg(up->dev, "Selecting BAUD MUX rate: %u\n", rate);
+	real_baud = best_freq / 16 / best_quot;
+	dev_dbg(up->dev, "Selecting BAUD MUX rate: %u\n", best_freq);
 	dev_dbg(up->dev, "Requested baud: %u, Actual baud: %u\n",
-	        baud, real_baud);
+		baud, real_baud);
 
 	/* calc nanoseconds for 1.5 characters time at the given baud rate */
 	i = NSEC_PER_SEC / real_baud / 10;
 	i += (i / 2);
 	priv->char_wait = ns_to_ktime(i);
 
-	up->uartclk = rate;
+	up->uartclk = best_freq;
 }
 
 static void brcmstb_set_termios(struct uart_port *up,
-                                struct ktermios *termios,
-                                const struct ktermios *old)
+				struct ktermios *termios,
+				const struct ktermios *old)
 {
 	struct uart_8250_port *p8250 = up_to_u8250p(up);
 	struct brcmuart_priv *priv = up->private_data;
 
-	if (priv->dma_enabled) {
+	if (priv->dma_enabled)
 		stop_rx_dma(p8250);
-	}
 	set_clock_mux(up, priv, tty_termios_baud_rate(termios));
 	serial8250_do_set_termios(up, termios, old);
-	if (p8250->mcr & UART_MCR_AFE) {
+	if (p8250->mcr & UART_MCR_AFE)
 		p8250->port.status |= UPSTAT_AUTOCTS;
-	}
-	if (priv->dma_enabled) {
+	if (priv->dma_enabled)
 		start_rx_dma(p8250);
-	}
 }
 
 static int brcmuart_handle_irq(struct uart_port *p)
@@ -831,7 +825,7 @@ static int brcmuart_handle_irq(struct uart_port *p)
 				mcr &= ~UART_MCR_RTS;
 				serial_port_out(p, UART_MCR, mcr);
 				hrtimer_start(&priv->hrt, priv->char_wait,
-				              HRTIMER_MODE_REL);
+					      HRTIMER_MODE_REL);
 			} else {
 				serial_port_in(p, UART_RX);
 			}
@@ -839,9 +833,8 @@ static int brcmuart_handle_irq(struct uart_port *p)
 			handled = 1;
 		}
 		uart_port_unlock_irqrestore(p, flags);
-		if (handled) {
+		if (handled)
 			return 1;
-		}
 	}
 	return serial8250_handle_irq(p, iir);
 }
@@ -854,9 +847,8 @@ static enum hrtimer_restart brcmuart_hrtimer_func(struct hrtimer *t)
 	unsigned int status;
 	unsigned long flags;
 
-	if (priv->shutdown) {
+	if (priv->shutdown)
 		return HRTIMER_NORESTART;
-	}
 
 	uart_port_lock_irqsave(p, &flags);
 	status = serial_port_in(p, UART_LSR);
@@ -904,10 +896,10 @@ static void brcmuart_free_bufs(struct device *dev, struct brcmuart_priv *priv)
 {
 	if (priv->rx_bufs)
 		dma_free_coherent(dev, priv->rx_size, priv->rx_bufs,
-		                  priv->rx_addr);
+				  priv->rx_addr);
 	if (priv->tx_buf)
 		dma_free_coherent(dev, priv->tx_size, priv->tx_buf,
-		                  priv->tx_addr);
+				  priv->tx_addr);
 }
 
 static void brcmuart_throttle(struct uart_port *port)
@@ -922,7 +914,7 @@ static void brcmuart_unthrottle(struct uart_port *port)
 	struct brcmuart_priv *priv = port->private_data;
 
 	udma_writel(priv, REGS_DMA_ISR, UDMA_INTR_MASK_CLEAR,
-	            UDMA_RX_INTERRUPTS);
+		    UDMA_RX_INTERRUPTS);
 }
 
 static int debugfs_stats_show(struct seq_file *s, void *unused)
@@ -930,33 +922,33 @@ static int debugfs_stats_show(struct seq_file *s, void *unused)
 	struct brcmuart_priv *priv = s->private;
 
 	seq_printf(s, "rx_err:\t\t\t\t%u\n",
-	           priv->rx_err);
+		   priv->rx_err);
 	seq_printf(s, "rx_timeout:\t\t\t%u\n",
-	           priv->rx_timeout);
+		   priv->rx_timeout);
 	seq_printf(s, "rx_abort:\t\t\t%u\n",
-	           priv->rx_abort);
+		   priv->rx_abort);
 	seq_printf(s, "rx_bad_timeout_late_char:\t%u\n",
-	           priv->rx_bad_timeout_late_char);
+		   priv->rx_bad_timeout_late_char);
 	seq_printf(s, "rx_bad_timeout_no_char:\t\t%u\n",
-	           priv->rx_bad_timeout_no_char);
+		   priv->rx_bad_timeout_no_char);
 	seq_printf(s, "rx_missing_close_timeout:\t%u\n",
-	           priv->rx_missing_close_timeout);
+		   priv->rx_missing_close_timeout);
 	if (priv->dma_enabled) {
 		seq_printf(s, "dma_rx_partial_buf:\t\t%llu\n",
-		           priv->dma_rx_partial_buf);
+			   priv->dma_rx_partial_buf);
 		seq_printf(s, "dma_rx_full_buf:\t\t%llu\n",
-		           priv->dma_rx_full_buf);
+			   priv->dma_rx_full_buf);
 	}
 	return 0;
 }
 DEFINE_SHOW_ATTRIBUTE(debugfs_stats);
 
 static void brcmuart_init_debugfs(struct brcmuart_priv *priv,
-                                  const char *device)
+				  const char *device)
 {
 	priv->debugfs_dir = debugfs_create_dir(device, brcmuart_debugfs_root);
 	debugfs_create_file("stats", 0444, priv->debugfs_dir, priv,
-	                    &debugfs_stats_fops);
+			    &debugfs_stats_fops);
 }
 
 
@@ -977,38 +969,33 @@ static int brcmuart_probe(struct platform_device *pdev)
 	int ret;
 	int x;
 	int dma_irq;
-	static const char *const reg_names[REGS_MAX] = {
+	static const char * const reg_names[REGS_MAX] = {
 		"uart", "dma_rx", "dma_tx", "dma_intr2", "dma_arb"
 	};
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return irq;
-	}
 	priv = devm_kzalloc(dev, sizeof(struct brcmuart_priv),
-	                    GFP_KERNEL);
-	if (!priv) {
+			GFP_KERNEL);
+	if (!priv)
 		return -ENOMEM;
-	}
 
 	of_id = of_match_node(brcmuart_dt_ids, np);
-	if (!of_id || !of_id->data) {
+	if (!of_id || !of_id->data)
 		priv->rate_table = brcmstb_rate_table;
-	} else {
+	else
 		priv->rate_table = of_id->data;
-	}
 
 	for (x = 0; x < REGS_MAX; x++) {
 		regs = platform_get_resource_byname(pdev, IORESOURCE_MEM,
-		                                    reg_names[x]);
-		if (!regs) {
+						reg_names[x]);
+		if (!regs)
 			break;
-		}
-		priv->regs[x] = devm_ioremap(dev, regs->start,
-		                             resource_size(regs));
-		if (!priv->regs[x]) {
+		priv->regs[x] =	devm_ioremap(dev, regs->start,
+					     resource_size(regs));
+		if (!priv->regs[x])
 			return -ENOMEM;
-		}
 		if (x == REGS_8250) {
 			mapbase = regs->start;
 			membase = priv->regs[x];
@@ -1030,18 +1017,18 @@ static int brcmuart_probe(struct platform_device *pdev)
 			txrev = udma_readl(priv, REGS_DMA_RX, UDMA_RX_REVISION);
 			rxrev = udma_readl(priv, REGS_DMA_TX, UDMA_TX_REVISION);
 			if ((txrev >= UDMA_TX_REVISION_REQUIRED) &&
-			    (rxrev >= UDMA_RX_REVISION_REQUIRED)) {
+				(rxrev >= UDMA_RX_REVISION_REQUIRED)) {
 
 				/* Enable the use of the DMA hardware */
 				priv->dma_enabled = true;
 			} else {
 				brcmuart_arbitration(priv, 0);
 				dev_err(dev,
-				        "Unsupported DMA Hardware Revision\n");
+					"Unsupported DMA Hardware Revision\n");
 			}
 		} else {
 			dev_err(dev,
-			        "Timeout arbitrating for UART DMA hardware\n");
+				"Timeout arbitrating for UART DMA hardware\n");
 		}
 	}
 
@@ -1058,9 +1045,8 @@ static int brcmuart_probe(struct platform_device *pdev)
 	} else {
 		dev_dbg(dev, "BAUD MUX clock found\n");
 		ret = clk_prepare_enable(baud_mux_clk);
-		if (ret) {
+		if (ret)
 			goto release_dma;
-		}
 		priv->baud_mux_clk = baud_mux_clk;
 		init_real_clk_rates(dev, priv);
 		clk_rate = priv->default_mux_rate;
@@ -1084,17 +1070,16 @@ static int brcmuart_probe(struct platform_device *pdev)
 	up.port.handle_irq = brcmuart_handle_irq;
 	up.port.regshift = 2;
 	up.port.iotype = of_device_is_big_endian(np) ?
-	                 UPIO_MEM32BE : UPIO_MEM32;
+		UPIO_MEM32BE : UPIO_MEM32;
 	up.port.flags = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF
-	                | UPF_FIXED_PORT | UPF_FIXED_TYPE;
+		| UPF_FIXED_PORT | UPF_FIXED_TYPE;
 	up.port.dev = dev;
 	up.port.private_data = priv;
 
 	/* Check for a fixed line number */
 	ret = of_alias_get_id(np, "serial");
-	if (ret >= 0) {
+	if (ret >= 0)
 		up.port.line = ret;
-	}
 
 	/* setup HR timer */
 	hrtimer_init(&priv->hrt, CLOCK_MONOTONIC, HRTIMER_MODE_ABS);
@@ -1109,16 +1094,16 @@ static int brcmuart_probe(struct platform_device *pdev)
 	if (priv->dma_enabled) {
 		priv->rx_size = RX_BUF_SIZE * RX_BUFS_COUNT;
 		priv->rx_bufs = dma_alloc_coherent(dev,
-		                                   priv->rx_size,
-		                                   &priv->rx_addr, GFP_KERNEL);
+						   priv->rx_size,
+						   &priv->rx_addr, GFP_KERNEL);
 		if (!priv->rx_bufs) {
 			ret = -ENOMEM;
 			goto err;
 		}
 		priv->tx_size = UART_XMIT_SIZE;
 		priv->tx_buf = dma_alloc_coherent(dev,
-		                                  priv->tx_size,
-		                                  &priv->tx_addr, GFP_KERNEL);
+						  priv->tx_size,
+						  &priv->tx_addr, GFP_KERNEL);
 		if (!priv->tx_buf) {
 			ret = -ENOMEM;
 			goto err;
@@ -1141,7 +1126,7 @@ static int brcmuart_probe(struct platform_device *pdev)
 			goto err1;
 		}
 		ret = devm_request_irq(dev, dma_irq, brcmuart_isr,
-		                       IRQF_SHARED, "uart DMA irq", &new_port->port);
+				IRQF_SHARED, "uart DMA irq", &new_port->port);
 		if (ret) {
 			dev_err(dev, "unable to register IRQ handler\n");
 			goto err1;
@@ -1158,9 +1143,8 @@ err:
 err_clk_disable:
 	clk_disable_unprepare(baud_mux_clk);
 release_dma:
-	if (priv->dma_enabled) {
+	if (priv->dma_enabled)
 		brcmuart_arbitration(priv, 0);
-	}
 	return ret;
 }
 
@@ -1173,9 +1157,8 @@ static int brcmuart_remove(struct platform_device *pdev)
 	serial8250_unregister_port(priv->line);
 	brcmuart_free_bufs(&pdev->dev, priv);
 	clk_disable_unprepare(priv->baud_mux_clk);
-	if (priv->dma_enabled) {
+	if (priv->dma_enabled)
 		brcmuart_arbitration(priv, 0);
-	}
 	return 0;
 }
 
@@ -1210,22 +1193,20 @@ static int __maybe_unused brcmuart_resume(struct device *dev)
 	int ret;
 
 	ret = clk_prepare_enable(priv->baud_mux_clk);
-	if (ret) {
+	if (ret)
 		dev_err(dev, "Error enabling BAUD MUX clock\n");
-	}
 
 	/*
 	 * The hardware goes back to it's default after suspend
 	 * so get the "clk" back in sync.
 	 */
 	ret = clk_set_rate(priv->baud_mux_clk, priv->default_mux_rate);
-	if (ret) {
+	if (ret)
 		dev_err(dev, "Error restoring default BAUD MUX clock\n");
-	}
 	if (priv->dma_enabled) {
 		if (brcmuart_arbitration(priv, 1)) {
 			dev_err(dev, "Timeout arbitrating for DMA hardware on resume\n");
-			return (-EBUSY);
+			return(-EBUSY);
 		}
 		brcmuart_init_dma_hardware(priv);
 		start_rx_dma(serial8250_get_port(priv->line));
@@ -1249,12 +1230,12 @@ static const struct dev_pm_ops brcmuart_dev_pm_ops = {
 
 static struct platform_driver brcmuart_platform_driver = {
 	.driver = {
-		.name   = "bcm7271-uart",
-		.pm     = &brcmuart_dev_pm_ops,
+		.name	= "bcm7271-uart",
+		.pm		= &brcmuart_dev_pm_ops,
 		.of_match_table = brcmuart_dt_ids,
 	},
-	.probe      = brcmuart_probe,
-	.remove     = brcmuart_remove,
+	.probe		= brcmuart_probe,
+	.remove		= brcmuart_remove,
 };
 
 static int __init brcmuart_init(void)
@@ -1262,7 +1243,7 @@ static int __init brcmuart_init(void)
 	int ret;
 
 	brcmuart_debugfs_root = debugfs_create_dir(
-	                            brcmuart_platform_driver.driver.name, NULL);
+		brcmuart_platform_driver.driver.name, NULL);
 	ret = platform_driver_register(&brcmuart_platform_driver);
 	if (ret) {
 		debugfs_remove_recursive(brcmuart_debugfs_root);

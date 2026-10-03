@@ -36,14 +36,14 @@ SCHED_FEAT(DOUBLE_TICK, false)
 SCHED_FEAT(NONTASK_CAPACITY, true)
 
 #ifdef CONFIG_PREEMPT_RT
-	SCHED_FEAT(TTWU_QUEUE, false)
+SCHED_FEAT(TTWU_QUEUE, false)
 #else
 
-	/*
-	* Queue remote wakeups on the target CPU and process them
-	* using the scheduler IPI. Reduces rq->lock contention/bounces.
-	*/
-	SCHED_FEAT(TTWU_QUEUE, true)
+/*
+ * Queue remote wakeups on the target CPU and process them
+ * using the scheduler IPI. Reduces rq->lock contention/bounces.
+ */
+SCHED_FEAT(TTWU_QUEUE, true)
 #endif
 
 /*
@@ -60,16 +60,24 @@ SCHED_FEAT(SIS_UTIL, true)
 SCHED_FEAT(WARN_DOUBLE_CLOCK, false)
 
 #ifdef HAVE_RT_PUSH_IPI
-	/*
-	* In order to avoid a thundering herd attack of CPUs that are
-	* lowering their priorities at the same time, and there being
-	* a single CPU that has an RT task that can migrate and is waiting
-	* to run, where the other CPUs will try to take that CPUs
-	* rq lock and possibly create a large contention, sending an
-	* IPI to that CPU and let that CPU push the RT task to where
-	* it should go may be a better scenario.
-	*/
-	SCHED_FEAT(RT_PUSH_IPI, true)
+/*
+ * In order to avoid a thundering herd attack of CPUs that are
+ * lowering their priorities at the same time, and there being
+ * a single CPU that has an RT task that can migrate and is waiting
+ * to run, where the other CPUs will try to take that CPUs
+ * rq lock and possibly create a large contention, sending an
+ * IPI to that CPU and let that CPU push the RT task to where
+ * it should go may be a better scenario.
+ *
+ * This is best for PREEMPT_RT, but for non-RT it can cause issues
+ * when preemption is disabled for long periods of time. Have
+ * it only default enabled for PREEMPT_RT.
+ */
+# ifdef CONFIG_PREEMPT_RT
+SCHED_FEAT(RT_PUSH_IPI, true)
+# else
+SCHED_FEAT(RT_PUSH_IPI, false)
+# endif
 #endif
 
 SCHED_FEAT(RT_RUNTIME_SHARE, false)
@@ -87,6 +95,11 @@ SCHED_FEAT(UTIL_EST, true)
 SCHED_FEAT(UTIL_EST_FASTUP, true)
 
 SCHED_FEAT(LATENCY_WARN, false)
+
+/*
+ * Do newidle balancing proportional to its success rate using randomization.
+ */
+SCHED_FEAT(NI_RANDOM, true)
 
 SCHED_FEAT(HZ_BW, true)
 

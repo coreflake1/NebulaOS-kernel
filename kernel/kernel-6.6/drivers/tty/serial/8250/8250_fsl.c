@@ -86,9 +86,8 @@ int fsl8250_handle_irq(struct uart_port *port)
 
 	serial8250_modem_status(up);
 
-	if ((lsr & UART_LSR_THRE) && (up->ier & UART_IER_THRI)) {
+	if ((lsr & UART_LSR_THRE) && (up->ier & UART_IER_THRI))
 		serial8250_tx_chars(up);
-	}
 
 	up->lsr_saved_flags |= orig_lsr & UART_LSR_BI;
 
@@ -100,7 +99,7 @@ EXPORT_SYMBOL_GPL(fsl8250_handle_irq);
 
 #ifdef CONFIG_ACPI
 struct fsl8250_data {
-	int line;
+	int	line;
 };
 
 static int fsl8250_acpi_probe(struct platform_device *pdev)
@@ -119,17 +118,15 @@ static int fsl8250_acpi_probe(struct platform_device *pdev)
 	}
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return irq;
-	}
 
 	memset(&port8250, 0, sizeof(port8250));
 
 	ret = device_property_read_u32(dev, "clock-frequency",
-	                               &port8250.port.uartclk);
-	if (ret) {
+					&port8250.port.uartclk);
+	if (ret)
 		return ret;
-	}
 
 	spin_lock_init(&port8250.port.lock);
 
@@ -138,28 +135,25 @@ static int fsl8250_acpi_probe(struct platform_device *pdev)
 	port8250.port.handle_irq        = fsl8250_handle_irq;
 	port8250.port.type              = PORT_16550A;
 	port8250.port.flags             = UPF_SHARE_IRQ | UPF_BOOT_AUTOCONF
-	                                  | UPF_FIXED_PORT | UPF_IOREMAP
-	                                  | UPF_FIXED_TYPE;
+						| UPF_FIXED_PORT | UPF_IOREMAP
+						| UPF_FIXED_TYPE;
 	port8250.port.dev               = dev;
 	port8250.port.mapsize           = resource_size(regs);
 	port8250.port.iotype            = UPIO_MEM;
 	port8250.port.irqflags          = IRQF_SHARED;
 
 	port8250.port.membase = devm_ioremap(dev,  port8250.port.mapbase,
-	                                     port8250.port.mapsize);
-	if (!port8250.port.membase) {
+							port8250.port.mapsize);
+	if (!port8250.port.membase)
 		return -ENOMEM;
-	}
 
 	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-	if (!data) {
+	if (!data)
 		return -ENOMEM;
-	}
 
 	data->line = serial8250_register_8250_port(&port8250);
-	if (data->line < 0) {
+	if (data->line < 0)
 		return data->line;
-	}
 
 	platform_set_drvdata(pdev, data);
 	return 0;
@@ -181,11 +175,11 @@ MODULE_DEVICE_TABLE(acpi, fsl_8250_acpi_id);
 
 static struct platform_driver fsl8250_platform_driver = {
 	.driver = {
-		.name           = "fsl-16550-uart",
-		.acpi_match_table   = ACPI_PTR(fsl_8250_acpi_id),
+		.name			= "fsl-16550-uart",
+		.acpi_match_table	= ACPI_PTR(fsl_8250_acpi_id),
 	},
-	.probe          = fsl8250_acpi_probe,
-	.remove         = fsl8250_acpi_remove,
+	.probe			= fsl8250_acpi_probe,
+	.remove			= fsl8250_acpi_remove,
 };
 
 module_platform_driver(fsl8250_platform_driver);

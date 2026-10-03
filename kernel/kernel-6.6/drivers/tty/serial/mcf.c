@@ -2,9 +2,9 @@
 /****************************************************************************/
 
 /*
- *  mcf.c -- Freescale ColdFire UART driver
+ *	mcf.c -- Freescale ColdFire UART driver
  *
- *  (C) Copyright 2003-2007, Greg Ungerer <gerg@uclinux.org>
+ *	(C) Copyright 2003-2007, Greg Ungerer <gerg@uclinux.org>
  */
 
 /****************************************************************************/
@@ -29,30 +29,30 @@
 /****************************************************************************/
 
 /*
- *  Some boards implement the DTR/DCD lines using GPIO lines, most
- *  don't. Dummy out the access macros for those that don't. Those
- *  that do should define these macros somewhere in there board
- *  specific inlude files.
+ *	Some boards implement the DTR/DCD lines using GPIO lines, most
+ *	don't. Dummy out the access macros for those that don't. Those
+ *	that do should define these macros somewhere in there board
+ *	specific inlude files.
  */
 #if !defined(mcf_getppdcd)
-	#define mcf_getppdcd(p)     (1)
+#define	mcf_getppdcd(p)		(1)
 #endif
 #if !defined(mcf_getppdtr)
-	#define mcf_getppdtr(p)     (1)
+#define	mcf_getppdtr(p)		(1)
 #endif
 #if !defined(mcf_setppdtr)
-	#define mcf_setppdtr(p, v)  do { } while (0)
+#define	mcf_setppdtr(p, v)	do { } while (0)
 #endif
 
 /****************************************************************************/
 
 /*
- *  Local per-uart structure.
+ *	Local per-uart structure.
  */
 struct mcf_uart {
-	struct uart_port    port;
-	unsigned int        sigs;       /* Local copy of line sigs */
-	unsigned char       imr;        /* Local IMR mirror */
+	struct uart_port	port;
+	unsigned int		sigs;		/* Local copy of line sigs */
+	unsigned char		imr;		/* Local IMR mirror */
 };
 
 /****************************************************************************/
@@ -60,7 +60,7 @@ struct mcf_uart {
 static unsigned int mcf_tx_empty(struct uart_port *port)
 {
 	return (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXEMPTY) ?
-	       TIOCSER_TEMT : 0;
+		TIOCSER_TEMT : 0;
 }
 
 /****************************************************************************/
@@ -71,7 +71,7 @@ static unsigned int mcf_get_mctrl(struct uart_port *port)
 	unsigned int sigs;
 
 	sigs = (readb(port->membase + MCFUART_UIPR) & MCFUART_UIPR_CTS) ?
-	       0 : TIOCM_CTS;
+		0 : TIOCM_CTS;
 	sigs |= (pp->sigs & TIOCM_RTS);
 	sigs |= (mcf_getppdcd(port->line) ? TIOCM_CD : 0);
 	sigs |= (mcf_getppdtr(port->line) ? TIOCM_DTR : 0);
@@ -87,11 +87,10 @@ static void mcf_set_mctrl(struct uart_port *port, unsigned int sigs)
 
 	pp->sigs = sigs;
 	mcf_setppdtr(port->line, (sigs & TIOCM_DTR));
-	if (sigs & TIOCM_RTS) {
+	if (sigs & TIOCM_RTS)
 		writeb(MCFUART_UOP_RTS, port->membase + MCFUART_UOP1);
-	} else {
+	else
 		writeb(MCFUART_UOP_RTS, port->membase + MCFUART_UOP0);
-	}
 }
 
 /****************************************************************************/
@@ -137,11 +136,10 @@ static void mcf_break_ctl(struct uart_port *port, int break_state)
 	unsigned long flags;
 
 	uart_port_lock_irqsave(port, &flags);
-	if (break_state == -1) {
+	if (break_state == -1)
 		writeb(MCFUART_UCR_CMDBREAKSTART, port->membase + MCFUART_UCR);
-	} else {
+	else
 		writeb(MCFUART_UCR_CMDBREAKSTOP, port->membase + MCFUART_UCR);
-	}
 	uart_port_unlock_irqrestore(port, flags);
 }
 
@@ -160,7 +158,7 @@ static int mcf_startup(struct uart_port *port)
 
 	/* Enable the UART transmitter and receiver */
 	writeb(MCFUART_UCR_RXENABLE | MCFUART_UCR_TXENABLE,
-	       port->membase + MCFUART_UCR);
+		port->membase + MCFUART_UCR);
 
 	/* Enable RX interrupts now */
 	pp->imr = MCFUART_UIR_RXREADY;
@@ -194,7 +192,7 @@ static void mcf_shutdown(struct uart_port *port)
 /****************************************************************************/
 
 static void mcf_set_termios(struct uart_port *port, struct ktermios *termios,
-                            const struct ktermios *old)
+			    const struct ktermios *old)
 {
 	unsigned long flags;
 	unsigned int baud, baudclk;
@@ -215,26 +213,24 @@ static void mcf_set_termios(struct uart_port *port, struct ktermios *termios,
 	mr2 = 0;
 
 	switch (termios->c_cflag & CSIZE) {
-		case CS5: mr1 |= MCFUART_MR1_CS5; break;
-		case CS6: mr1 |= MCFUART_MR1_CS6; break;
-		case CS7: mr1 |= MCFUART_MR1_CS7; break;
-		case CS8:
-		default:  mr1 |= MCFUART_MR1_CS8; break;
+	case CS5: mr1 |= MCFUART_MR1_CS5; break;
+	case CS6: mr1 |= MCFUART_MR1_CS6; break;
+	case CS7: mr1 |= MCFUART_MR1_CS7; break;
+	case CS8:
+	default:  mr1 |= MCFUART_MR1_CS8; break;
 	}
 
 	if (termios->c_cflag & PARENB) {
 		if (termios->c_cflag & CMSPAR) {
-			if (termios->c_cflag & PARODD) {
+			if (termios->c_cflag & PARODD)
 				mr1 |= MCFUART_MR1_PARITYMARK;
-			} else {
+			else
 				mr1 |= MCFUART_MR1_PARITYSPACE;
-			}
 		} else {
-			if (termios->c_cflag & PARODD) {
+			if (termios->c_cflag & PARODD)
 				mr1 |= MCFUART_MR1_PARITYODD;
-			} else {
+			else
 				mr1 |= MCFUART_MR1_PARITYEVEN;
-			}
 		}
 	} else {
 		mr1 |= MCFUART_MR1_PARITYNONE;
@@ -246,11 +242,10 @@ static void mcf_set_termios(struct uart_port *port, struct ktermios *termios,
 	 * INPCK, IGNBRK, IGNPAR, PARMRK, BRKINT
 	 */
 
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		mr2 |= MCFUART_MR2_STOP2;
-	} else {
+	else
 		mr2 |= MCFUART_MR2_STOP1;
-	}
 
 	if (termios->c_cflag & CRTSCTS) {
 		mr1 |= MCFUART_MR1_RXRTS;
@@ -275,9 +270,9 @@ static void mcf_set_termios(struct uart_port *port, struct ktermios *termios,
 	writeb((baudfr & 0x0f), port->membase + MCFUART_UFPD);
 #endif
 	writeb(MCFUART_UCSR_RXCLKTIMER | MCFUART_UCSR_TXCLKTIMER,
-	       port->membase + MCFUART_UCSR);
+		port->membase + MCFUART_UCSR);
 	writeb(MCFUART_UCR_RXENABLE | MCFUART_UCR_TXENABLE,
-	       port->membase + MCFUART_UCR);
+		port->membase + MCFUART_UCR);
 	uart_port_unlock_irqrestore(port, flags);
 }
 
@@ -295,13 +290,12 @@ static void mcf_rx_chars(struct mcf_uart *pp)
 
 		if (status & MCFUART_USR_RXERR) {
 			writeb(MCFUART_UCR_CMDRESETERR,
-			       port->membase + MCFUART_UCR);
+				port->membase + MCFUART_UCR);
 
 			if (status & MCFUART_USR_RXBREAK) {
 				port->icount.brk++;
-				if (uart_handle_break(port)) {
+				if (uart_handle_break(port))
 					continue;
-				}
 			} else if (status & MCFUART_USR_RXPARITY) {
 				port->icount.parity++;
 			} else if (status & MCFUART_USR_RXOVERRUN) {
@@ -312,18 +306,16 @@ static void mcf_rx_chars(struct mcf_uart *pp)
 
 			status &= port->read_status_mask;
 
-			if (status & MCFUART_USR_RXBREAK) {
+			if (status & MCFUART_USR_RXBREAK)
 				flag = TTY_BREAK;
-			} else if (status & MCFUART_USR_RXPARITY) {
+			else if (status & MCFUART_USR_RXPARITY)
 				flag = TTY_PARITY;
-			} else if (status & MCFUART_USR_RXFRAMING) {
+			else if (status & MCFUART_USR_RXFRAMING)
 				flag = TTY_FRAME;
-			}
 		}
 
-		if (uart_handle_sysrq_char(port, ch)) {
+		if (uart_handle_sysrq_char(port, ch))
 			continue;
-		}
 		uart_insert_char(port, status, MCFUART_USR_RXOVERRUN, ch, flag);
 	}
 
@@ -339,13 +331,12 @@ static void mcf_tx_chars(struct mcf_uart *pp)
 	u8 ch;
 
 	pending = uart_port_tx(port, ch,
-	                       readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY,
-	                       writeb(ch, port->membase + MCFUART_UTB));
+		readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY,
+		writeb(ch, port->membase + MCFUART_UTB));
 
 	/* Disable TX to negate RTS automatically */
-	if (!pending && (port->rs485.flags & SER_RS485_ENABLED)) {
+	if (!pending && (port->rs485.flags & SER_RS485_ENABLED))
 		writeb(MCFUART_UCR_TXDISABLE, port->membase + MCFUART_UCR);
-	}
 }
 
 /****************************************************************************/
@@ -385,7 +376,7 @@ static void mcf_config_port(struct uart_port *port, int flags)
 
 	if (request_irq(port->irq, mcf_interrupt, 0, "UART", port))
 		printk(KERN_ERR "MCF: unable to attach ColdFire UART %d "
-		       "interrupt vector=%d\n", port->line, port->irq);
+			"interrupt vector=%d\n", port->line, port->irq);
 }
 
 /****************************************************************************/
@@ -414,9 +405,8 @@ static void mcf_release_port(struct uart_port *port)
 
 static int mcf_verify_port(struct uart_port *port, struct serial_struct *ser)
 {
-	if ((ser->type != PORT_UNKNOWN) && (ser->type != PORT_MCF)) {
+	if ((ser->type != PORT_UNKNOWN) && (ser->type != PORT_MCF))
 		return -EINVAL;
-	}
 	return 0;
 }
 
@@ -424,7 +414,7 @@ static int mcf_verify_port(struct uart_port *port, struct serial_struct *ser)
 
 /* Enable or disable the RS485 support */
 static int mcf_config_rs485(struct uart_port *port, struct ktermios *termios,
-                            struct serial_rs485 *rs485)
+			    struct serial_rs485 *rs485)
 {
 	unsigned char mr1, mr2;
 
@@ -452,29 +442,29 @@ static const struct serial_rs485 mcf_rs485_supported = {
 /****************************************************************************/
 
 /*
- *  Define the basic serial functions we support.
+ *	Define the basic serial functions we support.
  */
 static const struct uart_ops mcf_uart_ops = {
-	.tx_empty   = mcf_tx_empty,
-	.get_mctrl  = mcf_get_mctrl,
-	.set_mctrl  = mcf_set_mctrl,
-	.start_tx   = mcf_start_tx,
-	.stop_tx    = mcf_stop_tx,
-	.stop_rx    = mcf_stop_rx,
-	.break_ctl  = mcf_break_ctl,
-	.startup    = mcf_startup,
-	.shutdown   = mcf_shutdown,
-	.set_termios    = mcf_set_termios,
-	.type       = mcf_type,
-	.request_port   = mcf_request_port,
-	.release_port   = mcf_release_port,
-	.config_port    = mcf_config_port,
-	.verify_port    = mcf_verify_port,
+	.tx_empty	= mcf_tx_empty,
+	.get_mctrl	= mcf_get_mctrl,
+	.set_mctrl	= mcf_set_mctrl,
+	.start_tx	= mcf_start_tx,
+	.stop_tx	= mcf_stop_tx,
+	.stop_rx	= mcf_stop_rx,
+	.break_ctl	= mcf_break_ctl,
+	.startup	= mcf_startup,
+	.shutdown	= mcf_shutdown,
+	.set_termios	= mcf_set_termios,
+	.type		= mcf_type,
+	.request_port	= mcf_request_port,
+	.release_port	= mcf_release_port,
+	.config_port	= mcf_config_port,
+	.verify_port	= mcf_verify_port,
 };
 
-static struct mcf_uart mcf_ports[4];
+static struct mcf_uart mcf_ports[10];
 
-#define MCF_MAXPORTS    ARRAY_SIZE(mcf_ports)
+#define	MCF_MAXPORTS	ARRAY_SIZE(mcf_ports)
 
 /****************************************************************************/
 #if defined(CONFIG_SERIAL_MCF_CONSOLE)
@@ -492,7 +482,7 @@ int __init early_mcf_setup(struct mcf_platform_uart *platp)
 		port->type = PORT_MCF;
 		port->mapbase = platp[i].mapbase;
 		port->membase = (platp[i].membase) ? platp[i].membase :
-		                (unsigned char __iomem *) port->mapbase;
+			(unsigned char __iomem *) port->mapbase;
 		port->iotype = SERIAL_IO_MEM;
 		port->irq = platp[i].irq;
 		port->uartclk = MCF_BUSCLK;
@@ -513,15 +503,13 @@ static void mcf_console_putc(struct console *co, const char c)
 	int i;
 
 	for (i = 0; (i < 0x10000); i++) {
-		if (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY) {
+		if (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY)
 			break;
-		}
 	}
 	writeb(c, port->membase + MCFUART_UTB);
 	for (i = 0; (i < 0x10000); i++) {
-		if (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY) {
+		if (readb(port->membase + MCFUART_USR) & MCFUART_USR_TXREADY)
 			break;
-		}
 	}
 }
 
@@ -531,9 +519,8 @@ static void mcf_console_write(struct console *co, const char *s, unsigned int co
 {
 	for (; (count); count--, s++) {
 		mcf_console_putc(co, *s);
-		if (*s == '\n') {
+		if (*s == '\n')
 			mcf_console_putc(co, '\r');
-		}
 	}
 }
 
@@ -547,17 +534,14 @@ static int __init mcf_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if ((co->index < 0) || (co->index >= MCF_MAXPORTS)) {
+	if ((co->index < 0) || (co->index >= MCF_MAXPORTS))
 		co->index = 0;
-	}
 	port = &mcf_ports[co->index].port;
-	if (port->membase == 0) {
+	if (port->membase == 0)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(port, co, baud, parity, bits, flow);
 }
@@ -567,13 +551,13 @@ static int __init mcf_console_setup(struct console *co, char *options)
 static struct uart_driver mcf_driver;
 
 static struct console mcf_console = {
-	.name       = "ttyS",
-	.write      = mcf_console_write,
-	.device     = uart_console_device,
-	.setup      = mcf_console_setup,
-	.flags      = CON_PRINTBUFFER,
-	.index      = -1,
-	.data       = &mcf_driver,
+	.name		= "ttyS",
+	.write		= mcf_console_write,
+	.device		= uart_console_device,
+	.setup		= mcf_console_setup,
+	.flags		= CON_PRINTBUFFER,
+	.index		= -1,
+	.data		= &mcf_driver,
 };
 
 static int __init mcf_console_init(void)
@@ -584,29 +568,29 @@ static int __init mcf_console_init(void)
 
 console_initcall(mcf_console_init);
 
-#define MCF_CONSOLE &mcf_console
+#define	MCF_CONSOLE	&mcf_console
 
 /****************************************************************************/
 #else
 /****************************************************************************/
 
-#define MCF_CONSOLE NULL
+#define	MCF_CONSOLE	NULL
 
 /****************************************************************************/
 #endif /* CONFIG_SERIAL_MCF_CONSOLE */
 /****************************************************************************/
 
 /*
- *  Define the mcf UART driver structure.
+ *	Define the mcf UART driver structure.
  */
 static struct uart_driver mcf_driver = {
-	.owner      = THIS_MODULE,
-	.driver_name    = "mcf",
-	.dev_name   = "ttyS",
-	.major      = TTY_MAJOR,
-	.minor      = 64,
-	.nr     = MCF_MAXPORTS,
-	.cons       = MCF_CONSOLE,
+	.owner		= THIS_MODULE,
+	.driver_name	= "mcf",
+	.dev_name	= "ttyS",
+	.major		= TTY_MAJOR,
+	.minor		= 64,
+	.nr		= MCF_MAXPORTS,
+	.cons		= MCF_CONSOLE,
 };
 
 /****************************************************************************/
@@ -624,7 +608,7 @@ static int mcf_probe(struct platform_device *pdev)
 		port->type = PORT_MCF;
 		port->mapbase = platp[i].mapbase;
 		port->membase = (platp[i].membase) ? platp[i].membase :
-		                (unsigned char __iomem *) platp[i].mapbase;
+			(unsigned char __iomem *) platp[i].mapbase;
 		port->dev = &pdev->dev;
 		port->iotype = SERIAL_IO_MEM;
 		port->irq = platp[i].irq;
@@ -650,9 +634,8 @@ static int mcf_remove(struct platform_device *pdev)
 
 	for (i = 0; (i < MCF_MAXPORTS); i++) {
 		port = &mcf_ports[i].port;
-		if (port) {
+		if (port)
 			uart_remove_one_port(&mcf_driver, port);
-		}
 	}
 
 	return 0;
@@ -661,10 +644,10 @@ static int mcf_remove(struct platform_device *pdev)
 /****************************************************************************/
 
 static struct platform_driver mcf_platform_driver = {
-	.probe      = mcf_probe,
-	.remove     = mcf_remove,
-	.driver     = {
-		.name   = "mcfuart",
+	.probe		= mcf_probe,
+	.remove		= mcf_remove,
+	.driver		= {
+		.name	= "mcfuart",
 	},
 };
 
@@ -677,9 +660,8 @@ static int __init mcf_init(void)
 	printk("ColdFire internal UART serial driver\n");
 
 	rc = uart_register_driver(&mcf_driver);
-	if (rc) {
+	if (rc)
 		return rc;
-	}
 	rc = platform_driver_register(&mcf_platform_driver);
 	if (rc) {
 		uart_unregister_driver(&mcf_driver);

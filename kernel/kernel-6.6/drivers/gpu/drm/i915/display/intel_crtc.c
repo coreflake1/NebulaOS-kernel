@@ -38,10 +38,9 @@ static void assert_vblank_disabled(struct drm_crtc *crtc)
 	struct drm_i915_private *i915 = to_i915(crtc->dev);
 
 	if (I915_STATE_WARN(i915, drm_crtc_vblank_get(crtc) == 0,
-	                    "[CRTC:%d:%s] vblank assertion failure (expected off, current on)\n",
-	                    crtc->base.id, crtc->name)) {
+			    "[CRTC:%d:%s] vblank assertion failure (expected off, current on)\n",
+			    crtc->base.id, crtc->name))
 		drm_crtc_vblank_put(crtc);
-	}
 }
 
 struct intel_crtc *intel_first_crtc(struct drm_i915_private *i915)
@@ -50,14 +49,13 @@ struct intel_crtc *intel_first_crtc(struct drm_i915_private *i915)
 }
 
 struct intel_crtc *intel_crtc_for_pipe(struct drm_i915_private *i915,
-                                       enum pipe pipe)
+				       enum pipe pipe)
 {
 	struct intel_crtc *crtc;
 
 	for_each_intel_crtc(&i915->drm, crtc) {
-		if (crtc->pipe == pipe) {
+		if (crtc->pipe == pipe)
 			return crtc;
-		}
 	}
 
 	return NULL;
@@ -69,13 +67,12 @@ void intel_crtc_wait_for_next_vblank(struct intel_crtc *crtc)
 }
 
 void intel_wait_for_vblank_if_active(struct drm_i915_private *i915,
-                                     enum pipe pipe)
+				     enum pipe pipe)
 {
 	struct intel_crtc *crtc = intel_crtc_for_pipe(i915, pipe);
 
-	if (crtc->active) {
+	if (crtc->active)
 		intel_crtc_wait_for_next_vblank(crtc);
-	}
 }
 
 u32 intel_crtc_get_vblank_counter(struct intel_crtc *crtc)
@@ -83,13 +80,11 @@ u32 intel_crtc_get_vblank_counter(struct intel_crtc *crtc)
 	struct drm_device *dev = crtc->base.dev;
 	struct drm_vblank_crtc *vblank = &dev->vblank[drm_crtc_index(&crtc->base)];
 
-	if (!crtc->active) {
+	if (!crtc->active)
 		return 0;
-	}
 
-	if (!vblank->max_vblank_count) {
+	if (!vblank->max_vblank_count)
 		return (u32)drm_crtc_accurate_vblank_count(&crtc->base);
-	}
 
 	return crtc->base.funcs->get_vblank_counter(&crtc->base);
 }
@@ -105,26 +100,23 @@ u32 intel_crtc_max_vblank_count(const struct intel_crtc_state *crtc_state)
 	 * the next TE, hence switching to sw counter.
 	 */
 	if (crtc_state->mode_flags & (I915_MODE_FLAG_DSI_USE_TE0 |
-	                              I915_MODE_FLAG_DSI_USE_TE1)) {
+				      I915_MODE_FLAG_DSI_USE_TE1))
 		return 0;
-	}
 
 	/*
 	 * On i965gm the hardware frame counter reads
 	 * zero when the TV encoder is enabled :(
 	 */
 	if (IS_I965GM(dev_priv) &&
-	    (crtc_state->output_types & BIT(INTEL_OUTPUT_TVOUT))) {
+	    (crtc_state->output_types & BIT(INTEL_OUTPUT_TVOUT)))
 		return 0;
-	}
 
-	if (DISPLAY_VER(dev_priv) >= 5 || IS_G4X(dev_priv)) {
-		return 0xffffffff;    /* full 32 bit counter */
-	} else if (DISPLAY_VER(dev_priv) >= 3) {
-		return 0xffffff;    /* only 24 bits of frame count */
-	} else {
-		return 0;    /* Gen2 doesn't have a hardware frame counter */
-	}
+	if (DISPLAY_VER(dev_priv) >= 5 || IS_G4X(dev_priv))
+		return 0xffffffff; /* full 32 bit counter */
+	else if (DISPLAY_VER(dev_priv) >= 3)
+		return 0xffffff; /* only 24 bits of frame count */
+	else
+		return 0; /* Gen2 doesn't have a hardware frame counter */
 }
 
 void intel_crtc_vblank_on(const struct intel_crtc_state *crtc_state)
@@ -133,7 +125,7 @@ void intel_crtc_vblank_on(const struct intel_crtc_state *crtc_state)
 
 	assert_vblank_disabled(&crtc->base);
 	drm_crtc_set_max_vblank_count(&crtc->base,
-	                              intel_crtc_max_vblank_count(crtc_state));
+				      intel_crtc_max_vblank_count(crtc_state));
 	drm_crtc_vblank_on(&crtc->base);
 
 	/*
@@ -165,15 +157,14 @@ struct intel_crtc_state *intel_crtc_state_alloc(struct intel_crtc *crtc)
 
 	crtc_state = kmalloc(sizeof(*crtc_state), GFP_KERNEL);
 
-	if (crtc_state) {
+	if (crtc_state)
 		intel_crtc_state_reset(crtc_state, crtc);
-	}
 
 	return crtc_state;
 }
 
 void intel_crtc_state_reset(struct intel_crtc_state *crtc_state,
-                            struct intel_crtc *crtc)
+			    struct intel_crtc *crtc)
 {
 	memset(crtc_state, 0, sizeof(*crtc_state));
 
@@ -192,9 +183,8 @@ static struct intel_crtc *intel_crtc_alloc(void)
 	struct intel_crtc *crtc;
 
 	crtc = kzalloc(sizeof(*crtc), GFP_KERNEL);
-	if (!crtc) {
+	if (!crtc)
 		return ERR_PTR(-ENOMEM);
-	}
 
 	crtc_state = intel_crtc_state_alloc(crtc);
 	if (!crtc_state) {
@@ -232,14 +222,14 @@ static int intel_crtc_late_register(struct drm_crtc *crtc)
 
 #define INTEL_CRTC_FUNCS \
 	.set_config = drm_atomic_helper_set_config, \
-	              .destroy = intel_crtc_destroy, \
-	                         .page_flip = drm_atomic_helper_page_flip, \
-	                                      .atomic_duplicate_state = intel_crtc_duplicate_state, \
-	                                              .atomic_destroy_state = intel_crtc_destroy_state, \
-	                                                      .set_crc_source = intel_crtc_set_crc_source, \
-	                                                              .verify_crc_source = intel_crtc_verify_crc_source, \
-	                                                                      .get_crc_sources = intel_crtc_get_crc_sources, \
-	                                                                              .late_register = intel_crtc_late_register
+	.destroy = intel_crtc_destroy, \
+	.page_flip = drm_atomic_helper_page_flip, \
+	.atomic_duplicate_state = intel_crtc_duplicate_state, \
+	.atomic_destroy_state = intel_crtc_destroy_state, \
+	.set_crc_source = intel_crtc_set_crc_source, \
+	.verify_crc_source = intel_crtc_verify_crc_source, \
+	.get_crc_sources = intel_crtc_get_crc_sources, \
+	.late_register = intel_crtc_late_register
 
 static const struct drm_crtc_funcs bdw_crtc_funcs = {
 	INTEL_CRTC_FUNCS,
@@ -312,19 +302,17 @@ int intel_crtc_init(struct drm_i915_private *dev_priv, enum pipe pipe)
 	int sprite, ret;
 
 	crtc = intel_crtc_alloc();
-	if (IS_ERR(crtc)) {
+	if (IS_ERR(crtc))
 		return PTR_ERR(crtc);
-	}
 
 	crtc->pipe = pipe;
 	crtc->num_scalers = DISPLAY_RUNTIME_INFO(dev_priv)->num_scalers[pipe];
 
 	if (DISPLAY_VER(dev_priv) >= 9)
 		primary = skl_universal_plane_create(dev_priv, pipe,
-		                                     PLANE_PRIMARY);
-	else {
+						     PLANE_PRIMARY);
+	else
 		primary = intel_primary_plane_create(dev_priv, pipe);
-	}
 	if (IS_ERR(primary)) {
 		ret = PTR_ERR(primary);
 		goto fail;
@@ -338,10 +326,9 @@ int intel_crtc_init(struct drm_i915_private *dev_priv, enum pipe pipe)
 
 		if (DISPLAY_VER(dev_priv) >= 9)
 			plane = skl_universal_plane_create(dev_priv, pipe,
-			                                   PLANE_SPRITE0 + sprite);
-		else {
+							   PLANE_SPRITE0 + sprite);
+		else
 			plane = intel_sprite_plane_create(dev_priv, pipe, sprite);
-		}
 		if (IS_ERR(plane)) {
 			ret = PTR_ERR(plane);
 			goto fail;
@@ -358,36 +345,33 @@ int intel_crtc_init(struct drm_i915_private *dev_priv, enum pipe pipe)
 
 	if (HAS_GMCH(dev_priv)) {
 		if (IS_CHERRYVIEW(dev_priv) ||
-		    IS_VALLEYVIEW(dev_priv) || IS_G4X(dev_priv)) {
+		    IS_VALLEYVIEW(dev_priv) || IS_G4X(dev_priv))
 			funcs = &g4x_crtc_funcs;
-		} else if (DISPLAY_VER(dev_priv) == 4) {
+		else if (DISPLAY_VER(dev_priv) == 4)
 			funcs = &i965_crtc_funcs;
-		} else if (IS_I945GM(dev_priv) || IS_I915GM(dev_priv)) {
+		else if (IS_I945GM(dev_priv) || IS_I915GM(dev_priv))
 			funcs = &i915gm_crtc_funcs;
-		} else if (DISPLAY_VER(dev_priv) == 3) {
+		else if (DISPLAY_VER(dev_priv) == 3)
 			funcs = &i915_crtc_funcs;
-		} else {
+		else
 			funcs = &i8xx_crtc_funcs;
-		}
 	} else {
-		if (DISPLAY_VER(dev_priv) >= 8) {
+		if (DISPLAY_VER(dev_priv) >= 8)
 			funcs = &bdw_crtc_funcs;
-		} else {
+		else
 			funcs = &ilk_crtc_funcs;
-		}
 	}
 
 	ret = drm_crtc_init_with_planes(&dev_priv->drm, &crtc->base,
-	                                &primary->base, &cursor->base,
-	                                funcs, "pipe %c", pipe_name(pipe));
-	if (ret) {
+					&primary->base, &cursor->base,
+					funcs, "pipe %c", pipe_name(pipe));
+	if (ret)
 		goto fail;
-	}
 
 	if (DISPLAY_VER(dev_priv) >= 11)
 		drm_crtc_create_scaling_filter_property(&crtc->base,
-		                                        BIT(DRM_SCALING_FILTER_DEFAULT) |
-		                                        BIT(DRM_SCALING_FILTER_NEAREST_NEIGHBOR));
+						BIT(DRM_SCALING_FILTER_DEFAULT) |
+						BIT(DRM_SCALING_FILTER_NEAREST_NEIGHBOR));
 
 	intel_color_crtc_init(crtc);
 	intel_drrs_crtc_init(crtc);
@@ -408,16 +392,16 @@ fail:
 static bool intel_crtc_needs_vblank_work(const struct intel_crtc_state *crtc_state)
 {
 	return crtc_state->hw.active &&
-	       !intel_crtc_needs_modeset(crtc_state) &&
-	       !crtc_state->preload_luts &&
-	       intel_crtc_needs_color_update(crtc_state);
+		!intel_crtc_needs_modeset(crtc_state) &&
+		!crtc_state->preload_luts &&
+		intel_crtc_needs_color_update(crtc_state);
 }
 
 static void intel_crtc_vblank_work(struct kthread_work *base)
 {
 	struct drm_vblank_work *work = to_drm_vblank_work(base);
 	struct intel_crtc_state *crtc_state =
-	    container_of(work, typeof(*crtc_state), vblank_work);
+		container_of(work, typeof(*crtc_state), vblank_work);
 	struct intel_crtc *crtc = to_intel_crtc(crtc_state->uapi.crtc);
 
 	trace_intel_crtc_vblank_work_start(crtc);
@@ -439,7 +423,7 @@ static void intel_crtc_vblank_work_init(struct intel_crtc_state *crtc_state)
 	struct intel_crtc *crtc = to_intel_crtc(crtc_state->uapi.crtc);
 
 	drm_vblank_work_init(&crtc_state->vblank_work, &crtc->base,
-	                     intel_crtc_vblank_work);
+			     intel_crtc_vblank_work);
 	/*
 	 * Interrupt latency is critical for getting the vblank
 	 * work executed as early as possible during the vblank.
@@ -454,42 +438,86 @@ void intel_wait_for_vblank_workers(struct intel_atomic_state *state)
 	int i;
 
 	for_each_new_intel_crtc_in_state(state, crtc, crtc_state, i) {
-		if (!intel_crtc_needs_vblank_work(crtc_state)) {
+		if (!intel_crtc_needs_vblank_work(crtc_state))
 			continue;
-		}
 
 		drm_vblank_work_flush(&crtc_state->vblank_work);
 		cpu_latency_qos_update_request(&crtc->vblank_pm_qos,
-		                               PM_QOS_DEFAULT_VALUE);
+					       PM_QOS_DEFAULT_VALUE);
 	}
 }
 
 int intel_usecs_to_scanlines(const struct drm_display_mode *adjusted_mode,
-                             int usecs)
+			     int usecs)
 {
 	/* paranoia */
-	if (!adjusted_mode->crtc_htotal) {
+	if (!adjusted_mode->crtc_htotal)
 		return 1;
-	}
 
 	return DIV_ROUND_UP(usecs * adjusted_mode->crtc_clock,
-	                    1000 * adjusted_mode->crtc_htotal);
+			    1000 * adjusted_mode->crtc_htotal);
 }
 
 static int intel_mode_vblank_start(const struct drm_display_mode *mode)
 {
 	int vblank_start = mode->crtc_vblank_start;
 
-	if (mode->flags & DRM_MODE_FLAG_INTERLACE) {
+	if (mode->flags & DRM_MODE_FLAG_INTERLACE)
 		vblank_start = DIV_ROUND_UP(vblank_start, 2);
-	}
 
 	return vblank_start;
 }
 
+static void intel_crtc_vblank_evade_scanlines(struct intel_atomic_state *state,
+					      struct intel_crtc *crtc,
+					      int *min, int *max, int *vblank_start)
+{
+	const struct intel_crtc_state *old_crtc_state =
+		intel_atomic_get_old_crtc_state(state, crtc);
+	const struct intel_crtc_state *new_crtc_state =
+		intel_atomic_get_new_crtc_state(state, crtc);
+	const struct intel_crtc_state *crtc_state;
+	const struct drm_display_mode *adjusted_mode;
+
+	/*
+	 * During fastsets/etc. the transcoder is still
+	 * running with the old timings at this point.
+	 *
+	 * TODO: maybe just use the active timings here?
+	 */
+	if (intel_crtc_needs_modeset(new_crtc_state))
+		crtc_state = new_crtc_state;
+	else
+		crtc_state = old_crtc_state;
+
+	adjusted_mode = &crtc_state->hw.adjusted_mode;
+
+	if (crtc->mode_flags & I915_MODE_FLAG_VRR) {
+		if (intel_vrr_is_push_sent(crtc_state))
+			*vblank_start = intel_vrr_vmin_vblank_start(crtc_state);
+		else
+			*vblank_start = intel_vrr_vmax_vblank_start(crtc_state);
+	} else {
+		*vblank_start = intel_mode_vblank_start(adjusted_mode);
+	}
+
+	/* FIXME needs to be calibrated sensibly */
+	*min = *vblank_start - intel_usecs_to_scanlines(adjusted_mode,
+							VBLANK_EVASION_TIME_US);
+	*max = *vblank_start - 1;
+
+	/*
+	 * M/N is double buffered on the transcoder's undelayed vblank,
+	 * so with seamless M/N we must evade both vblanks.
+	 */
+	if (new_crtc_state->update_m_n)
+		*min -= adjusted_mode->crtc_vblank_start - adjusted_mode->crtc_vdisplay;
+}
+
 /**
  * intel_pipe_update_start() - start update of a set of display registers
- * @new_crtc_state: the new crtc state
+ * @state: the atomic state
+ * @crtc: the crtc
  *
  * Mark the start of an update to pipe registers that should be updated
  * atomically regarding vblank. If the next vblank will happens within
@@ -499,58 +527,33 @@ static int intel_mode_vblank_start(const struct drm_display_mode *mode)
  * until a subsequent call to intel_pipe_update_end(). That is done to
  * avoid random delays.
  */
-void intel_pipe_update_start(struct intel_crtc_state *new_crtc_state)
+void intel_pipe_update_start(struct intel_atomic_state *state,
+			     struct intel_crtc *crtc)
 {
-	struct intel_crtc *crtc = to_intel_crtc(new_crtc_state->uapi.crtc);
 	struct drm_i915_private *dev_priv = to_i915(crtc->base.dev);
-	const struct drm_display_mode *adjusted_mode = &new_crtc_state->hw.adjusted_mode;
+	struct intel_crtc_state *new_crtc_state =
+		intel_atomic_get_new_crtc_state(state, crtc);
 	long timeout = msecs_to_jiffies_timeout(1);
 	int scanline, min, max, vblank_start;
 	wait_queue_head_t *wq = drm_crtc_vblank_waitqueue(&crtc->base);
 	bool need_vlv_dsi_wa = (IS_VALLEYVIEW(dev_priv) || IS_CHERRYVIEW(dev_priv)) &&
-	                       intel_crtc_has_type(new_crtc_state, INTEL_OUTPUT_DSI);
+		intel_crtc_has_type(new_crtc_state, INTEL_OUTPUT_DSI);
 	DEFINE_WAIT(wait);
 
 	intel_psr_lock(new_crtc_state);
 
-	if (new_crtc_state->do_async_flip) {
+	if (new_crtc_state->do_async_flip)
 		return;
-	}
 
-	if (intel_crtc_needs_vblank_work(new_crtc_state)) {
+	if (intel_crtc_needs_vblank_work(new_crtc_state))
 		intel_crtc_vblank_work_init(new_crtc_state);
-	}
 
-	if (new_crtc_state->vrr.enable) {
-		if (intel_vrr_is_push_sent(new_crtc_state)) {
-			vblank_start = intel_vrr_vmin_vblank_start(new_crtc_state);
-		} else {
-			vblank_start = intel_vrr_vmax_vblank_start(new_crtc_state);
-		}
-	} else {
-		vblank_start = intel_mode_vblank_start(adjusted_mode);
-	}
-
-	/* FIXME needs to be calibrated sensibly */
-	min = vblank_start - intel_usecs_to_scanlines(adjusted_mode,
-	        VBLANK_EVASION_TIME_US);
-	max = vblank_start - 1;
-
-	/*
-	 * M/N is double buffered on the transcoder's undelayed vblank,
-	 * so with seamless M/N we must evade both vblanks.
-	 */
-	if (new_crtc_state->seamless_m_n && intel_crtc_needs_fastset(new_crtc_state)) {
-		min -= adjusted_mode->crtc_vblank_start - adjusted_mode->crtc_vdisplay;
-	}
-
-	if (min <= 0 || max <= 0) {
+	intel_crtc_vblank_evade_scanlines(state, crtc, &min, &max, &vblank_start);
+	if (min <= 0 || max <= 0)
 		goto irq_disable;
-	}
 
-	if (drm_WARN_ON(&dev_priv->drm, drm_crtc_vblank_get(&crtc->base))) {
+	if (drm_WARN_ON(&dev_priv->drm, drm_crtc_vblank_get(&crtc->base)))
 		goto irq_disable;
-	}
 
 	/*
 	 * Wait for psr to idle out after enabling the VBL interrupts
@@ -559,9 +562,8 @@ void intel_pipe_update_start(struct intel_crtc_state *new_crtc_state)
 	 */
 	intel_psr_wait_for_idle_locked(new_crtc_state);
 
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 		local_irq_disable();
-	}
 
 	crtc->debug.min_vbl = min;
 	crtc->debug.max_vbl = max;
@@ -576,26 +578,23 @@ void intel_pipe_update_start(struct intel_crtc_state *new_crtc_state)
 		prepare_to_wait(wq, &wait, TASK_UNINTERRUPTIBLE);
 
 		scanline = intel_get_crtc_scanline(crtc);
-		if (scanline < min || scanline > max) {
+		if (scanline < min || scanline > max)
 			break;
-		}
 
 		if (!timeout) {
 			drm_err(&dev_priv->drm,
-			        "Potential atomic update failure on pipe %c\n",
-			        pipe_name(crtc->pipe));
+				"Potential atomic update failure on pipe %c\n",
+				pipe_name(crtc->pipe));
 			break;
 		}
 
-		if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+		if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 			local_irq_enable();
-		}
 
 		timeout = schedule_timeout(timeout);
 
-		if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+		if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 			local_irq_disable();
-		}
 	}
 
 	finish_wait(wq, &wait);
@@ -617,9 +616,8 @@ void intel_pipe_update_start(struct intel_crtc_state *new_crtc_state)
 	 *
 	 * FIXME figure out if BXT+ DSI suffers from this as well
 	 */
-	while (need_vlv_dsi_wa && scanline == vblank_start) {
+	while (need_vlv_dsi_wa && scanline == vblank_start)
 		scanline = intel_get_crtc_scanline(crtc);
-	}
 
 	crtc->debug.scanline_start = scanline;
 	crtc->debug.start_vbl_time = ktime_get();
@@ -629,9 +627,8 @@ void intel_pipe_update_start(struct intel_crtc_state *new_crtc_state)
 	return;
 
 irq_disable:
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 		local_irq_disable();
-	}
 }
 
 #if IS_ENABLED(CONFIG_DRM_I915_DEBUG_VBLANK_EVADE)
@@ -641,25 +638,22 @@ static void dbg_vblank_evade(struct intel_crtc *crtc, ktime_t end)
 	unsigned int h;
 
 	h = ilog2(delta >> 9);
-	if (h >= ARRAY_SIZE(crtc->debug.vbl.times)) {
+	if (h >= ARRAY_SIZE(crtc->debug.vbl.times))
 		h = ARRAY_SIZE(crtc->debug.vbl.times) - 1;
-	}
 	crtc->debug.vbl.times[h]++;
 
 	crtc->debug.vbl.sum += delta;
-	if (!crtc->debug.vbl.min || delta < crtc->debug.vbl.min) {
+	if (!crtc->debug.vbl.min || delta < crtc->debug.vbl.min)
 		crtc->debug.vbl.min = delta;
-	}
-	if (delta > crtc->debug.vbl.max) {
+	if (delta > crtc->debug.vbl.max)
 		crtc->debug.vbl.max = delta;
-	}
 
 	if (delta > 1000 * VBLANK_EVASION_TIME_US) {
 		drm_dbg_kms(crtc->base.dev,
-		            "Atomic update on pipe (%c) took %lld us, max time under evasion is %u us\n",
-		            pipe_name(crtc->pipe),
-		            div_u64(delta, 1000),
-		            VBLANK_EVASION_TIME_US);
+			    "Atomic update on pipe (%c) took %lld us, max time under evasion is %u us\n",
+			    pipe_name(crtc->pipe),
+			    div_u64(delta, 1000),
+			    VBLANK_EVASION_TIME_US);
 		crtc->debug.vbl.over++;
 	}
 }
@@ -669,15 +663,18 @@ static void dbg_vblank_evade(struct intel_crtc *crtc, ktime_t end) {}
 
 /**
  * intel_pipe_update_end() - end update of a set of display registers
- * @new_crtc_state: the new crtc state
+ * @state: the atomic state
+ * @crtc: the crtc
  *
  * Mark the end of an update started with intel_pipe_update_start(). This
  * re-enables interrupts and verifies the update was actually completed
  * before a vblank.
  */
-void intel_pipe_update_end(struct intel_crtc_state *new_crtc_state)
+void intel_pipe_update_end(struct intel_atomic_state *state,
+			   struct intel_crtc *crtc)
 {
-	struct intel_crtc *crtc = to_intel_crtc(new_crtc_state->uapi.crtc);
+	struct intel_crtc_state *new_crtc_state =
+		intel_atomic_get_new_crtc_state(state, crtc);
 	enum pipe pipe = crtc->pipe;
 	int scanline_end = intel_get_crtc_scanline(crtc);
 	u32 end_vbl_count = intel_crtc_get_vblank_counter(crtc);
@@ -686,9 +683,8 @@ void intel_pipe_update_end(struct intel_crtc_state *new_crtc_state)
 
 	intel_psr_unlock(new_crtc_state);
 
-	if (new_crtc_state->do_async_flip) {
+	if (new_crtc_state->do_async_flip)
 		return;
-	}
 
 	trace_intel_pipe_update_end(crtc, end_vbl_count, scanline_end);
 
@@ -697,9 +693,8 @@ void intel_pipe_update_end(struct intel_crtc_state *new_crtc_state)
 	 * request for every commit.
 	 */
 	if (DISPLAY_VER(dev_priv) >= 11 &&
-	    intel_crtc_has_type(new_crtc_state, INTEL_OUTPUT_DSI)) {
+	    intel_crtc_has_type(new_crtc_state, INTEL_OUTPUT_DSI))
 		icl_dsi_frame_update(new_crtc_state);
-	}
 
 	/* We're still in the vblank-evade critical section, this can't race.
 	 * Would be slightly nice to just grab the vblank count and arm the
@@ -707,15 +702,15 @@ void intel_pipe_update_end(struct intel_crtc_state *new_crtc_state)
 	 * while ... */
 	if (intel_crtc_needs_vblank_work(new_crtc_state)) {
 		drm_vblank_work_schedule(&new_crtc_state->vblank_work,
-		                         drm_crtc_accurate_vblank_count(&crtc->base) + 1,
-		                         false);
+					 drm_crtc_accurate_vblank_count(&crtc->base) + 1,
+					 false);
 	} else if (new_crtc_state->uapi.event) {
 		drm_WARN_ON(&dev_priv->drm,
-		            drm_crtc_vblank_get(&crtc->base) != 0);
+			    drm_crtc_vblank_get(&crtc->base) != 0);
 
 		spin_lock(&crtc->base.dev->event_lock);
 		drm_crtc_arm_vblank_event(&crtc->base,
-		                          new_crtc_state->uapi.event);
+					  new_crtc_state->uapi.event);
 		spin_unlock(&crtc->base.dev->event_lock);
 
 		new_crtc_state->uapi.event = NULL;
@@ -737,33 +732,22 @@ void intel_pipe_update_end(struct intel_crtc_state *new_crtc_state)
 	 */
 	intel_vrr_send_push(new_crtc_state);
 
-	/*
-	 * Seamless M/N update may need to update frame timings.
-	 *
-	 * FIXME Should be synchronized with the start of vblank somehow...
-	 */
-	if (new_crtc_state->seamless_m_n && intel_crtc_needs_fastset(new_crtc_state))
-		intel_crtc_update_active_timings(new_crtc_state,
-		                                 new_crtc_state->vrr.enable);
-
-	if (!IS_ENABLED(CONFIG_PREEMPT_RT)) {
+	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 		local_irq_enable();
-	}
 
-	if (intel_vgpu_active(dev_priv)) {
+	if (intel_vgpu_active(dev_priv))
 		return;
-	}
 
 	if (crtc->debug.start_vbl_count &&
 	    crtc->debug.start_vbl_count != end_vbl_count) {
 		drm_err(&dev_priv->drm,
-		        "Atomic update failure on pipe %c (start=%u end=%u) time %lld us, min %d, max %d, scanline start %d, end %d\n",
-		        pipe_name(pipe), crtc->debug.start_vbl_count,
-		        end_vbl_count,
-		        ktime_us_delta(end_vbl_time,
-		                       crtc->debug.start_vbl_time),
-		        crtc->debug.min_vbl, crtc->debug.max_vbl,
-		        crtc->debug.scanline_start, scanline_end);
+			"Atomic update failure on pipe %c (start=%u end=%u) time %lld us, min %d, max %d, scanline start %d, end %d\n",
+			pipe_name(pipe), crtc->debug.start_vbl_count,
+			end_vbl_count,
+			ktime_us_delta(end_vbl_time,
+				       crtc->debug.start_vbl_time),
+			crtc->debug.min_vbl, crtc->debug.max_vbl,
+			crtc->debug.scanline_start, scanline_end);
 	}
 
 	dbg_vblank_evade(crtc, end_vbl_time);

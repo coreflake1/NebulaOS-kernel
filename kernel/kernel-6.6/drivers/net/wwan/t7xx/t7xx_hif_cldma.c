@@ -139,8 +139,9 @@ static int t7xx_cldma_gpd_rx_from_q(struct cldma_queue *queue, int budget, bool 
 				return -ENODEV;
 			}
 
-			gpd_addr = ioread64(hw_info->ap_pdn_base + REG_CLDMA_DL_CURRENT_ADDRL_0 +
-					    queue->index * sizeof(u64));
+			gpd_addr = ioread64_lo_hi(hw_info->ap_pdn_base +
+						  REG_CLDMA_DL_CURRENT_ADDRL_0 +
+						  queue->index * sizeof(u64));
 			if (req->gpd_addr == gpd_addr || hwo_polling_count++ >= 100)
 				return 0;
 
@@ -318,8 +319,8 @@ static void t7xx_cldma_txq_empty_hndl(struct cldma_queue *queue)
 		struct t7xx_cldma_hw *hw_info = &md_ctrl->hw_info;
 
 		/* Check current processing TGPD, 64-bit address is in a table by Q index */
-		ul_curr_addr = ioread64(hw_info->ap_pdn_base + REG_CLDMA_UL_CURRENT_ADDRL_0 +
-					queue->index * sizeof(u64));
+		ul_curr_addr = ioread64_lo_hi(hw_info->ap_pdn_base + REG_CLDMA_UL_CURRENT_ADDRL_0 +
+					      queue->index * sizeof(u64));
 		if (req->gpd_addr != ul_curr_addr) {
 			spin_unlock_irqrestore(&md_ctrl->cldma_lock, flags);
 			dev_err(md_ctrl->dev, "CLDMA%d queue %d is not empty\n",
@@ -1051,6 +1052,9 @@ err_free_rx_ring:
 err_free_tx_ring:
 	while (i--)
 		t7xx_cldma_ring_free(md_ctrl, &md_ctrl->tx_ring[i], DMA_TO_DEVICE);
+
+	dma_pool_destroy(md_ctrl->gpd_dmapool);
+	md_ctrl->gpd_dmapool = NULL;
 
 	return ret;
 }

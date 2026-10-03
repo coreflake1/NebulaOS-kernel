@@ -25,6 +25,8 @@
 #include <linux/of.h>
 #include <linux/sched/task_stack.h>
 #include <linux/sched/mm.h>
+
+#include <asm/cpufeature.h>
 #include <asm/cpu_ops.h>
 #include <asm/cpufeature.h>
 #include <asm/irq.h>
@@ -58,19 +60,16 @@ void __init smp_prepare_cpus(unsigned int max_cpus)
 	numa_add_cpu(curr_cpuid);
 
 	/* This covers non-smp usecase mandated by "nosmp" option */
-	if (max_cpus == 0) {
+	if (max_cpus == 0)
 		return;
-	}
 
 	for_each_possible_cpu(cpuid) {
-		if (cpuid == curr_cpuid) {
+		if (cpuid == curr_cpuid)
 			continue;
-		}
 		if (cpu_ops[cpuid]->cpu_prepare) {
 			ret = cpu_ops[cpuid]->cpu_prepare(cpuid);
-			if (ret) {
+			if (ret)
 				continue;
-			}
 		}
 		set_cpu_present(cpuid, true);
 		numa_store_cpu_info(cpuid);
@@ -91,13 +90,11 @@ static int __init acpi_parse_rintc(union acpi_subtable_headers *header, const un
 	 * bit in the flag is not enabled, it means OS should not try to enable
 	 * the cpu to which RINTC belongs.
 	 */
-	if (!(processor->flags & ACPI_MADT_ENABLED)) {
+	if (!(processor->flags & ACPI_MADT_ENABLED))
 		return 0;
-	}
 
-	if (BAD_MADT_ENTRY(processor, end)) {
+	if (BAD_MADT_ENTRY(processor, end))
 		return -EINVAL;
-	}
 
 	acpi_table_print_madt_entry(&header->common);
 
@@ -142,7 +139,7 @@ static void __init acpi_parse_and_init_cpus(void)
 	}
 }
 #else
-#define acpi_parse_and_init_cpus(...)   do { } while (0)
+#define acpi_parse_and_init_cpus(...)	do { } while (0)
 #endif
 
 static void __init of_parse_and_init_cpus(void)
@@ -157,9 +154,8 @@ static void __init of_parse_and_init_cpus(void)
 
 	for_each_of_cpu_node(dn) {
 		rc = riscv_early_of_processor_hartid(dn, &hart);
-		if (rc < 0) {
+		if (rc < 0)
 			continue;
-		}
 
 		if (hart == cpuid_to_hartid_map(0)) {
 			BUG_ON(found_boot_cpu);
@@ -169,7 +165,7 @@ static void __init of_parse_and_init_cpus(void)
 		}
 		if (cpuid >= NR_CPUS) {
 			pr_warn("Invalid cpuid [%d] for hartid [%lu]\n",
-			        cpuid, hart);
+				cpuid, hart);
 			continue;
 		}
 
@@ -182,7 +178,7 @@ static void __init of_parse_and_init_cpus(void)
 
 	if (cpuid > nr_cpu_ids)
 		pr_warn("Total number of cpus [%d] is greater than nr_cpus option value [%d]\n",
-		        cpuid, nr_cpu_ids);
+			cpuid, nr_cpu_ids);
 
 	for (cpuid = 1; cpuid < nr_cpu_ids; cpuid++) {
 		if (cpuid_to_hartid_map(cpuid) != INVALID_HARTID) {
@@ -194,18 +190,16 @@ static void __init of_parse_and_init_cpus(void)
 
 void __init setup_smp(void)
 {
-	if (acpi_disabled) {
+	if (acpi_disabled)
 		of_parse_and_init_cpus();
-	} else {
+	else
 		acpi_parse_and_init_cpus();
-	}
 }
 
 static int start_secondary_cpu(int cpu, struct task_struct *tidle)
 {
-	if (cpu_ops[cpu]->cpu_start) {
+	if (cpu_ops[cpu]->cpu_start)
 		return cpu_ops[cpu]->cpu_start(cpu, tidle);
-	}
 
 	return -EOPNOTSUPP;
 }
@@ -218,7 +212,7 @@ int __cpu_up(unsigned int cpu, struct task_struct *tidle)
 	ret = start_secondary_cpu(cpu, tidle);
 	if (!ret) {
 		wait_for_completion_timeout(&cpu_running,
-		                            msecs_to_jiffies(1000));
+					    msecs_to_jiffies(1000));
 
 		if (!cpu_online(cpu)) {
 			pr_crit("CPU%u: failed to come online\n", cpu);
@@ -256,10 +250,11 @@ asmlinkage __visible void smp_callin(void)
 	set_cpu_online(curr_cpuid, 1);
 
 	if (has_vector()) {
-		if (riscv_v_setup_vsize()) {
+		if (riscv_v_setup_vsize())
 			elf_hwcap &= ~COMPAT_HWCAP_ISA_V;
-		}
 	}
+
+	riscv_user_isa_enable();
 
 	/*
 	 * Remote TLB flushes are ignored while the CPU is offline, so emit

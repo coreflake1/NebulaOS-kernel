@@ -29,9 +29,9 @@
 
 #include "apbuart.h"
 
-#define SERIAL_APBUART_MAJOR    TTY_MAJOR
-#define SERIAL_APBUART_MINOR    64
-#define UART_DUMMY_RSR_RX   0x8000  /* for ignore all read */
+#define SERIAL_APBUART_MAJOR	TTY_MAJOR
+#define SERIAL_APBUART_MINOR	64
+#define UART_DUMMY_RSR_RX	0x8000	/* for ignore all read */
 
 static void apbuart_tx_chars(struct uart_port *port);
 
@@ -52,9 +52,8 @@ static void apbuart_start_tx(struct uart_port *port)
 	cr |= UART_CTRL_TI;
 	UART_PUT_CTRL(port, cr);
 
-	if (UART_GET_STATUS(port) & UART_STATUS_THE) {
+	if (UART_GET_STATUS(port) & UART_STATUS_THE)
 		apbuart_tx_chars(port);
-	}
 }
 
 static void apbuart_stop_rx(struct uart_port *port)
@@ -88,35 +87,31 @@ static void apbuart_rx_chars(struct uart_port *port)
 			if (rsr & UART_STATUS_BR) {
 				rsr &= ~(UART_STATUS_FE | UART_STATUS_PE);
 				port->icount.brk++;
-				if (uart_handle_break(port)) {
+				if (uart_handle_break(port))
 					goto ignore_char;
-				}
 			} else if (rsr & UART_STATUS_PE) {
 				port->icount.parity++;
 			} else if (rsr & UART_STATUS_FE) {
 				port->icount.frame++;
 			}
-			if (rsr & UART_STATUS_OE) {
+			if (rsr & UART_STATUS_OE)
 				port->icount.overrun++;
-			}
 
 			rsr &= port->read_status_mask;
 
-			if (rsr & UART_STATUS_PE) {
+			if (rsr & UART_STATUS_PE)
 				flag = TTY_PARITY;
-			} else if (rsr & UART_STATUS_FE) {
+			else if (rsr & UART_STATUS_FE)
 				flag = TTY_FRAME;
-			}
 		}
 
-		if (uart_handle_sysrq_char(port, ch)) {
+		if (uart_handle_sysrq_char(port, ch))
 			goto ignore_char;
-		}
 
 		uart_insert_char(port, rsr, UART_STATUS_OE, ch, flag);
 
 
-ignore_char:
+	      ignore_char:
 		status = UART_GET_STATUS(port);
 	}
 
@@ -128,9 +123,9 @@ static void apbuart_tx_chars(struct uart_port *port)
 	u8 ch;
 
 	uart_port_tx_limited(port, ch, port->fifosize,
-	                     true,
-	                     UART_PUT_CHAR(port, ch),
-	                     ({}));
+		true,
+		UART_PUT_CHAR(port, ch),
+		({}));
 }
 
 static irqreturn_t apbuart_int(int irq, void *dev_id)
@@ -141,12 +136,10 @@ static irqreturn_t apbuart_int(int irq, void *dev_id)
 	uart_port_lock(port);
 
 	status = UART_GET_STATUS(port);
-	if (status & UART_STATUS_DR) {
+	if (status & UART_STATUS_DR)
 		apbuart_rx_chars(port);
-	}
-	if (status & UART_STATUS_THE) {
+	if (status & UART_STATUS_THE)
 		apbuart_tx_chars(port);
-	}
 
 	uart_port_unlock(port);
 
@@ -182,15 +175,14 @@ static int apbuart_startup(struct uart_port *port)
 
 	/* Allocate the IRQ */
 	retval = request_irq(port->irq, apbuart_int, 0, "apbuart", port);
-	if (retval) {
+	if (retval)
 		return retval;
-	}
 
 	/* Finally, enable interrupts */
 	cr = UART_GET_CTRL(port);
 	UART_PUT_CTRL(port,
-	              cr | UART_CTRL_RE | UART_CTRL_TE |
-	              UART_CTRL_RI | UART_CTRL_TI);
+		      cr | UART_CTRL_RE | UART_CTRL_TE |
+		      UART_CTRL_RI | UART_CTRL_TI);
 
 	return 0;
 }
@@ -202,15 +194,15 @@ static void apbuart_shutdown(struct uart_port *port)
 	/* disable all interrupts, disable the port */
 	cr = UART_GET_CTRL(port);
 	UART_PUT_CTRL(port,
-	              cr & ~(UART_CTRL_RE | UART_CTRL_TE |
-	                     UART_CTRL_RI | UART_CTRL_TI));
+		      cr & ~(UART_CTRL_RE | UART_CTRL_TE |
+			     UART_CTRL_RI | UART_CTRL_TI));
 
 	/* Free the interrupt */
 	free_irq(port->irq, port);
 }
 
 static void apbuart_set_termios(struct uart_port *port,
-                                struct ktermios *termios, const struct ktermios *old)
+				struct ktermios *termios, const struct ktermios *old)
 {
 	unsigned int cr;
 	unsigned long flags;
@@ -218,9 +210,8 @@ static void apbuart_set_termios(struct uart_port *port,
 
 	/* Ask the core to calculate the divisor for us. */
 	baud = uart_get_baud_rate(port, termios, old, 0, port->uartclk / 16);
-	if (baud == 0) {
+	if (baud == 0)
 		panic("invalid baudrate %i\n", port->uartclk / 16);
-	}
 
 	/* uart_get_divisor calc a *16 uart freq, apbuart is *8 */
 	quot = (uart_get_divisor(port, baud)) * 2;
@@ -229,15 +220,13 @@ static void apbuart_set_termios(struct uart_port *port,
 
 	if (termios->c_cflag & PARENB) {
 		cr |= UART_CTRL_PE;
-		if ((termios->c_cflag & PARODD)) {
+		if ((termios->c_cflag & PARODD))
 			cr |= UART_CTRL_PS;
-		}
 	}
 
 	/* Enable flow control. */
-	if (termios->c_cflag & CRTSCTS) {
+	if (termios->c_cflag & CRTSCTS)
 		cr |= UART_CTRL_FL;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 
@@ -245,20 +234,17 @@ static void apbuart_set_termios(struct uart_port *port,
 	uart_update_timeout(port, termios->c_cflag, baud);
 
 	port->read_status_mask = UART_STATUS_OE;
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		port->read_status_mask |= UART_STATUS_FE | UART_STATUS_PE;
-	}
 
 	/* Characters to ignore */
 	port->ignore_status_mask = 0;
-	if (termios->c_iflag & IGNPAR) {
+	if (termios->c_iflag & IGNPAR)
 		port->ignore_status_mask |= UART_STATUS_FE | UART_STATUS_PE;
-	}
 
 	/* Ignore all characters if CREAD is not set. */
-	if ((termios->c_cflag & CREAD) == 0) {
+	if ((termios->c_cflag & CREAD) == 0)
 		port->ignore_status_mask |= UART_DUMMY_RSR_RX;
-	}
 
 	/* Set baud rate */
 	quot -= 1;
@@ -281,7 +267,7 @@ static void apbuart_release_port(struct uart_port *port)
 static int apbuart_request_port(struct uart_port *port)
 {
 	return request_mem_region(port->mapbase, 0x100, "grlib-apbuart")
-	       != NULL ? 0 : -EBUSY;
+	    != NULL ? 0 : -EBUSY;
 	return 0;
 }
 
@@ -296,18 +282,15 @@ static void apbuart_config_port(struct uart_port *port, int flags)
 
 /* Verify the new serial_struct (for TIOCSSERIAL) */
 static int apbuart_verify_port(struct uart_port *port,
-                               struct serial_struct *ser)
+			       struct serial_struct *ser)
 {
 	int ret = 0;
-	if (ser->type != PORT_UNKNOWN && ser->type != PORT_APBUART) {
+	if (ser->type != PORT_UNKNOWN && ser->type != PORT_APBUART)
 		ret = -EINVAL;
-	}
-	if (ser->irq < 0 || ser->irq >= NR_IRQS) {
+	if (ser->irq < 0 || ser->irq >= NR_IRQS)
 		ret = -EINVAL;
-	}
-	if (ser->baud_base < 9600) {
+	if (ser->baud_base < 9600)
 		ret = -EINVAL;
-	}
 	return ret;
 }
 
@@ -352,9 +335,8 @@ static int apbuart_scan_fifo_size(struct uart_port *port, int portnumber)
 
 	UART_PUT_CTRL(port, ctrl | UART_CTRL_TE);
 
-	while (!UART_TX_READY(UART_GET_STATUS(port))) {
+	while (!UART_TX_READY(UART_GET_STATUS(port)))
 		loop++;
-	}
 
 	/*
 	 * Disable the transceiver so data isn't actually sent during the
@@ -384,9 +366,8 @@ static int apbuart_scan_fifo_size(struct uart_port *port, int portnumber)
 	UART_PUT_CTRL(port, ctrl);
 	local_irq_restore(flags);
 
-	if (fifosize == 0) {
+	if (fifosize == 0)
 		fifosize = 1;
-	}
 
 	return fifosize;
 }
@@ -395,9 +376,8 @@ static void apbuart_flush_fifo(struct uart_port *port)
 {
 	int i;
 
-	for (i = 0; i < port->fifosize; i++) {
+	for (i = 0; i < port->fifosize; i++)
 		UART_GET_CHAR(port);
-	}
 }
 
 
@@ -441,7 +421,7 @@ apbuart_console_write(struct console *co, const char *s, unsigned int count)
 
 static void __init
 apbuart_console_get_options(struct uart_port *port, int *baud,
-                            int *parity, int *bits)
+			    int *parity, int *bits)
 {
 	if (UART_GET_CTRL(port) & (UART_CTRL_RE | UART_CTRL_TE)) {
 
@@ -450,11 +430,10 @@ apbuart_console_get_options(struct uart_port *port, int *baud,
 
 		*parity = 'n';
 		if (status & UART_CTRL_PE) {
-			if ((status & UART_CTRL_PS) == 0) {
+			if ((status & UART_CTRL_PS) == 0)
 				*parity = 'e';
-			} else {
+			else
 				*parity = 'o';
-			}
 		}
 
 		*bits = 8;
@@ -472,26 +451,24 @@ static int __init apbuart_console_setup(struct console *co, char *options)
 	int flow = 'n';
 
 	pr_debug("apbuart_console_setup co=%p, co->index=%i, options=%s\n",
-	         co, co->index, options);
+		 co, co->index, options);
 
 	/*
 	 * Check whether an invalid uart number has been specified, and
 	 * if so, search for the first available port that does have
 	 * console support.
 	 */
-	if (co->index >= grlib_apbuart_port_nr) {
+	if (co->index >= grlib_apbuart_port_nr)
 		co->index = 0;
-	}
 
 	port = &grlib_apbuart_ports[co->index];
 
 	spin_lock_init(&port->lock);
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	} else {
+	else
 		apbuart_console_get_options(port, &baud, &parity, &bits);
-	}
 
 	return uart_set_options(port, co, baud, parity, bits, flow);
 }
@@ -513,18 +490,17 @@ static int grlib_apbuart_configure(void);
 
 static int __init apbuart_console_init(void)
 {
-	if (grlib_apbuart_configure()) {
+	if (grlib_apbuart_configure())
 		return -ENODEV;
-	}
 	register_console(&grlib_apbuart_console);
 	return 0;
 }
 
 console_initcall(apbuart_console_init);
 
-#define APBUART_CONSOLE (&grlib_apbuart_console)
+#define APBUART_CONSOLE	(&grlib_apbuart_console)
 #else
-#define APBUART_CONSOLE NULL
+#define APBUART_CONSOLE	NULL
 #endif
 
 static struct uart_driver grlib_apbuart_driver = {
@@ -548,9 +524,8 @@ static int apbuart_probe(struct platform_device *op)
 	struct uart_port *port = NULL;
 
 	for (i = 0; i < grlib_apbuart_port_nr; i++) {
-		if (op->dev.of_node == grlib_apbuart_nodes[i]) {
+		if (op->dev.of_node == grlib_apbuart_nodes[i])
 			break;
-		}
 	}
 
 	port = &grlib_apbuart_ports[i];
@@ -568,11 +543,11 @@ static int apbuart_probe(struct platform_device *op)
 
 static const struct of_device_id apbuart_match[] = {
 	{
-		.name = "GAISLER_APBUART",
-	},
+	 .name = "GAISLER_APBUART",
+	 },
 	{
-		.name = "01_00c",
-	},
+	 .name = "01_00c",
+	 },
 	{},
 };
 MODULE_DEVICE_TABLE(of, apbuart_match);
@@ -599,16 +574,14 @@ static int __init grlib_apbuart_configure(void)
 		unsigned long addr;
 
 		ampopts = of_get_property(np, "ampopts", NULL);
-		if (ampopts && (*ampopts == 0)) {
-			continue;    /* Ignore if used by another OS instance */
-		}
+		if (ampopts && (*ampopts == 0))
+			continue; /* Ignore if used by another OS instance */
 		regs = of_get_property(np, "reg", NULL);
 		/* Frequency of APB Bus is frequency of UART */
 		freq_hz = of_get_property(np, "freq", NULL);
 
-		if (!regs || !freq_hz || (*freq_hz == 0)) {
+		if (!regs || !freq_hz || (*freq_hz == 0))
 			continue;
-		}
 
 		grlib_apbuart_nodes[line] = np;
 
@@ -629,9 +602,8 @@ static int __init grlib_apbuart_configure(void)
 		line++;
 
 		/* We support maximum UART_NR uarts ... */
-		if (line == UART_NR) {
+		if (line == UART_NR)
 			break;
-		}
 	}
 
 	grlib_apbuart_driver.nr = grlib_apbuart_port_nr = line;
@@ -644,9 +616,8 @@ static int __init grlib_apbuart_init(void)
 
 	/* Find all APBUARTS in device the tree and initialize their ports */
 	ret = grlib_apbuart_configure();
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	printk(KERN_INFO "Serial: GRLIB APBUART driver\n");
 
@@ -676,7 +647,7 @@ static void __exit grlib_apbuart_exit(void)
 
 	for (i = 0; i < grlib_apbuart_port_nr; i++)
 		uart_remove_one_port(&grlib_apbuart_driver,
-		                     &grlib_apbuart_ports[i]);
+				     &grlib_apbuart_ports[i]);
 
 	uart_unregister_driver(&grlib_apbuart_driver);
 	platform_driver_unregister(&grlib_apbuart_of_driver);

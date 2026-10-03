@@ -29,46 +29,46 @@
 #include <linux/tty_flip.h>
 
 /* Register Map */
-#define UART_STD_RBR        0x00
-#define UART_EXT_RBR        0x18
+#define UART_STD_RBR		0x00
+#define UART_EXT_RBR		0x18
 
-#define UART_STD_TSH        0x04
-#define UART_EXT_TSH        0x1C
+#define UART_STD_TSH		0x04
+#define UART_EXT_TSH		0x1C
 
-#define UART_STD_CTRL1      0x08
-#define UART_EXT_CTRL1      0x04
-#define  CTRL_SOFT_RST      BIT(31)
-#define  CTRL_TXFIFO_RST    BIT(15)
-#define  CTRL_RXFIFO_RST    BIT(14)
-#define  CTRL_SND_BRK_SEQ   BIT(11)
-#define  CTRL_BRK_DET_INT   BIT(3)
-#define  CTRL_FRM_ERR_INT   BIT(2)
-#define  CTRL_PAR_ERR_INT   BIT(1)
-#define  CTRL_OVR_ERR_INT   BIT(0)
-#define  CTRL_BRK_INT       (CTRL_BRK_DET_INT | CTRL_FRM_ERR_INT | \
-                             CTRL_PAR_ERR_INT | CTRL_OVR_ERR_INT)
+#define UART_STD_CTRL1		0x08
+#define UART_EXT_CTRL1		0x04
+#define  CTRL_SOFT_RST		BIT(31)
+#define  CTRL_TXFIFO_RST	BIT(15)
+#define  CTRL_RXFIFO_RST	BIT(14)
+#define  CTRL_SND_BRK_SEQ	BIT(11)
+#define  CTRL_BRK_DET_INT	BIT(3)
+#define  CTRL_FRM_ERR_INT	BIT(2)
+#define  CTRL_PAR_ERR_INT	BIT(1)
+#define  CTRL_OVR_ERR_INT	BIT(0)
+#define  CTRL_BRK_INT		(CTRL_BRK_DET_INT | CTRL_FRM_ERR_INT | \
+				CTRL_PAR_ERR_INT | CTRL_OVR_ERR_INT)
 
-#define UART_STD_CTRL2      UART_STD_CTRL1
-#define UART_EXT_CTRL2      0x20
-#define  CTRL_STD_TX_RDY_INT    BIT(5)
-#define  CTRL_EXT_TX_RDY_INT    BIT(6)
-#define  CTRL_STD_RX_RDY_INT    BIT(4)
-#define  CTRL_EXT_RX_RDY_INT    BIT(5)
+#define UART_STD_CTRL2		UART_STD_CTRL1
+#define UART_EXT_CTRL2		0x20
+#define  CTRL_STD_TX_RDY_INT	BIT(5)
+#define  CTRL_EXT_TX_RDY_INT	BIT(6)
+#define  CTRL_STD_RX_RDY_INT	BIT(4)
+#define  CTRL_EXT_RX_RDY_INT	BIT(5)
 
-#define UART_STAT       0x0C
-#define  STAT_TX_FIFO_EMP   BIT(13)
-#define  STAT_TX_FIFO_FUL   BIT(11)
-#define  STAT_TX_EMP        BIT(6)
-#define  STAT_STD_TX_RDY    BIT(5)
-#define  STAT_EXT_TX_RDY    BIT(15)
-#define  STAT_STD_RX_RDY    BIT(4)
-#define  STAT_EXT_RX_RDY    BIT(14)
-#define  STAT_BRK_DET       BIT(3)
-#define  STAT_FRM_ERR       BIT(2)
-#define  STAT_PAR_ERR       BIT(1)
-#define  STAT_OVR_ERR       BIT(0)
-#define  STAT_BRK_ERR       (STAT_BRK_DET | STAT_FRM_ERR \
-                             | STAT_PAR_ERR | STAT_OVR_ERR)
+#define UART_STAT		0x0C
+#define  STAT_TX_FIFO_EMP	BIT(13)
+#define  STAT_TX_FIFO_FUL	BIT(11)
+#define  STAT_TX_EMP		BIT(6)
+#define  STAT_STD_TX_RDY	BIT(5)
+#define  STAT_EXT_TX_RDY	BIT(15)
+#define  STAT_STD_RX_RDY	BIT(4)
+#define  STAT_EXT_RX_RDY	BIT(14)
+#define  STAT_BRK_DET		BIT(3)
+#define  STAT_FRM_ERR		BIT(2)
+#define  STAT_PAR_ERR		BIT(1)
+#define  STAT_OVR_ERR		BIT(0)
+#define  STAT_BRK_ERR		(STAT_BRK_DET | STAT_FRM_ERR \
+				 | STAT_PAR_ERR | STAT_OVR_ERR)
 
 /*
  * Marvell Armada 3700 Functional Specifications describes that bit 21 of UART
@@ -77,34 +77,34 @@
  * error in Marvell's documentation. Hence following CLK_DIS macros are swapped.
  */
 
-#define UART_BRDV       0x10
+#define UART_BRDV		0x10
 /* These bits are located in UART1 address space and control UART2 */
-#define  UART2_CLK_DIS      BIT(21)
+#define  UART2_CLK_DIS		BIT(21)
 /* These bits are located in UART1 address space and control UART1 */
-#define  UART1_CLK_DIS      BIT(20)
+#define  UART1_CLK_DIS		BIT(20)
 /* These bits are located in UART1 address space and control both UARTs */
-#define  CLK_NO_XTAL        BIT(19)
-#define  CLK_TBG_DIV1_SHIFT 15
-#define  CLK_TBG_DIV1_MASK  0x7
-#define  CLK_TBG_DIV1_MAX   6
-#define  CLK_TBG_DIV2_SHIFT 12
-#define  CLK_TBG_DIV2_MASK  0x7
-#define  CLK_TBG_DIV2_MAX   6
-#define  CLK_TBG_SEL_SHIFT  10
-#define  CLK_TBG_SEL_MASK   0x3
+#define  CLK_NO_XTAL		BIT(19)
+#define  CLK_TBG_DIV1_SHIFT	15
+#define  CLK_TBG_DIV1_MASK	0x7
+#define  CLK_TBG_DIV1_MAX	6
+#define  CLK_TBG_DIV2_SHIFT	12
+#define  CLK_TBG_DIV2_MASK	0x7
+#define  CLK_TBG_DIV2_MAX	6
+#define  CLK_TBG_SEL_SHIFT	10
+#define  CLK_TBG_SEL_MASK	0x3
 /* These bits are located in both UARTs address space */
 #define  BRDV_BAUD_MASK         0x3FF
-#define  BRDV_BAUD_MAX      BRDV_BAUD_MASK
+#define  BRDV_BAUD_MAX		BRDV_BAUD_MASK
 
-#define UART_OSAMP      0x14
-#define  OSAMP_DEFAULT_DIVISOR  16
-#define  OSAMP_DIVISORS_MASK    0x3F3F3F3F
-#define  OSAMP_MAX_DIVISOR  63
+#define UART_OSAMP		0x14
+#define  OSAMP_DEFAULT_DIVISOR	16
+#define  OSAMP_DIVISORS_MASK	0x3F3F3F3F
+#define  OSAMP_MAX_DIVISOR	63
 
-#define MVEBU_NR_UARTS      2
+#define MVEBU_NR_UARTS		2
 
-#define MVEBU_UART_TYPE     "mvebu-uart"
-#define DRIVER_NAME     "mvebu_serial"
+#define MVEBU_UART_TYPE		"mvebu-uart"
+#define DRIVER_NAME		"mvebu_serial"
 
 enum {
 	/* Either there is only one summed IRQ... */
@@ -200,12 +200,12 @@ static unsigned int mvebu_uart_get_mctrl(struct uart_port *port)
 }
 
 static void mvebu_uart_set_mctrl(struct uart_port *port,
-                                 unsigned int mctrl)
+				 unsigned int mctrl)
 {
-	/*
-	 * Even if we do not support configuring the modem control lines, this
-	 * function must be proided to the serial core
-	 */
+/*
+ * Even if we do not support configuring the modem control lines, this
+ * function must be proided to the serial core
+ */
 }
 
 static void mvebu_uart_stop_tx(struct uart_port *port)
@@ -251,11 +251,10 @@ static void mvebu_uart_break_ctl(struct uart_port *port, int brk)
 
 	uart_port_lock_irqsave(port, &flags);
 	ctl = readl(port->membase + UART_CTRL(port));
-	if (brk == -1) {
+	if (brk == -1)
 		ctl |= CTRL_SND_BRK_SEQ;
-	} else {
+	else
 		ctl &= ~CTRL_SND_BRK_SEQ;
-	}
 	writel(ctl, port->membase + UART_CTRL(port));
 	uart_port_unlock_irqrestore(port, flags);
 }
@@ -274,9 +273,8 @@ static void mvebu_uart_rx_chars(struct uart_port *port, unsigned int status)
 			flag = TTY_NORMAL;
 			port->icount.rx++;
 
-			if (status & STAT_PAR_ERR) {
+			if (status & STAT_PAR_ERR)
 				port->icount.parity++;
-			}
 		}
 
 		/*
@@ -292,50 +290,40 @@ static void mvebu_uart_rx_chars(struct uart_port *port, unsigned int status)
 		if (status & STAT_BRK_DET) {
 			port->icount.brk++;
 			status &= ~(STAT_FRM_ERR | STAT_PAR_ERR);
-			if (uart_handle_break(port)) {
+			if (uart_handle_break(port))
 				goto ignore_char;
-			}
 		}
 
-		if (status & STAT_OVR_ERR) {
+		if (status & STAT_OVR_ERR)
 			port->icount.overrun++;
-		}
 
-		if (status & STAT_FRM_ERR) {
+		if (status & STAT_FRM_ERR)
 			port->icount.frame++;
-		}
 
-		if (uart_handle_sysrq_char(port, ch)) {
+		if (uart_handle_sysrq_char(port, ch))
 			goto ignore_char;
-		}
 
-		if (status & port->ignore_status_mask & STAT_PAR_ERR) {
+		if (status & port->ignore_status_mask & STAT_PAR_ERR)
 			status &= ~STAT_RX_RDY(port);
-		}
 
 		status &= port->read_status_mask;
 
-		if (status & STAT_PAR_ERR) {
+		if (status & STAT_PAR_ERR)
 			flag = TTY_PARITY;
-		}
 
 		status &= ~port->ignore_status_mask;
 
-		if (status & STAT_RX_RDY(port)) {
+		if (status & STAT_RX_RDY(port))
 			tty_insert_flip_char(tport, ch, flag);
-		}
 
-		if (status & STAT_BRK_DET) {
+		if (status & STAT_BRK_DET)
 			tty_insert_flip_char(tport, 0, TTY_BREAK);
-		}
 
-		if (status & STAT_FRM_ERR) {
+		if (status & STAT_FRM_ERR)
 			tty_insert_flip_char(tport, 0, TTY_FRAME);
-		}
 
-		if (status & STAT_OVR_ERR) {
+		if (status & STAT_OVR_ERR)
 			tty_insert_flip_char(tport, 0, TTY_OVERRUN);
-		}
 
 ignore_char:
 		status = readl(port->membase + UART_STAT);
@@ -349,9 +337,9 @@ static void mvebu_uart_tx_chars(struct uart_port *port, unsigned int status)
 	u8 ch;
 
 	uart_port_tx_limited(port, ch, port->fifosize,
-	                     !(readl(port->membase + UART_STAT) & STAT_TX_FIFO_FUL),
-	                     writel(ch, port->membase + UART_TSH(port)),
-	                     ({}));
+		!(readl(port->membase + UART_STAT) & STAT_TX_FIFO_FUL),
+		writel(ch, port->membase + UART_TSH(port)),
+		({}));
 }
 
 static irqreturn_t mvebu_uart_isr(int irq, void *dev_id)
@@ -360,13 +348,11 @@ static irqreturn_t mvebu_uart_isr(int irq, void *dev_id)
 	unsigned int st = readl(port->membase + UART_STAT);
 
 	if (st & (STAT_RX_RDY(port) | STAT_OVR_ERR | STAT_FRM_ERR |
-	          STAT_BRK_DET)) {
+		  STAT_BRK_DET))
 		mvebu_uart_rx_chars(port, st);
-	}
 
-	if (st & STAT_TX_RDY(port)) {
+	if (st & STAT_TX_RDY(port))
 		mvebu_uart_tx_chars(port, st);
-	}
 
 	return IRQ_HANDLED;
 }
@@ -377,9 +363,8 @@ static irqreturn_t mvebu_uart_rx_isr(int irq, void *dev_id)
 	unsigned int st = readl(port->membase + UART_STAT);
 
 	if (st & (STAT_RX_RDY(port) | STAT_OVR_ERR | STAT_FRM_ERR |
-	          STAT_BRK_DET)) {
+			STAT_BRK_DET))
 		mvebu_uart_rx_chars(port, st);
-	}
 
 	return IRQ_HANDLED;
 }
@@ -389,9 +374,8 @@ static irqreturn_t mvebu_uart_tx_isr(int irq, void *dev_id)
 	struct uart_port *port = (struct uart_port *)dev_id;
 	unsigned int st = readl(port->membase + UART_STAT);
 
-	if (st & STAT_TX_RDY(port)) {
+	if (st & STAT_TX_RDY(port))
 		mvebu_uart_tx_chars(port, st);
-	}
 
 	return IRQ_HANDLED;
 }
@@ -420,33 +404,33 @@ static int mvebu_uart_startup(struct uart_port *port)
 	if (!mvuart->irq[UART_TX_IRQ]) {
 		/* Old bindings with just one interrupt (UART0 only) */
 		ret = devm_request_irq(port->dev, mvuart->irq[UART_IRQ_SUM],
-		                       mvebu_uart_isr, port->irqflags,
-		                       dev_name(port->dev), port);
+				       mvebu_uart_isr, port->irqflags,
+				       dev_name(port->dev), port);
 		if (ret) {
 			dev_err(port->dev, "unable to request IRQ %d\n",
-			        mvuart->irq[UART_IRQ_SUM]);
+				mvuart->irq[UART_IRQ_SUM]);
 			return ret;
 		}
 	} else {
 		/* New bindings with an IRQ for RX and TX (both UART) */
 		ret = devm_request_irq(port->dev, mvuart->irq[UART_RX_IRQ],
-		                       mvebu_uart_rx_isr, port->irqflags,
-		                       dev_name(port->dev), port);
+				       mvebu_uart_rx_isr, port->irqflags,
+				       dev_name(port->dev), port);
 		if (ret) {
 			dev_err(port->dev, "unable to request IRQ %d\n",
-			        mvuart->irq[UART_RX_IRQ]);
+				mvuart->irq[UART_RX_IRQ]);
 			return ret;
 		}
 
 		ret = devm_request_irq(port->dev, mvuart->irq[UART_TX_IRQ],
-		                       mvebu_uart_tx_isr, port->irqflags,
-		                       dev_name(port->dev),
-		                       port);
+				       mvebu_uart_tx_isr, port->irqflags,
+				       dev_name(port->dev),
+				       port);
 		if (ret) {
 			dev_err(port->dev, "unable to request IRQ %d\n",
-			        mvuart->irq[UART_TX_IRQ]);
+				mvuart->irq[UART_TX_IRQ]);
 			devm_free_irq(port->dev, mvuart->irq[UART_RX_IRQ],
-			              port);
+				      port);
 			return ret;
 		}
 	}
@@ -474,9 +458,8 @@ static unsigned int mvebu_uart_baud_rate_set(struct uart_port *port, unsigned in
 	unsigned long flags;
 	u32 brdv, osamp;
 
-	if (!port->uartclk) {
+	if (!port->uartclk)
 		return 0;
-	}
 
 	/*
 	 * The baudrate is derived from the UART clock thanks to divisors:
@@ -528,11 +511,10 @@ static unsigned int mvebu_uart_baud_rate_set(struct uart_port *port, unsigned in
 		d_divisor = DIV_ROUND_CLOSEST(port->uartclk, baud * m_divisor);
 	}
 
-	if (d_divisor < 1) {
+	if (d_divisor < 1)
 		d_divisor = 1;
-	} else if (d_divisor > BRDV_BAUD_MAX) {
+	else if (d_divisor > BRDV_BAUD_MAX)
 		d_divisor = BRDV_BAUD_MAX;
-	}
 
 	spin_lock_irqsave(&mvebu_uart_lock, flags);
 	brdv = readl(port->membase + UART_BRDV);
@@ -545,15 +527,15 @@ static unsigned int mvebu_uart_baud_rate_set(struct uart_port *port, unsigned in
 	osamp &= ~OSAMP_DIVISORS_MASK;
 	if (m_divisor != OSAMP_DEFAULT_DIVISOR)
 		osamp |= (m_divisor << 0) | (m_divisor << 8) |
-		         (m_divisor << 16) | (m_divisor << 24);
+			(m_divisor << 16) | (m_divisor << 24);
 	writel(osamp, port->membase + UART_OSAMP);
 
 	return DIV_ROUND_CLOSEST(port->uartclk, d_divisor * m_divisor);
 }
 
 static void mvebu_uart_set_termios(struct uart_port *port,
-                                   struct ktermios *termios,
-                                   const struct ktermios *old)
+				   struct ktermios *termios,
+				   const struct ktermios *old)
 {
 	unsigned long flags;
 	unsigned int baud, min_baud, max_baud;
@@ -561,20 +543,18 @@ static void mvebu_uart_set_termios(struct uart_port *port,
 	uart_port_lock_irqsave(port, &flags);
 
 	port->read_status_mask = STAT_RX_RDY(port) | STAT_OVR_ERR |
-	                         STAT_TX_RDY(port) | STAT_TX_FIFO_FUL;
+		STAT_TX_RDY(port) | STAT_TX_FIFO_FUL;
 
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		port->read_status_mask |= STAT_FRM_ERR | STAT_PAR_ERR;
-	}
 
 	port->ignore_status_mask = 0;
 	if (termios->c_iflag & IGNPAR)
 		port->ignore_status_mask |=
-		    STAT_FRM_ERR | STAT_PAR_ERR | STAT_OVR_ERR;
+			STAT_FRM_ERR | STAT_PAR_ERR | STAT_OVR_ERR;
 
-	if ((termios->c_cflag & CREAD) == 0) {
+	if ((termios->c_cflag & CREAD) == 0)
 		port->ignore_status_mask |= STAT_RX_RDY(port) | STAT_BRK_ERR;
-	}
 
 	/*
 	 * Maximal divisor is 1023 and maximal fractional divisor is 63. And
@@ -585,16 +565,15 @@ static void mvebu_uart_set_termios(struct uart_port *port,
 	 * in this case do not matter.
 	 */
 	min_baud = DIV_ROUND_UP(port->uartclk, BRDV_BAUD_MAX *
-	                        OSAMP_MAX_DIVISOR);
+				OSAMP_MAX_DIVISOR);
 	max_baud = port->uartclk / 80;
 
 	baud = uart_get_baud_rate(port, termios, old, min_baud, max_baud);
 	baud = mvebu_uart_baud_rate_set(port, baud);
 
 	/* In case baudrate cannot be changed, report previous old value */
-	if (baud == 0 && old) {
+	if (baud == 0 && old)
 		baud = tty_termios_baud_rate(old);
-	}
 
 	/* Only the following flag changes are supported */
 	if (old) {
@@ -633,9 +612,8 @@ static int mvebu_uart_get_poll_char(struct uart_port *port)
 {
 	unsigned int st = readl(port->membase + UART_STAT);
 
-	if (!(st & STAT_RX_RDY(port))) {
+	if (!(st & STAT_RX_RDY(port)))
 		return NO_POLL_CHAR;
-	}
 
 	return readl(port->membase + UART_RBR(port));
 }
@@ -647,9 +625,8 @@ static void mvebu_uart_put_poll_char(struct uart_port *port, unsigned char c)
 	for (;;) {
 		st = readl(port->membase + UART_STAT);
 
-		if (!(st & STAT_TX_FIFO_FUL)) {
+		if (!(st & STAT_TX_FIFO_FUL))
 			break;
-		}
 
 		udelay(1);
 	}
@@ -659,22 +636,22 @@ static void mvebu_uart_put_poll_char(struct uart_port *port, unsigned char c)
 #endif
 
 static const struct uart_ops mvebu_uart_ops = {
-	.tx_empty   = mvebu_uart_tx_empty,
-	.set_mctrl  = mvebu_uart_set_mctrl,
-	.get_mctrl  = mvebu_uart_get_mctrl,
-	.stop_tx    = mvebu_uart_stop_tx,
-	.start_tx   = mvebu_uart_start_tx,
-	.stop_rx    = mvebu_uart_stop_rx,
-	.break_ctl  = mvebu_uart_break_ctl,
-	.startup    = mvebu_uart_startup,
-	.shutdown   = mvebu_uart_shutdown,
-	.set_termios    = mvebu_uart_set_termios,
-	.type       = mvebu_uart_type,
-	.release_port   = mvebu_uart_release_port,
-	.request_port   = mvebu_uart_request_port,
+	.tx_empty	= mvebu_uart_tx_empty,
+	.set_mctrl	= mvebu_uart_set_mctrl,
+	.get_mctrl	= mvebu_uart_get_mctrl,
+	.stop_tx	= mvebu_uart_stop_tx,
+	.start_tx	= mvebu_uart_start_tx,
+	.stop_rx	= mvebu_uart_stop_rx,
+	.break_ctl	= mvebu_uart_break_ctl,
+	.startup	= mvebu_uart_startup,
+	.shutdown	= mvebu_uart_shutdown,
+	.set_termios	= mvebu_uart_set_termios,
+	.type		= mvebu_uart_type,
+	.release_port	= mvebu_uart_release_port,
+	.request_port	= mvebu_uart_request_port,
 #ifdef CONFIG_CONSOLE_POLL
-	.poll_get_char  = mvebu_uart_get_poll_char,
-	.poll_put_char  = mvebu_uart_put_poll_char,
+	.poll_get_char	= mvebu_uart_get_poll_char,
+	.poll_put_char	= mvebu_uart_put_poll_char,
 #endif
 };
 
@@ -688,9 +665,8 @@ static void mvebu_uart_putc(struct uart_port *port, unsigned char c)
 
 	for (;;) {
 		st = readl(port->membase + UART_STAT);
-		if (!(st & STAT_TX_FIFO_FUL)) {
+		if (!(st & STAT_TX_FIFO_FUL))
 			break;
-		}
 	}
 
 	/* At early stage, DT is not parsed yet, only use UART0 */
@@ -698,15 +674,14 @@ static void mvebu_uart_putc(struct uart_port *port, unsigned char c)
 
 	for (;;) {
 		st = readl(port->membase + UART_STAT);
-		if (st & STAT_TX_FIFO_EMP) {
+		if (st & STAT_TX_FIFO_EMP)
 			break;
-		}
 	}
 }
 
 static void mvebu_uart_putc_early_write(struct console *con,
-                                        const char *s,
-                                        unsigned int n)
+					const char *s,
+					unsigned int n)
 {
 	struct earlycon_device *dev = con->data;
 
@@ -715,11 +690,10 @@ static void mvebu_uart_putc_early_write(struct console *con,
 
 static int __init
 mvebu_uart_early_console_setup(struct earlycon_device *device,
-                               const char *opt)
+			       const char *opt)
 {
-	if (!device->port.membase) {
+	if (!device->port.membase)
 		return -ENODEV;
-	}
 
 	device->con->write = mvebu_uart_putc_early_write;
 
@@ -728,14 +702,14 @@ mvebu_uart_early_console_setup(struct earlycon_device *device,
 
 EARLYCON_DECLARE(ar3700_uart, mvebu_uart_early_console_setup);
 OF_EARLYCON_DECLARE(ar3700_uart, "marvell,armada-3700-uart",
-                    mvebu_uart_early_console_setup);
+		    mvebu_uart_early_console_setup);
 
 static void wait_for_xmitr(struct uart_port *port)
 {
 	u32 val;
 
 	readl_poll_timeout_atomic(port->membase + UART_STAT, val,
-	                          (val & STAT_TX_RDY(port)), 1, 10000);
+				  (val & STAT_TX_RDY(port)), 1, 10000);
 }
 
 static void wait_for_xmite(struct uart_port *port)
@@ -743,7 +717,7 @@ static void wait_for_xmite(struct uart_port *port)
 	u32 val;
 
 	readl_poll_timeout_atomic(port->membase + UART_STAT, val,
-	                          (val & STAT_TX_EMP), 1, 10000);
+				  (val & STAT_TX_EMP), 1, 10000);
 }
 
 static void mvebu_uart_console_putchar(struct uart_port *port, unsigned char ch)
@@ -753,22 +727,21 @@ static void mvebu_uart_console_putchar(struct uart_port *port, unsigned char ch)
 }
 
 static void mvebu_uart_console_write(struct console *co, const char *s,
-                                     unsigned int count)
+				     unsigned int count)
 {
 	struct uart_port *port = &mvebu_uart_ports[co->index];
 	unsigned long flags;
 	unsigned int ier, intr, ctl;
 	int locked = 1;
 
-	if (oops_in_progress) {
+	if (oops_in_progress)
 		locked = uart_port_trylock_irqsave(port, &flags);
-	} else {
+	else
 		uart_port_lock_irqsave(port, &flags);
-	}
 
 	ier = readl(port->membase + UART_CTRL(port)) & CTRL_BRK_INT;
 	intr = readl(port->membase + UART_INTR(port)) &
-	       (CTRL_RX_RDY_INT(port) | CTRL_TX_RDY_INT(port));
+		(CTRL_RX_RDY_INT(port) | CTRL_TX_RDY_INT(port));
 	writel(0, port->membase + UART_CTRL(port));
 	writel(0, port->membase + UART_INTR(port));
 
@@ -776,18 +749,16 @@ static void mvebu_uart_console_write(struct console *co, const char *s,
 
 	wait_for_xmite(port);
 
-	if (ier) {
+	if (ier)
 		writel(ier, port->membase + UART_CTRL(port));
-	}
 
 	if (intr) {
 		ctl = intr | readl(port->membase + UART_INTR(port));
 		writel(ctl, port->membase + UART_INTR(port));
 	}
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock_irqrestore(port, flags);
-	}
 }
 
 static int mvebu_uart_console_setup(struct console *co, char *options)
@@ -798,9 +769,8 @@ static int mvebu_uart_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if (co->index < 0 || co->index >= MVEBU_NR_UARTS) {
+	if (co->index < 0 || co->index >= MVEBU_NR_UARTS)
 		return -EINVAL;
-	}
 
 	port = &mvebu_uart_ports[co->index];
 
@@ -809,9 +779,8 @@ static int mvebu_uart_console_setup(struct console *co, char *options)
 		return -ENODEV;
 	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(port, co, baud, parity, bits, flow);
 }
@@ -819,13 +788,13 @@ static int mvebu_uart_console_setup(struct console *co, char *options)
 static struct uart_driver mvebu_uart_driver;
 
 static struct console mvebu_uart_console = {
-	.name   = "ttyMV",
-	.write  = mvebu_uart_console_write,
-	.device = uart_console_device,
-	.setup  = mvebu_uart_console_setup,
-	.flags  = CON_PRINTBUFFER,
-	.index  = -1,
-	.data   = &mvebu_uart_driver,
+	.name	= "ttyMV",
+	.write	= mvebu_uart_console_write,
+	.device	= uart_console_device,
+	.setup	= mvebu_uart_console_setup,
+	.flags	= CON_PRINTBUFFER,
+	.index	= -1,
+	.data	= &mvebu_uart_driver,
 };
 
 static int __init mvebu_uart_console_init(void)
@@ -840,12 +809,12 @@ console_initcall(mvebu_uart_console_init);
 #endif /* CONFIG_SERIAL_MVEBU_CONSOLE */
 
 static struct uart_driver mvebu_uart_driver = {
-	.owner          = THIS_MODULE,
-	.driver_name        = DRIVER_NAME,
-	.dev_name       = "ttyMV",
-	.nr         = MVEBU_NR_UARTS,
+	.owner			= THIS_MODULE,
+	.driver_name		= DRIVER_NAME,
+	.dev_name		= "ttyMV",
+	.nr			= MVEBU_NR_UARTS,
 #ifdef CONFIG_SERIAL_MVEBU_CONSOLE
-	.cons           = &mvebu_uart_console,
+	.cons			= &mvebu_uart_console,
 #endif
 };
 
@@ -908,7 +877,7 @@ static int uart_num_counter;
 static int mvebu_uart_probe(struct platform_device *pdev)
 {
 	const struct of_device_id *match = of_match_device(mvebu_uart_of_match,
-	                                   &pdev->dev);
+							   &pdev->dev);
 	struct uart_port *port;
 	struct mvebu_uart *mvuart;
 	struct resource *reg;
@@ -916,15 +885,14 @@ static int mvebu_uart_probe(struct platform_device *pdev)
 
 	/* Assume that all UART ports have a DT alias or none has */
 	id = of_alias_get_id(pdev->dev.of_node, "serial");
-	if (!pdev->dev.of_node || id < 0) {
+	if (!pdev->dev.of_node || id < 0)
 		pdev->id = uart_num_counter++;
-	} else {
+	else
 		pdev->id = id;
-	}
 
 	if (pdev->id >= MVEBU_NR_UARTS) {
 		dev_err(&pdev->dev, "cannot have more than %d UART ports\n",
-		        MVEBU_NR_UARTS);
+			MVEBU_NR_UARTS);
 		return -EINVAL;
 	}
 
@@ -951,16 +919,14 @@ static int mvebu_uart_probe(struct platform_device *pdev)
 	port->irqflags   = 0;
 
 	port->membase = devm_platform_get_and_ioremap_resource(pdev, 0, &reg);
-	if (IS_ERR(port->membase)) {
+	if (IS_ERR(port->membase))
 		return PTR_ERR(port->membase);
-	}
 	port->mapbase    = reg->start;
 
 	mvuart = devm_kzalloc(&pdev->dev, sizeof(struct mvebu_uart),
-	                      GFP_KERNEL);
-	if (!mvuart) {
+			      GFP_KERNEL);
+	if (!mvuart)
 		return -ENOMEM;
-	}
 
 	/* Get controller data depending on the compatible string */
 	mvuart->data = (struct mvebu_uart_driver_data *)match->data;
@@ -972,27 +938,24 @@ static int mvebu_uart_probe(struct platform_device *pdev)
 	/* Get fixed clock frequency */
 	mvuart->clk = devm_clk_get(&pdev->dev, NULL);
 	if (IS_ERR(mvuart->clk)) {
-		if (PTR_ERR(mvuart->clk) == -EPROBE_DEFER) {
+		if (PTR_ERR(mvuart->clk) == -EPROBE_DEFER)
 			return PTR_ERR(mvuart->clk);
-		}
 
 		if (IS_EXTENDED(port)) {
 			dev_err(&pdev->dev, "unable to get UART clock\n");
 			return PTR_ERR(mvuart->clk);
 		}
 	} else {
-		if (!clk_prepare_enable(mvuart->clk)) {
+		if (!clk_prepare_enable(mvuart->clk))
 			port->uartclk = clk_get_rate(mvuart->clk);
-		}
 	}
 
 	/* Manage interrupts */
 	if (platform_irq_count(pdev) == 1) {
 		/* Old bindings: no name on the single unamed UART0 IRQ */
 		irq = platform_get_irq(pdev, 0);
-		if (irq < 0) {
+		if (irq < 0)
 			return irq;
-		}
 
 		mvuart->irq[UART_IRQ_SUM] = irq;
 	} else {
@@ -1002,16 +965,14 @@ static int mvebu_uart_probe(struct platform_device *pdev)
 		 * uart-sum of UART0 port.
 		 */
 		irq = platform_get_irq_byname(pdev, "uart-rx");
-		if (irq < 0) {
+		if (irq < 0)
 			return irq;
-		}
 
 		mvuart->irq[UART_RX_IRQ] = irq;
 
 		irq = platform_get_irq_byname(pdev, "uart-tx");
-		if (irq < 0) {
+		if (irq < 0)
 			return irq;
-		}
 
 		mvuart->irq[UART_TX_IRQ] = irq;
 	}
@@ -1052,23 +1013,23 @@ static struct mvebu_uart_driver_data uart_ext_driver_data = {
 static const struct of_device_id mvebu_uart_of_match[] = {
 	{
 		.compatible = "marvell,armada-3700-uart",
-		.data = (void *) &uart_std_driver_data,
+		.data = (void *)&uart_std_driver_data,
 	},
 	{
 		.compatible = "marvell,armada-3700-uart-ext",
-		.data = (void *) &uart_ext_driver_data,
+		.data = (void *)&uart_ext_driver_data,
 	},
 	{}
 };
 
 static struct platform_driver mvebu_uart_platform_driver = {
-	.probe  = mvebu_uart_probe,
-	.driver = {
+	.probe	= mvebu_uart_probe,
+	.driver	= {
 		.name  = "mvebu-uart",
 		.of_match_table = of_match_ptr(mvebu_uart_of_match),
 		.suppress_bind_attrs = true,
 #if defined(CONFIG_PM)
-		.pm = &mvebu_uart_pm_ops,
+		.pm	= &mvebu_uart_pm_ops,
 #endif /* CONFIG_PM */
 	},
 };
@@ -1096,13 +1057,13 @@ struct mvebu_uart_clock_base {
 
 #define to_uart_clock(hw) container_of(hw, struct mvebu_uart_clock, clk_hw)
 #define to_uart_clock_base(uart_clock) container_of(uart_clock, \
-        struct mvebu_uart_clock_base, clocks[uart_clock->clock_idx])
+	struct mvebu_uart_clock_base, clocks[uart_clock->clock_idx])
 
 static int mvebu_uart_clock_prepare(struct clk_hw *hw)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 	unsigned int prev_clock_idx, prev_clock_rate, prev_d1d2;
 	unsigned int parent_clock_idx, parent_clock_rate;
 	unsigned long flags;
@@ -1148,7 +1109,7 @@ static int mvebu_uart_clock_prepare(struct clk_hw *hw)
 	if (val & CLK_NO_XTAL) {
 		prev_clock_idx = (val >> CLK_TBG_SEL_SHIFT) & CLK_TBG_SEL_MASK;
 		prev_d1d2 = ((val >> CLK_TBG_DIV1_SHIFT) & CLK_TBG_DIV1_MASK) *
-		            ((val >> CLK_TBG_DIV2_SHIFT) & CLK_TBG_DIV2_MASK);
+			    ((val >> CLK_TBG_DIV2_SHIFT) & CLK_TBG_DIV2_MASK);
 	} else {
 		prev_clock_idx = PARENT_CLOCK_XTAL;
 		prev_d1d2 = 1;
@@ -1160,13 +1121,12 @@ static int mvebu_uart_clock_prepare(struct clk_hw *hw)
 	/* Recalculate UART1 divisor so UART1 baudrate does not change */
 	if (prev_clock_rate) {
 		divisor = DIV_U64_ROUND_CLOSEST((u64)(val & BRDV_BAUD_MASK) *
-		                                parent_clock_rate * prev_d1d2,
-		                                prev_clock_rate * d1 * d2);
-		if (divisor < 1) {
+						parent_clock_rate * prev_d1d2,
+						prev_clock_rate * d1 * d2);
+		if (divisor < 1)
 			divisor = 1;
-		} else if (divisor > BRDV_BAUD_MAX) {
+		else if (divisor > BRDV_BAUD_MAX)
 			divisor = BRDV_BAUD_MAX;
-		}
 		val = (val & ~BRDV_BAUD_MASK) | divisor;
 	}
 
@@ -1190,13 +1150,12 @@ static int mvebu_uart_clock_prepare(struct clk_hw *hw)
 	if (prev_clock_rate) {
 		val = readl(uart_clock_base->reg2);
 		divisor = DIV_U64_ROUND_CLOSEST((u64)(val & BRDV_BAUD_MASK) *
-		                                parent_clock_rate * prev_d1d2,
-		                                prev_clock_rate * d1 * d2);
-		if (divisor < 1) {
+						parent_clock_rate * prev_d1d2,
+						prev_clock_rate * d1 * d2);
+		if (divisor < 1)
 			divisor = 1;
-		} else if (divisor > BRDV_BAUD_MAX) {
+		else if (divisor > BRDV_BAUD_MAX)
 			divisor = BRDV_BAUD_MAX;
-		}
 		val = (val & ~BRDV_BAUD_MASK) | divisor;
 		writel(val, uart_clock_base->reg2);
 	}
@@ -1212,7 +1171,7 @@ static int mvebu_uart_clock_enable(struct clk_hw *hw)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 	unsigned long flags;
 	u32 val;
 
@@ -1220,11 +1179,10 @@ static int mvebu_uart_clock_enable(struct clk_hw *hw)
 
 	val = readl(uart_clock_base->reg1);
 
-	if (uart_clock->clock_idx == 0) {
+	if (uart_clock->clock_idx == 0)
 		val &= ~UART1_CLK_DIS;
-	} else {
+	else
 		val &= ~UART2_CLK_DIS;
-	}
 
 	writel(val, uart_clock_base->reg1);
 
@@ -1237,7 +1195,7 @@ static void mvebu_uart_clock_disable(struct clk_hw *hw)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 	unsigned long flags;
 	u32 val;
 
@@ -1245,11 +1203,10 @@ static void mvebu_uart_clock_disable(struct clk_hw *hw)
 
 	val = readl(uart_clock_base->reg1);
 
-	if (uart_clock->clock_idx == 0) {
+	if (uart_clock->clock_idx == 0)
 		val |= UART1_CLK_DIS;
-	} else {
+	else
 		val |= UART2_CLK_DIS;
-	}
 
 	writel(val, uart_clock_base->reg1);
 
@@ -1260,23 +1217,22 @@ static int mvebu_uart_clock_is_enabled(struct clk_hw *hw)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 	u32 val;
 
 	val = readl(uart_clock_base->reg1);
 
-	if (uart_clock->clock_idx == 0) {
+	if (uart_clock->clock_idx == 0)
 		return !(val & UART1_CLK_DIS);
-	} else {
+	else
 		return !(val & UART2_CLK_DIS);
-	}
 }
 
 static int mvebu_uart_clock_save_context(struct clk_hw *hw)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 	unsigned long flags;
 
 	spin_lock_irqsave(&mvebu_uart_lock, flags);
@@ -1291,7 +1247,7 @@ static void mvebu_uart_clock_restore_context(struct clk_hw *hw)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 	unsigned long flags;
 
 	spin_lock_irqsave(&mvebu_uart_lock, flags);
@@ -1301,27 +1257,27 @@ static void mvebu_uart_clock_restore_context(struct clk_hw *hw)
 }
 
 static unsigned long mvebu_uart_clock_recalc_rate(struct clk_hw *hw,
-        unsigned long parent_rate)
+						  unsigned long parent_rate)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 
 	return parent_rate / uart_clock_base->div;
 }
 
 static long mvebu_uart_clock_round_rate(struct clk_hw *hw, unsigned long rate,
-                                        unsigned long *parent_rate)
+					unsigned long *parent_rate)
 {
 	struct mvebu_uart_clock *uart_clock = to_uart_clock(hw);
 	struct mvebu_uart_clock_base *uart_clock_base =
-	    to_uart_clock_base(uart_clock);
+						to_uart_clock_base(uart_clock);
 
 	return *parent_rate / uart_clock_base->div;
 }
 
 static int mvebu_uart_clock_set_rate(struct clk_hw *hw, unsigned long rate,
-                                     unsigned long parent_rate)
+				     unsigned long parent_rate)
 {
 	/*
 	 * We must report success but we can do so unconditionally because
@@ -1345,9 +1301,9 @@ static const struct clk_ops mvebu_uart_clock_ops = {
 };
 
 static int mvebu_uart_clock_register(struct device *dev,
-                                     struct mvebu_uart_clock *uart_clock,
-                                     const char *name,
-                                     const char *parent_name)
+				     struct mvebu_uart_clock *uart_clock,
+				     const char *name,
+				     const char *parent_name)
 {
 	struct clk_init_data init = { };
 
@@ -1366,9 +1322,8 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 {
 	static const char *const uart_clk_names[] = { "uart_1", "uart_2" };
 	static const char *const parent_clk_names[] = { "TBG-A-P", "TBG-B-P",
-	                                                "TBG-A-S", "TBG-B-S",
-	                                                "xtal"
-	                                              };
+							"TBG-A-S", "TBG-B-S",
+							"xtal" };
 	struct clk *parent_clks[ARRAY_SIZE(parent_clk_names)];
 	struct mvebu_uart_clock_base *uart_clock_base;
 	struct clk_hw_onecell_data *hw_clk_data;
@@ -1379,16 +1334,15 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 	unsigned int d1, d2;
 
 	BUILD_BUG_ON(ARRAY_SIZE(uart_clk_names) !=
-	             ARRAY_SIZE(uart_clock_base->clocks));
+		     ARRAY_SIZE(uart_clock_base->clocks));
 	BUILD_BUG_ON(ARRAY_SIZE(parent_clk_names) !=
-	             ARRAY_SIZE(uart_clock_base->parent_rates));
+		     ARRAY_SIZE(uart_clock_base->parent_rates));
 
 	uart_clock_base = devm_kzalloc(dev,
-	                               sizeof(*uart_clock_base),
-	                               GFP_KERNEL);
-	if (!uart_clock_base) {
+				       sizeof(*uart_clock_base),
+				       GFP_KERNEL);
+	if (!uart_clock_base)
 		return -ENOMEM;
-	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!res) {
@@ -1405,10 +1359,9 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 	 * by a lock shared between clock and UART driver.
 	 */
 	uart_clock_base->reg1 = devm_ioremap(dev, res->start,
-	                                     resource_size(res));
-	if (!uart_clock_base->reg1) {
+					     resource_size(res));
+	if (!uart_clock_base->reg1)
 		return -ENOMEM;
-	}
 
 	res = platform_get_resource(pdev, IORESOURCE_MEM, 1);
 	if (!res) {
@@ -1425,18 +1378,16 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 	 * by lock shared between clock and UART driver.
 	 */
 	uart_clock_base->reg2 = devm_ioremap(dev, res->start,
-	                                     resource_size(res));
-	if (!uart_clock_base->reg2) {
+					     resource_size(res));
+	if (!uart_clock_base->reg2)
 		return -ENOMEM;
-	}
 
 	hw_clk_data = devm_kzalloc(dev,
-	                           struct_size(hw_clk_data, hws,
-	                                       ARRAY_SIZE(uart_clk_names)),
-	                           GFP_KERNEL);
-	if (!hw_clk_data) {
+				   struct_size(hw_clk_data, hws,
+					       ARRAY_SIZE(uart_clk_names)),
+				   GFP_KERNEL);
+	if (!hw_clk_data)
 		return -ENOMEM;
-	}
 
 	hw_clk_data->num = ARRAY_SIZE(uart_clk_names);
 	for (i = 0; i < ARRAY_SIZE(uart_clk_names); i++) {
@@ -1449,18 +1400,17 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 	for (i = 0; i < ARRAY_SIZE(parent_clk_names); i++) {
 		parent_clks[i] = devm_clk_get(dev, parent_clk_names[i]);
 		if (IS_ERR(parent_clks[i])) {
-			if (PTR_ERR(parent_clks[i]) == -EPROBE_DEFER) {
+			if (PTR_ERR(parent_clks[i]) == -EPROBE_DEFER)
 				return -EPROBE_DEFER;
-			}
 			dev_warn(dev, "Couldn't get the parent clock %s: %ld\n",
-			         parent_clk_names[i], PTR_ERR(parent_clks[i]));
+				 parent_clk_names[i], PTR_ERR(parent_clks[i]));
 			continue;
 		}
 
 		ret = clk_prepare_enable(parent_clks[i]);
 		if (ret) {
 			dev_warn(dev, "Couldn't enable parent clock %s: %d\n",
-			         parent_clk_names[i], ret);
+				 parent_clk_names[i], ret);
 			continue;
 		}
 		rate = clk_get_rate(parent_clks[i]);
@@ -1472,20 +1422,18 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 			 * still can provide 9600 baudrate.
 			 */
 			d1 = DIV_ROUND_UP(rate, 9600 * OSAMP_MAX_DIVISOR *
-			                  BRDV_BAUD_MAX);
-			if (d1 < 1) {
+					  BRDV_BAUD_MAX);
+			if (d1 < 1)
 				d1 = 1;
-			} else if (d1 > CLK_TBG_DIV1_MAX) {
+			else if (d1 > CLK_TBG_DIV1_MAX)
 				d1 = CLK_TBG_DIV1_MAX;
-			}
 
 			d2 = DIV_ROUND_UP(rate, 9600 * OSAMP_MAX_DIVISOR *
-			                  BRDV_BAUD_MAX * d1);
-			if (d2 < 1) {
+					  BRDV_BAUD_MAX * d1);
+			if (d2 < 1)
 				d2 = 1;
-			} else if (d2 > CLK_TBG_DIV2_MAX) {
+			else if (d2 > CLK_TBG_DIV2_MAX)
 				d2 = CLK_TBG_DIV2_MAX;
-			}
 		} else {
 			/*
 			 * When UART clock uses XTAL clock as a source then it
@@ -1495,9 +1443,8 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 		}
 
 		/* Skip clock source which cannot provide 9600 baudrate */
-		if (rate > 9600 * OSAMP_MAX_DIVISOR * BRDV_BAUD_MAX * d1 * d2) {
+		if (rate > 9600 * OSAMP_MAX_DIVISOR * BRDV_BAUD_MAX * d1 * d2)
 			continue;
-		}
 
 		/*
 		 * Choose TBG clock source with the smallest divisors. Use XTAL
@@ -1512,9 +1459,8 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 	}
 
 	for (i = 0; i < ARRAY_SIZE(parent_clk_names); i++) {
-		if (i == parent_clk_idx || IS_ERR(parent_clks[i])) {
+		if (i == parent_clk_idx || IS_ERR(parent_clks[i]))
 			continue;
-		}
 		clk_disable_unprepare(parent_clks[i]);
 		devm_clk_put(dev, parent_clks[i]);
 	}
@@ -1528,22 +1474,22 @@ static int mvebu_uart_clock_probe(struct platform_device *pdev)
 	uart_clock_base->div = div;
 
 	dev_notice(dev, "Using parent clock %s as base UART clock\n",
-	           __clk_get_name(parent_clks[parent_clk_idx]));
+		   __clk_get_name(parent_clks[parent_clk_idx]));
 
 	for (i = 0; i < ARRAY_SIZE(uart_clk_names); i++) {
 		ret = mvebu_uart_clock_register(dev,
-		                                &uart_clock_base->clocks[i],
-		                                uart_clk_names[i],
-		                                __clk_get_name(parent_clks[parent_clk_idx]));
+				&uart_clock_base->clocks[i],
+				uart_clk_names[i],
+				__clk_get_name(parent_clks[parent_clk_idx]));
 		if (ret) {
 			dev_err(dev, "Can't register UART clock %d: %d\n",
-			        i, ret);
+				i, ret);
 			return ret;
 		}
 	}
 
 	return devm_of_clk_add_hw_provider(dev, of_clk_hw_onecell_get,
-	                                   hw_clk_data);
+					   hw_clk_data);
 }
 
 static const struct of_device_id mvebu_uart_clock_of_match[] = {
@@ -1553,8 +1499,8 @@ static const struct of_device_id mvebu_uart_clock_of_match[] = {
 
 static struct platform_driver mvebu_uart_clock_platform_driver = {
 	.probe = mvebu_uart_clock_probe,
-	.driver     = {
-		.name   = "mvebu-uart-clock",
+	.driver		= {
+		.name	= "mvebu-uart-clock",
 		.of_match_table = mvebu_uart_clock_of_match,
 	},
 };
@@ -1564,9 +1510,8 @@ static int __init mvebu_uart_init(void)
 	int ret;
 
 	ret = uart_register_driver(&mvebu_uart_driver);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = platform_driver_register(&mvebu_uart_clock_platform_driver);
 	if (ret) {

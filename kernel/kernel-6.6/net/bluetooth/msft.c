@@ -150,10 +150,7 @@ static bool read_supported_features(struct hci_dev *hdev,
 
 	skb = __hci_cmd_sync(hdev, hdev->msft_opcode, sizeof(cp), &cp,
 			     HCI_CMD_TIMEOUT);
-	if (IS_ERR_OR_NULL(skb)) {
-		if (!skb)
-			skb = ERR_PTR(-EIO);
-
+	if (IS_ERR(skb)) {
 		bt_dev_err(hdev, "Failed to read MSFT supported features (%ld)",
 			   PTR_ERR(skb));
 		return false;
@@ -168,6 +165,11 @@ static bool read_supported_features(struct hci_dev *hdev,
 
 	if (rp->sub_opcode != MSFT_OP_READ_SUPPORTED_FEATURES)
 		goto failed;
+
+	if (skb->len < sizeof(*rp) + rp->evt_prefix_len) {
+		bt_dev_err(hdev, "MSFT event prefix length mismatch");
+		goto failed;
+	}
 
 	if (rp->evt_prefix_len > 0) {
 		msft->evt_prefix = kmemdup(rp->evt_prefix, rp->evt_prefix_len,
@@ -295,7 +297,7 @@ static int msft_le_monitor_advertisement_cb(struct hci_dev *hdev, u16 opcode,
 	monitor->state = ADV_MONITOR_STATE_OFFLOADED;
 
 unlock:
-	if (status)
+	if (status && msft->resuming)
 		hci_free_adv_monitor(hdev, monitor);
 
 	hci_dev_unlock(hdev);
@@ -353,7 +355,7 @@ static void msft_remove_addr_filters_sync(struct hci_dev *hdev, u8 handle)
 
 		skb = __hci_cmd_sync(hdev, hdev->msft_opcode, sizeof(cp), &cp,
 				     HCI_CMD_TIMEOUT);
-		if (IS_ERR_OR_NULL(skb)) {
+		if (IS_ERR(skb)) {
 			kfree(address_filter);
 			continue;
 		}
@@ -442,11 +444,8 @@ static int msft_remove_monitor_sync(struct hci_dev *hdev,
 
 	skb = __hci_cmd_sync(hdev, hdev->msft_opcode, sizeof(cp), &cp,
 			     HCI_CMD_TIMEOUT);
-	if (IS_ERR_OR_NULL(skb)) {
-		if (!skb)
-			return -EIO;
+	if (IS_ERR(skb))
 		return PTR_ERR(skb);
-	}
 
 	return msft_le_cancel_monitor_advertisement_cb(hdev, hdev->msft_opcode,
 						       monitor, skb);
@@ -559,7 +558,7 @@ static int msft_add_monitor_sync(struct hci_dev *hdev,
 	skb = __hci_cmd_sync(hdev, hdev->msft_opcode, total_size, cp,
 			     HCI_CMD_TIMEOUT);
 
-	if (IS_ERR_OR_NULL(skb)) {
+	if (IS_ERR(skb)) {
 		err = PTR_ERR(skb);
 		goto out_free;
 	}
@@ -740,10 +739,10 @@ static int msft_cancel_address_filter_sync(struct hci_dev *hdev, void *data)
 
 	skb = __hci_cmd_sync(hdev, hdev->msft_opcode, sizeof(cp), &cp,
 			     HCI_CMD_TIMEOUT);
-	if (IS_ERR_OR_NULL(skb)) {
+	if (IS_ERR(skb)) {
 		bt_dev_err(hdev, "MSFT: Failed to cancel address (%pMR) filter",
 			   &address_filter->bdaddr);
-		err = -EIO;
+		err = PTR_ERR(skb);
 		goto done;
 	}
 	kfree_skb(skb);
@@ -775,7 +774,7 @@ void msft_register(struct hci_dev *hdev)
 	mutex_init(&msft->filter_lock);
 }
 
-void msft_unregister(struct hci_dev *hdev)
+void msft_release(struct hci_dev *hdev)
 {
 	struct msft_data *msft = hdev->msft_data;
 
@@ -881,6 +880,7 @@ static int msft_add_address_filter_sync(struct hci_dev *hdev, void *data)
 		remove = true;
 		goto done;
 	}
+
 	cp->sub_opcode           = MSFT_OP_LE_MONITOR_ADVERTISEMENT;
 	cp->rssi_high		 = address_filter->rssi_high;
 	cp->rssi_low		 = address_filter->rssi_low;
@@ -893,7 +893,9 @@ static int msft_add_address_filter_sync(struct hci_dev *hdev, void *data)
 
 	skb = __hci_cmd_sync(hdev, hdev->msft_opcode, size, cp,
 			     HCI_CMD_TIMEOUT);
-	if (IS_ERR_OR_NULL(skb)) {
+	kfree(cp);
+
+	if (IS_ERR(skb)) {
 		bt_dev_err(hdev, "Failed to enable address %pMR filter",
 			   &address_filter->bdaddr);
 		skb = NULL;

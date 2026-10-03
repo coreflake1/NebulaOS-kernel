@@ -30,89 +30,89 @@
 
 #include "8250.h"
 
-#define DEFAULT_CLK_SPEED   48000000
-#define OMAP_UART_REGSHIFT  2
+#define DEFAULT_CLK_SPEED	48000000
+#define OMAP_UART_REGSHIFT	2
 
-#define UART_ERRATA_i202_MDR1_ACCESS    (1 << 0)
-#define OMAP_UART_WER_HAS_TX_WAKEUP (1 << 1)
-#define OMAP_DMA_TX_KICK        (1 << 2)
+#define UART_ERRATA_i202_MDR1_ACCESS	(1 << 0)
+#define OMAP_UART_WER_HAS_TX_WAKEUP	(1 << 1)
+#define OMAP_DMA_TX_KICK		(1 << 2)
 /*
  * See Advisory 21 in AM437x errata SPRZ408B, updated April 2015.
  * The same errata is applicable to AM335x and DRA7x processors too.
  */
-#define UART_ERRATA_CLOCK_DISABLE   (1 << 3)
-#define UART_HAS_EFR2           BIT(4)
-#define UART_HAS_RHR_IT_DIS     BIT(5)
-#define UART_RX_TIMEOUT_QUIRK       BIT(6)
-#define UART_HAS_NATIVE_RS485       BIT(7)
+#define UART_ERRATA_CLOCK_DISABLE	(1 << 3)
+#define	UART_HAS_EFR2			BIT(4)
+#define UART_HAS_RHR_IT_DIS		BIT(5)
+#define UART_RX_TIMEOUT_QUIRK		BIT(6)
+#define UART_HAS_NATIVE_RS485		BIT(7)
 
-#define OMAP_UART_FCR_RX_TRIG       6
-#define OMAP_UART_FCR_TX_TRIG       4
+#define OMAP_UART_FCR_RX_TRIG		6
+#define OMAP_UART_FCR_TX_TRIG		4
 
 /* SCR register bitmasks */
-#define OMAP_UART_SCR_RX_TRIG_GRANU1_MASK   (1 << 7)
-#define OMAP_UART_SCR_TX_TRIG_GRANU1_MASK   (1 << 6)
-#define OMAP_UART_SCR_TX_EMPTY          (1 << 3)
-#define OMAP_UART_SCR_DMAMODE_MASK      (3 << 1)
-#define OMAP_UART_SCR_DMAMODE_1         (1 << 1)
-#define OMAP_UART_SCR_DMAMODE_CTL       (1 << 0)
+#define OMAP_UART_SCR_RX_TRIG_GRANU1_MASK	(1 << 7)
+#define OMAP_UART_SCR_TX_TRIG_GRANU1_MASK	(1 << 6)
+#define OMAP_UART_SCR_TX_EMPTY			(1 << 3)
+#define OMAP_UART_SCR_DMAMODE_MASK		(3 << 1)
+#define OMAP_UART_SCR_DMAMODE_1			(1 << 1)
+#define OMAP_UART_SCR_DMAMODE_CTL		(1 << 0)
 
 /* MVR register bitmasks */
-#define OMAP_UART_MVR_SCHEME_SHIFT  30
-#define OMAP_UART_LEGACY_MVR_MAJ_MASK   0xf0
-#define OMAP_UART_LEGACY_MVR_MAJ_SHIFT  4
-#define OMAP_UART_LEGACY_MVR_MIN_MASK   0x0f
-#define OMAP_UART_MVR_MAJ_MASK      0x700
-#define OMAP_UART_MVR_MAJ_SHIFT     8
-#define OMAP_UART_MVR_MIN_MASK      0x3f
+#define OMAP_UART_MVR_SCHEME_SHIFT	30
+#define OMAP_UART_LEGACY_MVR_MAJ_MASK	0xf0
+#define OMAP_UART_LEGACY_MVR_MAJ_SHIFT	4
+#define OMAP_UART_LEGACY_MVR_MIN_MASK	0x0f
+#define OMAP_UART_MVR_MAJ_MASK		0x700
+#define OMAP_UART_MVR_MAJ_SHIFT		8
+#define OMAP_UART_MVR_MIN_MASK		0x3f
 
 /* SYSC register bitmasks */
-#define OMAP_UART_SYSC_SOFTRESET    (1 << 1)
+#define OMAP_UART_SYSC_SOFTRESET	(1 << 1)
 
 /* SYSS register bitmasks */
-#define OMAP_UART_SYSS_RESETDONE    (1 << 0)
+#define OMAP_UART_SYSS_RESETDONE	(1 << 0)
 
-#define UART_TI752_TLR_TX   0
-#define UART_TI752_TLR_RX   4
+#define UART_TI752_TLR_TX	0
+#define UART_TI752_TLR_RX	4
 
-#define TRIGGER_TLR_MASK(x) ((x & 0x3c) >> 2)
-#define TRIGGER_FCR_MASK(x) (x & 3)
+#define TRIGGER_TLR_MASK(x)	((x & 0x3c) >> 2)
+#define TRIGGER_FCR_MASK(x)	(x & 3)
 
 /* Enable XON/XOFF flow control on output */
-#define OMAP_UART_SW_TX     0x08
+#define OMAP_UART_SW_TX		0x08
 /* Enable XON/XOFF flow control on input */
-#define OMAP_UART_SW_RX     0x02
+#define OMAP_UART_SW_RX		0x02
 
-#define OMAP_UART_WER_MOD_WKUP  0x7f
-#define OMAP_UART_TX_WAKEUP_EN  (1 << 7)
+#define OMAP_UART_WER_MOD_WKUP	0x7f
+#define OMAP_UART_TX_WAKEUP_EN	(1 << 7)
 
-#define TX_TRIGGER  1
-#define RX_TRIGGER  48
+#define TX_TRIGGER	1
+#define RX_TRIGGER	48
 
-#define OMAP_UART_TCR_RESTORE(x)    ((x / 4) << 4)
-#define OMAP_UART_TCR_HALT(x)       ((x / 4) << 0)
+#define OMAP_UART_TCR_RESTORE(x)	((x / 4) << 4)
+#define OMAP_UART_TCR_HALT(x)		((x / 4) << 0)
 
-#define UART_BUILD_REVISION(x, y)   (((x) << 8) | (y))
+#define UART_BUILD_REVISION(x, y)	(((x) << 8) | (y))
 
 #define OMAP_UART_REV_46 0x0406
 #define OMAP_UART_REV_52 0x0502
 #define OMAP_UART_REV_63 0x0603
 
 /* Interrupt Enable Register 2 */
-#define UART_OMAP_IER2          0x1B
-#define UART_OMAP_IER2_RHR_IT_DIS   BIT(2)
+#define UART_OMAP_IER2			0x1B
+#define UART_OMAP_IER2_RHR_IT_DIS	BIT(2)
 
 /* Mode Definition Register 3 */
-#define UART_OMAP_MDR3          0x20
-#define UART_OMAP_MDR3_DIR_POL      BIT(3)
-#define UART_OMAP_MDR3_DIR_EN       BIT(4)
+#define UART_OMAP_MDR3			0x20
+#define UART_OMAP_MDR3_DIR_POL		BIT(3)
+#define UART_OMAP_MDR3_DIR_EN		BIT(4)
 
 /* Enhanced features register 2 */
-#define UART_OMAP_EFR2          0x23
-#define UART_OMAP_EFR2_TIMEOUT_BEHAVE   BIT(6)
+#define UART_OMAP_EFR2			0x23
+#define UART_OMAP_EFR2_TIMEOUT_BEHAVE	BIT(6)
 
 /* RX FIFO occupancy indicator */
-#define UART_OMAP_RX_LVL        0x19
+#define UART_OMAP_RX_LVL		0x19
 
 struct omap8250_priv {
 	void __iomem *membase;
@@ -165,6 +165,10 @@ static u32 uart_read(struct omap8250_priv *priv, u32 reg)
 	return readl(priv->membase + (reg << OMAP_UART_REGSHIFT));
 }
 
+/* Timeout low and High */
+#define UART_OMAP_TO_L                 0x26
+#define UART_OMAP_TO_H                 0x27
+
 /*
  * Called on runtime PM resume path from omap8250_restore_regs(), and
  * omap8250_set_mctrl().
@@ -184,11 +188,10 @@ static void __omap8250_set_mctrl(struct uart_port *port, unsigned int mctrl)
 		 */
 		lcr = serial_in(up, UART_LCR);
 		serial_out(up, UART_LCR, UART_LCR_CONF_MODE_B);
-		if ((mctrl & TIOCM_RTS) && (port->status & UPSTAT_AUTORTS)) {
+		if ((mctrl & TIOCM_RTS) && (port->status & UPSTAT_AUTORTS))
 			priv->efr |= UART_EFR_RTS;
-		} else {
+		else
 			priv->efr &= ~UART_EFR_RTS;
-		}
 		serial_out(up, UART_EFR, priv->efr);
 		serial_out(up, UART_LCR, lcr);
 	}
@@ -199,9 +202,8 @@ static void omap8250_set_mctrl(struct uart_port *port, unsigned int mctrl)
 	int err;
 
 	err = pm_runtime_resume_and_get(port->dev);
-	if (err) {
+	if (err)
 		return;
-	}
 
 	__omap8250_set_mctrl(port, mctrl);
 
@@ -219,16 +221,16 @@ static void omap8250_set_mctrl(struct uart_port *port, unsigned int mctrl)
  * give 10 times as much
  */
 static void omap_8250_mdr1_errataset(struct uart_8250_port *up,
-                                     struct omap8250_priv *priv)
+				     struct omap8250_priv *priv)
 {
 	serial_out(up, UART_OMAP_MDR1, priv->mdr1);
 	udelay(2);
 	serial_out(up, UART_FCR, up->fcr | UART_FCR_CLEAR_XMIT |
-	           UART_FCR_CLEAR_RCVR);
+			UART_FCR_CLEAR_RCVR);
 }
 
 static void omap_8250_get_divisor(struct uart_port *port, unsigned int baud,
-                                  struct omap8250_priv *priv)
+				  struct omap8250_priv *priv)
 {
 	unsigned int uartclk = port->uartclk;
 	unsigned int div_13, div_16;
@@ -244,22 +246,19 @@ static void omap_8250_get_divisor(struct uart_port *port, unsigned int baud,
 		 * would like to specify the divisor _and_ the mode then the
 		 * driver is ready and waiting for it.
 		 */
-		if (port->custom_divisor & (1 << 16)) {
+		if (port->custom_divisor & (1 << 16))
 			priv->mdr1 = UART_OMAP_MDR1_13X_MODE;
-		} else {
+		else
 			priv->mdr1 = UART_OMAP_MDR1_16X_MODE;
-		}
 		return;
 	}
 	div_13 = DIV_ROUND_CLOSEST(uartclk, 13 * baud);
 	div_16 = DIV_ROUND_CLOSEST(uartclk, 16 * baud);
 
-	if (!div_13) {
+	if (!div_13)
 		div_13 = 1;
-	}
-	if (!div_16) {
+	if (!div_16)
 		div_16 = 1;
-	}
 
 	abs_d13 = abs(baud - uartclk / 13 / div_13);
 	abs_d16 = abs(baud - uartclk / 16 / div_16);
@@ -274,14 +273,13 @@ static void omap_8250_get_divisor(struct uart_port *port, unsigned int baud,
 }
 
 static void omap8250_update_scr(struct uart_8250_port *up,
-                                struct omap8250_priv *priv)
+				struct omap8250_priv *priv)
 {
 	u8 old_scr;
 
 	old_scr = serial_in(up, UART_OMAP_SCR);
-	if (old_scr == priv->scr) {
+	if (old_scr == priv->scr)
 		return;
-	}
 
 	/*
 	 * The manual recommends not to enable the DMA mode selector in the SCR
@@ -290,24 +288,23 @@ static void omap8250_update_scr(struct uart_8250_port *up,
 	 */
 	if (priv->scr & OMAP_UART_SCR_DMAMODE_MASK)
 		serial_out(up, UART_OMAP_SCR,
-		           priv->scr & ~OMAP_UART_SCR_DMAMODE_MASK);
+			   priv->scr & ~OMAP_UART_SCR_DMAMODE_MASK);
 	serial_out(up, UART_OMAP_SCR, priv->scr);
 }
 
 static void omap8250_update_mdr1(struct uart_8250_port *up,
-                                 struct omap8250_priv *priv)
+				 struct omap8250_priv *priv)
 {
-	if (priv->habit & UART_ERRATA_i202_MDR1_ACCESS) {
+	if (priv->habit & UART_ERRATA_i202_MDR1_ACCESS)
 		omap_8250_mdr1_errataset(up, priv);
-	} else {
+	else
 		serial_out(up, UART_OMAP_MDR1, priv->mdr1);
-	}
 }
 
 static void omap8250_restore_regs(struct uart_8250_port *up)
 {
 	struct omap8250_priv *priv = up->port.private_data;
-	struct uart_8250_dma    *dma = up->dma;
+	struct uart_8250_dma	*dma = up->dma;
 	u8 mcr = serial8250_in_MCR(up);
 
 	/* Port locked to synchronize UART_IER access against the console. */
@@ -336,10 +333,10 @@ static void omap8250_restore_regs(struct uart_8250_port *up)
 	serial_out(up, UART_LCR, UART_LCR_CONF_MODE_B);
 
 	serial_out(up, UART_TI752_TCR, OMAP_UART_TCR_RESTORE(16) |
-	           OMAP_UART_TCR_HALT(52));
+			OMAP_UART_TCR_HALT(52));
 	serial_out(up, UART_TI752_TLR,
-	           TRIGGER_TLR_MASK(priv->tx_trigger) << UART_TI752_TLR_TX |
-	           TRIGGER_TLR_MASK(priv->rx_trigger) << UART_TI752_TLR_RX);
+		   TRIGGER_TLR_MASK(priv->tx_trigger) << UART_TI752_TLR_TX |
+		   TRIGGER_TLR_MASK(priv->rx_trigger) << UART_TI752_TLR_RX);
 
 	serial_out(up, UART_LCR, 0);
 
@@ -367,9 +364,8 @@ static void omap8250_restore_regs(struct uart_8250_port *up)
 	serial_out(up, UART_OMAP_MDR3, priv->mdr3);
 
 	if (up->port.rs485.flags & SER_RS485_ENABLED &&
-	    up->port.rs485_config == serial8250_em485_config) {
+	    up->port.rs485_config == serial8250_em485_config)
 		serial8250_em485_stop_tx(up);
-	}
 }
 
 /*
@@ -377,8 +373,8 @@ static void omap8250_restore_regs(struct uart_8250_port *up)
  * some differences in how we want to handle flow control.
  */
 static void omap_8250_set_termios(struct uart_port *port,
-                                  struct ktermios *termios,
-                                  const struct ktermios *old)
+				  struct ktermios *termios,
+				  const struct ktermios *old)
 {
 	struct uart_8250_port *up = up_to_u8250p(port);
 	struct omap8250_priv *priv = up->port.private_data;
@@ -387,25 +383,21 @@ static void omap_8250_set_termios(struct uart_port *port,
 
 	cval = UART_LCR_WLEN(tty_get_char_size(termios->c_cflag));
 
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		cval |= UART_LCR_STOP;
-	}
-	if (termios->c_cflag & PARENB) {
+	if (termios->c_cflag & PARENB)
 		cval |= UART_LCR_PARITY;
-	}
-	if (!(termios->c_cflag & PARODD)) {
+	if (!(termios->c_cflag & PARODD))
 		cval |= UART_LCR_EPAR;
-	}
-	if (termios->c_cflag & CMSPAR) {
+	if (termios->c_cflag & CMSPAR)
 		cval |= UART_LCR_SPAR;
-	}
 
 	/*
 	 * Ask the core to calculate the divisor for us.
 	 */
 	baud = uart_get_baud_rate(port, termios, old,
-	                          port->uartclk / 16 / UART_DIV_MAX,
-	                          port->uartclk / 13);
+				  port->uartclk / 16 / UART_DIV_MAX,
+				  port->uartclk / 13);
 	omap_8250_get_divisor(port, baud, priv);
 
 	/*
@@ -421,45 +413,39 @@ static void omap_8250_set_termios(struct uart_port *port,
 	uart_update_timeout(port, termios->c_cflag, baud);
 
 	up->port.read_status_mask = UART_LSR_OE | UART_LSR_THRE | UART_LSR_DR;
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		up->port.read_status_mask |= UART_LSR_FE | UART_LSR_PE;
-	}
-	if (termios->c_iflag & (IGNBRK | PARMRK)) {
+	if (termios->c_iflag & (IGNBRK | PARMRK))
 		up->port.read_status_mask |= UART_LSR_BI;
-	}
 
 	/*
 	 * Characters to ignore
 	 */
 	up->port.ignore_status_mask = 0;
-	if (termios->c_iflag & IGNPAR) {
+	if (termios->c_iflag & IGNPAR)
 		up->port.ignore_status_mask |= UART_LSR_PE | UART_LSR_FE;
-	}
 	if (termios->c_iflag & IGNBRK) {
 		up->port.ignore_status_mask |= UART_LSR_BI;
 		/*
 		 * If we're ignoring parity and break indicators,
 		 * ignore overruns too (for real raw support).
 		 */
-		if (termios->c_iflag & IGNPAR) {
+		if (termios->c_iflag & IGNPAR)
 			up->port.ignore_status_mask |= UART_LSR_OE;
-		}
 	}
 
 	/*
 	 * ignore all characters if CREAD is not set
 	 */
-	if ((termios->c_cflag & CREAD) == 0) {
+	if ((termios->c_cflag & CREAD) == 0)
 		up->port.ignore_status_mask |= UART_LSR_DR;
-	}
 
 	/*
 	 * Modem status interrupts
 	 */
 	up->ier &= ~UART_IER_MSI;
-	if (UART_ENABLE_MS(&up->port, termios->c_cflag)) {
+	if (UART_ENABLE_MS(&up->port, termios->c_cflag))
 		up->ier |= UART_IER_MSI;
-	}
 
 	up->lcr = cval;
 	/* Up to here it was mostly serial8250_do_set_termios() */
@@ -486,11 +472,11 @@ static void omap_8250_set_termios(struct uart_port *port,
 	up->fcr |= TRIGGER_FCR_MASK(priv->rx_trigger) << OMAP_UART_FCR_RX_TRIG;
 
 	priv->scr = OMAP_UART_SCR_RX_TRIG_GRANU1_MASK | OMAP_UART_SCR_TX_EMPTY |
-	            OMAP_UART_SCR_TX_TRIG_GRANU1_MASK;
+		OMAP_UART_SCR_TX_TRIG_GRANU1_MASK;
 
 	if (up->dma)
 		priv->scr |= OMAP_UART_SCR_DMAMODE_1 |
-		             OMAP_UART_SCR_DMAMODE_CTL;
+			OMAP_UART_SCR_DMAMODE_CTL;
 
 	priv->xon = termios->c_cc[VSTART];
 	priv->xoff = termios->c_cc[VSTOP];
@@ -504,7 +490,7 @@ static void omap_8250_set_termios(struct uart_port *port,
 		/* Enable AUTOCTS (autoRTS is enabled when RTS is raised) */
 		up->port.status |= UPSTAT_AUTOCTS | UPSTAT_AUTORTS;
 		priv->efr |= UART_EFR_CTS;
-	} else  if (up->port.flags & UPF_SOFT_FLOW) {
+	} else	if (up->port.flags & UPF_SOFT_FLOW) {
 		/*
 		 * OMAP rx s/w flow control is borked; the transmitter remains
 		 * stuck off even if rx flow control is subsequently disabled
@@ -533,14 +519,13 @@ static void omap_8250_set_termios(struct uart_port *port,
 	schedule_work(&priv->qos_work);
 
 	/* Don't rewrite B0 */
-	if (tty_termios_baud_rate(termios)) {
+	if (tty_termios_baud_rate(termios))
 		tty_termios_encode_baud_rate(termios, baud, baud);
-	}
 }
 
 /* same as 8250 except that we may have extra flow bits set in EFR */
 static void omap_8250_pm(struct uart_port *port, unsigned int state,
-                         unsigned int oldstate)
+			 unsigned int oldstate)
 {
 	struct uart_8250_port *up = up_to_u8250p(port);
 	u8 efr;
@@ -567,7 +552,7 @@ static void omap_8250_pm(struct uart_port *port, unsigned int state,
 }
 
 static void omap_serial_fill_features_erratas(struct uart_8250_port *up,
-        struct omap8250_priv *priv)
+					      struct omap8250_priv *priv)
 {
 	static const struct soc_device_attribute k3_soc_devices[] = {
 		{ .family = "AM65X",  },
@@ -583,43 +568,43 @@ static void omap_serial_fill_features_erratas(struct uart_8250_port *up,
 	scheme = mvr >> OMAP_UART_MVR_SCHEME_SHIFT;
 
 	switch (scheme) {
-		case 0: /* Legacy Scheme: OMAP2/3 */
-			/* MINOR_REV[0:4], MAJOR_REV[4:7] */
-			major = (mvr & OMAP_UART_LEGACY_MVR_MAJ_MASK) >>
-			        OMAP_UART_LEGACY_MVR_MAJ_SHIFT;
-			minor = (mvr & OMAP_UART_LEGACY_MVR_MIN_MASK);
-			break;
-		case 1:
-			/* New Scheme: OMAP4+ */
-			/* MINOR_REV[0:5], MAJOR_REV[8:10] */
-			major = (mvr & OMAP_UART_MVR_MAJ_MASK) >>
-			        OMAP_UART_MVR_MAJ_SHIFT;
-			minor = (mvr & OMAP_UART_MVR_MIN_MASK);
-			break;
-		default:
-			dev_warn(up->port.dev,
-			         "Unknown revision, defaulting to highest\n");
-			/* highest possible revision */
-			major = 0xff;
-			minor = 0xff;
+	case 0: /* Legacy Scheme: OMAP2/3 */
+		/* MINOR_REV[0:4], MAJOR_REV[4:7] */
+		major = (mvr & OMAP_UART_LEGACY_MVR_MAJ_MASK) >>
+			OMAP_UART_LEGACY_MVR_MAJ_SHIFT;
+		minor = (mvr & OMAP_UART_LEGACY_MVR_MIN_MASK);
+		break;
+	case 1:
+		/* New Scheme: OMAP4+ */
+		/* MINOR_REV[0:5], MAJOR_REV[8:10] */
+		major = (mvr & OMAP_UART_MVR_MAJ_MASK) >>
+			OMAP_UART_MVR_MAJ_SHIFT;
+		minor = (mvr & OMAP_UART_MVR_MIN_MASK);
+		break;
+	default:
+		dev_warn(up->port.dev,
+			 "Unknown revision, defaulting to highest\n");
+		/* highest possible revision */
+		major = 0xff;
+		minor = 0xff;
 	}
 	/* normalize revision for the driver */
 	revision = UART_BUILD_REVISION(major, minor);
 
 	switch (revision) {
-		case OMAP_UART_REV_46:
-			priv->habit |= UART_ERRATA_i202_MDR1_ACCESS;
-			break;
-		case OMAP_UART_REV_52:
-			priv->habit |= UART_ERRATA_i202_MDR1_ACCESS |
-			               OMAP_UART_WER_HAS_TX_WAKEUP;
-			break;
-		case OMAP_UART_REV_63:
-			priv->habit |= UART_ERRATA_i202_MDR1_ACCESS |
-			               OMAP_UART_WER_HAS_TX_WAKEUP;
-			break;
-		default:
-			break;
+	case OMAP_UART_REV_46:
+		priv->habit |= UART_ERRATA_i202_MDR1_ACCESS;
+		break;
+	case OMAP_UART_REV_52:
+		priv->habit |= UART_ERRATA_i202_MDR1_ACCESS |
+				OMAP_UART_WER_HAS_TX_WAKEUP;
+		break;
+	case OMAP_UART_REV_63:
+		priv->habit |= UART_ERRATA_i202_MDR1_ACCESS |
+			OMAP_UART_WER_HAS_TX_WAKEUP;
+		break;
+	default:
+		break;
 	}
 
 	/*
@@ -627,9 +612,8 @@ static void omap_serial_fill_features_erratas(struct uart_8250_port *up,
 	 * don't have RHR_IT_DIS bit in IER2 register. So drop to flag
 	 * to enable errata workaround.
 	 */
-	if (soc_device_match(k3_soc_devices)) {
+	if (soc_device_match(k3_soc_devices))
 		priv->habit &= ~UART_HAS_RHR_IT_DIS;
-	}
 }
 
 static void omap8250_uart_qos_work(struct work_struct *work)
@@ -641,7 +625,7 @@ static void omap8250_uart_qos_work(struct work_struct *work)
 }
 
 #ifdef CONFIG_SERIAL_8250_DMA
-	static int omap_8250_dma_handle_irq(struct uart_port *port);
+static int omap_8250_dma_handle_irq(struct uart_port *port);
 #endif
 
 static irqreturn_t omap8250_irq(int irq, void *dev_id)
@@ -666,13 +650,25 @@ static irqreturn_t omap8250_irq(int irq, void *dev_id)
 
 	/*
 	 * On K3 SoCs, it is observed that RX TIMEOUT is signalled after
-	 * FIFO has been drained, in which case a dummy read of RX FIFO
-	 * is required to clear RX TIMEOUT condition.
+	 * FIFO has been drained or erroneously.
+	 * So apply solution of Errata i2310 as mentioned in
+	 * https://www.ti.com/lit/pdf/sprz536
 	 */
 	if (priv->habit & UART_RX_TIMEOUT_QUIRK &&
 	    (iir & UART_IIR_RX_TIMEOUT) == UART_IIR_RX_TIMEOUT &&
 	    serial_port_in(port, UART_OMAP_RX_LVL) == 0) {
-		serial_port_in(port, UART_RX);
+		unsigned char efr2, timeout_h, timeout_l;
+
+		efr2 = serial_in(up, UART_OMAP_EFR2);
+		timeout_h = serial_in(up, UART_OMAP_TO_H);
+		timeout_l = serial_in(up, UART_OMAP_TO_L);
+		serial_out(up, UART_OMAP_TO_H, 0xFF);
+		serial_out(up, UART_OMAP_TO_L, 0xFF);
+		serial_out(up, UART_OMAP_EFR2, UART_OMAP_EFR2_TIMEOUT_BEHAVE);
+		serial_in(up, UART_IIR);
+		serial_out(up, UART_OMAP_EFR2, efr2);
+		serial_out(up, UART_OMAP_TO_H, timeout_h);
+		serial_out(up, UART_OMAP_TO_L, timeout_l);
 	}
 
 	/* Stop processing interrupts on input overrun */
@@ -710,9 +706,8 @@ static int omap_8250_startup(struct uart_port *port)
 
 	if (priv->wakeirq) {
 		ret = dev_pm_set_dedicated_wake_irq(port->dev, priv->wakeirq);
-		if (ret) {
+		if (ret)
 			return ret;
-		}
 	}
 
 	pm_runtime_get_sync(port->dev);
@@ -730,7 +725,7 @@ static int omap_8250_startup(struct uart_port *port)
 		ret = serial8250_request_dma(up);
 		if (ret) {
 			dev_warn_ratelimited(port->dev,
-			                     "failed to request DMA\n");
+					     "failed to request DMA\n");
 			up->dma = NULL;
 		}
 	} else {
@@ -749,9 +744,8 @@ static int omap_8250_startup(struct uart_port *port)
 
 	/* Enable module level wake up */
 	priv->wer = OMAP_UART_WER_MOD_WKUP;
-	if (priv->habit & OMAP_UART_WER_HAS_TX_WAKEUP) {
+	if (priv->habit & OMAP_UART_WER_HAS_TX_WAKEUP)
 		priv->wer |= OMAP_UART_TX_WAKEUP_EN;
-	}
 	serial_out(up, UART_OMAP_WER, priv->wer);
 
 	if (up->dma && !(priv->habit & UART_HAS_EFR2)) {
@@ -772,17 +766,15 @@ static void omap_8250_shutdown(struct uart_port *port)
 	struct uart_8250_port *up = up_to_u8250p(port);
 	struct omap8250_priv *priv = port->private_data;
 
-	flush_work(&priv->qos_work);
-	if (up->dma) {
-		omap_8250_rx_dma_flush(up);
-	}
-
 	pm_runtime_get_sync(port->dev);
 
+	flush_work(&priv->qos_work);
+	if (up->dma)
+		omap_8250_rx_dma_flush(up);
+
 	serial_out(up, UART_OMAP_WER, 0);
-	if (priv->habit & UART_HAS_EFR2) {
+	if (priv->habit & UART_HAS_EFR2)
 		serial_out(up, UART_OMAP_EFR2, 0x0);
-	}
 
 	/* Synchronize UART_IER access against the console. */
 	uart_port_lock_irq(port);
@@ -798,9 +790,8 @@ static void omap_8250_shutdown(struct uart_port *port)
 	/*
 	 * Disable break condition and FIFOs
 	 */
-	if (up->lcr & UART_LCR_SBC) {
+	if (up->lcr & UART_LCR_SBC)
 		serial_out(up, UART_LCR, up->lcr & ~UART_LCR_SBC);
-	}
 	serial_out(up, UART_FCR, UART_FCR_CLEAR_RCVR | UART_FCR_CLEAR_XMIT);
 
 	pm_runtime_mark_last_busy(port->dev);
@@ -834,9 +825,8 @@ static void omap_8250_unthrottle(struct uart_port *port)
 	/* Synchronize UART_IER access against the console. */
 	uart_port_lock_irqsave(port, &flags);
 	priv->throttled = false;
-	if (up->dma) {
+	if (up->dma)
 		up->dma->rx_dma(up);
-	}
 	up->ier |= UART_IER_RLSI | UART_IER_RDI;
 	port->read_status_mask |= UART_LSR_DR;
 	serial_out(up, UART_IER, up->ier);
@@ -847,8 +837,8 @@ static void omap_8250_unthrottle(struct uart_port *port)
 }
 
 static int omap8250_rs485_config(struct uart_port *port,
-                                 struct ktermios *termios,
-                                 struct serial_rs485 *rs485)
+				 struct ktermios *termios,
+				 struct serial_rs485 *rs485)
 {
 	struct omap8250_priv *priv = port->private_data;
 	struct uart_8250_port *up = up_to_u8250p(port);
@@ -866,11 +856,10 @@ static int omap8250_rs485_config(struct uart_port *port,
 	 * of the AM65 TRM:  https://www.ti.com/lit/ug/spruid7e/spruid7e.pdf
 	 */
 	if (priv->quot) {
-		if (priv->mdr1 == UART_OMAP_MDR1_16X_MODE) {
+		if (priv->mdr1 == UART_OMAP_MDR1_16X_MODE)
 			baud = port->uartclk / (16 * priv->quot);
-		} else {
+		else
 			baud = port->uartclk / (13 * priv->quot);
-		}
 
 		fixed_delay_rts_after_send  = 3 * MSEC_PER_SEC / baud;
 		fixed_delay_rts_before_send = 1 * MSEC_PER_SEC / baud;
@@ -896,21 +885,19 @@ static int omap8250_rs485_config(struct uart_port *port,
 	rs485->delay_rts_after_send  = fixed_delay_rts_after_send;
 	rs485->delay_rts_before_send = fixed_delay_rts_before_send;
 
-	if (rs485->flags & SER_RS485_ENABLED) {
+	if (rs485->flags & SER_RS485_ENABLED)
 		priv->mdr3 |= UART_OMAP_MDR3_DIR_EN;
-	} else {
+	else
 		priv->mdr3 &= ~UART_OMAP_MDR3_DIR_EN;
-	}
 
 	/*
 	 * Retain same polarity semantics as RS485 software emulation,
 	 * i.e. SER_RS485_RTS_ON_SEND means driving RTS low on send.
 	 */
-	if (rs485->flags & SER_RS485_RTS_ON_SEND) {
+	if (rs485->flags & SER_RS485_RTS_ON_SEND)
 		priv->mdr3 &= ~UART_OMAP_MDR3_DIR_POL;
-	} else {
+	else
 		priv->mdr3 |= UART_OMAP_MDR3_DIR_POL;
-	}
 
 	serial_out(up, UART_OMAP_MDR3, priv->mdr3);
 
@@ -925,20 +912,18 @@ static void __dma_rx_do_complete(struct uart_8250_port *p)
 {
 	struct uart_8250_dma    *dma = p->dma;
 	struct tty_port         *tty_port = &p->port.state->port;
-	struct omap8250_priv    *priv = p->port.private_data;
-	struct dma_chan     *rxchan = dma->rxchan;
-	dma_cookie_t        cookie;
+	struct omap8250_priv	*priv = p->port.private_data;
+	struct dma_chan		*rxchan = dma->rxchan;
+	dma_cookie_t		cookie;
 	struct dma_tx_state     state;
 	int                     count;
-	int         ret;
-	u32         reg;
+	int			ret;
+	u32			reg;
 
-	if (!dma->rx_running) {
+	if (!dma->rx_running)
 		goto out;
-	}
 
 	cookie = dma->rx_cookie;
-	dma->rx_running = 0;
 
 	/* Re-enable RX FIFO interrupt now that transfer is complete */
 	if (priv->habit & UART_HAS_RHR_IT_DIS) {
@@ -961,18 +946,17 @@ static void __dma_rx_do_complete(struct uart_8250_port *p)
 			int poll_count = 25;
 
 			while (dmaengine_tx_status(rxchan, cookie, NULL) &&
-			       poll_count--) {
+			       poll_count--)
 				cpu_relax();
-			}
 
-			if (poll_count == -1) {
+			if (poll_count == -1)
 				dev_err(p->port.dev, "teardown incomplete\n");
-			}
 		}
 	}
-	if (!count) {
+
+	dma->rx_running = 0;
+	if (!count)
 		goto out;
-	}
 	ret = tty_insert_flip_string(tty_port, dma->rx_buf, count);
 
 	p->port.icount.rx += ret;
@@ -999,7 +983,7 @@ static void __dma_rx_complete(void *param)
 	 * already pushed the data, so exit.
 	 */
 	if (dmaengine_tx_status(dma->rxchan, dma->rx_cookie, &state) !=
-	    DMA_COMPLETE) {
+			DMA_COMPLETE) {
 		uart_port_unlock_irqrestore(&p->port, flags);
 		return;
 	}
@@ -1007,9 +991,8 @@ static void __dma_rx_complete(void *param)
 	if (!priv->throttled) {
 		p->ier |= UART_IER_RLSI | UART_IER_RDI;
 		serial_out(p, UART_IER, p->ier);
-		if (!(priv->habit & UART_HAS_EFR2)) {
+		if (!(priv->habit & UART_HAS_EFR2))
 			omap_8250_rx_dma(p);
-		}
 	}
 
 	uart_port_unlock_irqrestore(&p->port, flags);
@@ -1017,10 +1000,10 @@ static void __dma_rx_complete(void *param)
 
 static void omap_8250_rx_dma_flush(struct uart_8250_port *p)
 {
-	struct omap8250_priv    *priv = p->port.private_data;
-	struct uart_8250_dma    *dma = p->dma;
+	struct omap8250_priv	*priv = p->port.private_data;
+	struct uart_8250_dma	*dma = p->dma;
 	struct dma_tx_state     state;
-	unsigned long       flags;
+	unsigned long		flags;
 	int ret;
 
 	spin_lock_irqsave(&priv->rx_dma_lock, flags);
@@ -1033,9 +1016,8 @@ static void omap_8250_rx_dma_flush(struct uart_8250_port *p)
 	ret = dmaengine_tx_status(dma->rxchan, dma->rx_cookie, &state);
 	if (ret == DMA_IN_PROGRESS) {
 		ret = dmaengine_pause(dma->rxchan);
-		if (WARN_ON_ONCE(ret)) {
+		if (WARN_ON_ONCE(ret))
 			priv->rx_dma_broken = true;
-		}
 	}
 	__dma_rx_do_complete(p);
 	spin_unlock_irqrestore(&priv->rx_dma_lock, flags);
@@ -1043,19 +1025,18 @@ static void omap_8250_rx_dma_flush(struct uart_8250_port *p)
 
 static int omap_8250_rx_dma(struct uart_8250_port *p)
 {
-	struct omap8250_priv        *priv = p->port.private_data;
+	struct omap8250_priv		*priv = p->port.private_data;
 	struct uart_8250_dma            *dma = p->dma;
-	int             err = 0;
+	int				err = 0;
 	struct dma_async_tx_descriptor  *desc;
-	unsigned long           flags;
-	u32             reg;
+	unsigned long			flags;
+	u32				reg;
 
 	/* Port locked to synchronize UART_IER access against the console. */
 	lockdep_assert_held_once(&p->port.lock);
 
-	if (priv->rx_dma_broken) {
+	if (priv->rx_dma_broken)
 		return -EINVAL;
-	}
 
 	spin_lock_irqsave(&priv->rx_dma_lock, flags);
 
@@ -1075,8 +1056,8 @@ static int omap_8250_rx_dma(struct uart_8250_port *p)
 	}
 
 	desc = dmaengine_prep_slave_single(dma->rxchan, dma->rx_addr,
-	                                   dma->rx_size, DMA_DEV_TO_MEM,
-	                                   DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
+					   dma->rx_size, DMA_DEV_TO_MEM,
+					   DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
 	if (!desc) {
 		err = -EBUSY;
 		goto out;
@@ -1109,15 +1090,15 @@ static int omap_8250_tx_dma(struct uart_8250_port *p);
 
 static void omap_8250_dma_tx_complete(void *param)
 {
-	struct uart_8250_port   *p = param;
-	struct uart_8250_dma    *dma = p->dma;
-	struct circ_buf     *xmit = &p->port.state->xmit;
-	unsigned long       flags;
-	bool            en_thri = false;
-	struct omap8250_priv    *priv = p->port.private_data;
+	struct uart_8250_port	*p = param;
+	struct uart_8250_dma	*dma = p->dma;
+	struct circ_buf		*xmit = &p->port.state->xmit;
+	unsigned long		flags;
+	bool			en_thri = false;
+	struct omap8250_priv	*priv = p->port.private_data;
 
 	dma_sync_single_for_cpu(dma->txchan->device->dev, dma->tx_addr,
-	                        UART_XMIT_SIZE, DMA_TO_DEVICE);
+				UART_XMIT_SIZE, DMA_TO_DEVICE);
 
 	uart_port_lock_irqsave(&p->port, &flags);
 
@@ -1130,17 +1111,15 @@ static void omap_8250_dma_tx_complete(void *param)
 		omap8250_restore_regs(p);
 	}
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(&p->port);
-	}
 
 	if (!uart_circ_empty(xmit) && !uart_tx_stopped(&p->port)) {
 		int ret;
 
 		ret = omap_8250_tx_dma(p);
-		if (ret) {
+		if (ret)
 			en_thri = true;
-		}
 	} else if (p->capabilities & UART_CAP_RPM) {
 		en_thri = true;
 	}
@@ -1155,16 +1134,15 @@ static void omap_8250_dma_tx_complete(void *param)
 
 static int omap_8250_tx_dma(struct uart_8250_port *p)
 {
-	struct uart_8250_dma        *dma = p->dma;
-	struct omap8250_priv        *priv = p->port.private_data;
-	struct circ_buf         *xmit = &p->port.state->xmit;
-	struct dma_async_tx_descriptor  *desc;
-	unsigned int    skip_byte = 0;
+	struct uart_8250_dma		*dma = p->dma;
+	struct omap8250_priv		*priv = p->port.private_data;
+	struct circ_buf			*xmit = &p->port.state->xmit;
+	struct dma_async_tx_descriptor	*desc;
+	unsigned int	skip_byte = 0;
 	int ret;
 
-	if (dma->tx_running) {
+	if (dma->tx_running)
 		return 0;
-	}
 	if (uart_tx_stopped(&p->port) || uart_circ_empty(xmit)) {
 
 		/*
@@ -1212,9 +1190,9 @@ static int omap_8250_tx_dma(struct uart_8250_port *p)
 	}
 
 	desc = dmaengine_prep_slave_single(dma->txchan,
-	                                   dma->tx_addr + xmit->tail + skip_byte,
-	                                   dma->tx_size - skip_byte, DMA_MEM_TO_DEV,
-	                                   DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
+			dma->tx_addr + xmit->tail + skip_byte,
+			dma->tx_size - skip_byte, DMA_MEM_TO_DEV,
+			DMA_PREP_INTERRUPT | DMA_CTRL_ACK);
 	if (!desc) {
 		ret = -EBUSY;
 		goto err;
@@ -1228,17 +1206,15 @@ static int omap_8250_tx_dma(struct uart_8250_port *p)
 	dma->tx_cookie = dmaengine_submit(desc);
 
 	dma_sync_single_for_device(dma->txchan->device->dev, dma->tx_addr,
-	                           UART_XMIT_SIZE, DMA_TO_DEVICE);
+				   UART_XMIT_SIZE, DMA_TO_DEVICE);
 
 	dma_async_issue_pending(dma->txchan);
-	if (dma->tx_err) {
+	if (dma->tx_err)
 		dma->tx_err = 0;
-	}
 
 	serial8250_clear_THRI(p);
-	if (skip_byte) {
+	if (skip_byte)
 		serial_out(p, UART_TX, xmit->buf[xmit->tail]);
-	}
 	return 0;
 err:
 	dma->tx_err = 1;
@@ -1248,11 +1224,11 @@ err:
 static bool handle_rx_dma(struct uart_8250_port *up, unsigned int iir)
 {
 	switch (iir & 0x3f) {
-		case UART_IIR_RLSI:
-		case UART_IIR_RX_TIMEOUT:
-		case UART_IIR_RDI:
-			omap_8250_rx_dma_flush(up);
-			return true;
+	case UART_IIR_RLSI:
+	case UART_IIR_RX_TIMEOUT:
+	case UART_IIR_RDI:
+		omap_8250_rx_dma_flush(up);
+		return true;
 	}
 	return omap_8250_rx_dma(up);
 }
@@ -1271,7 +1247,7 @@ static u16 omap_8250_handle_rx_dma(struct uart_8250_port *up, u8 iir, u16 status
 }
 
 static void am654_8250_handle_rx_dma(struct uart_8250_port *up, u8 iir,
-                                     u16 status)
+				     u16 status)
 {
 	/* Port locked to synchronize UART_IER access against the console. */
 	lockdep_assert_held_once(&up->port.lock);
@@ -1324,11 +1300,10 @@ static int omap_8250_dma_handle_irq(struct uart_port *port)
 	status = serial_port_in(port, UART_LSR);
 
 	if ((iir & 0x3f) != UART_IIR_THRI) {
-		if (priv->habit & UART_HAS_EFR2) {
+		if (priv->habit & UART_HAS_EFR2)
 			am654_8250_handle_rx_dma(up, iir, status);
-		} else {
+		else
 			status = omap_8250_handle_rx_dma(up, iir, status);
-		}
 	}
 
 	serial8250_modem_status(up);
@@ -1342,9 +1317,8 @@ static int omap_8250_dma_handle_irq(struct uart_port *port)
 			 * try again due to an earlier failer which
 			 * might have been resolved by now.
 			 */
-			if (omap_8250_tx_dma(up)) {
+			if (omap_8250_tx_dma(up))
 				serial8250_tx_chars(up);
-			}
 		}
 	}
 
@@ -1387,19 +1361,19 @@ static struct omap8250_dma_params am33xx_dma = {
 };
 
 static struct omap8250_platdata am654_platdata = {
-	.dma_params = &am654_dma,
-	.habit      = UART_HAS_EFR2 | UART_HAS_RHR_IT_DIS |
-	UART_RX_TIMEOUT_QUIRK | UART_HAS_NATIVE_RS485,
+	.dma_params	= &am654_dma,
+	.habit		= UART_HAS_EFR2 | UART_HAS_RHR_IT_DIS |
+			  UART_RX_TIMEOUT_QUIRK | UART_HAS_NATIVE_RS485,
 };
 
 static struct omap8250_platdata am33xx_platdata = {
-	.dma_params = &am33xx_dma,
-	.habit      = OMAP_DMA_TX_KICK | UART_ERRATA_CLOCK_DISABLE,
+	.dma_params	= &am33xx_dma,
+	.habit		= OMAP_DMA_TX_KICK | UART_ERRATA_CLOCK_DISABLE,
 };
 
 static struct omap8250_platdata omap4_platdata = {
-	.dma_params = &am33xx_dma,
-	.habit      = UART_ERRATA_CLOCK_DISABLE,
+	.dma_params	= &am33xx_dma,
+	.habit		= UART_ERRATA_CLOCK_DISABLE,
 };
 
 static const struct of_device_id omap8250_dt_ids[] = {
@@ -1425,9 +1399,8 @@ static int omap8250_probe(struct platform_device *pdev)
 	int irq, ret;
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return irq;
-	}
 
 	regs = platform_get_resource(pdev, IORESOURCE_MEM, 0);
 	if (!regs) {
@@ -1436,15 +1409,13 @@ static int omap8250_probe(struct platform_device *pdev)
 	}
 
 	priv = devm_kzalloc(&pdev->dev, sizeof(*priv), GFP_KERNEL);
-	if (!priv) {
+	if (!priv)
 		return -ENOMEM;
-	}
 
 	membase = devm_ioremap(&pdev->dev, regs->start,
-	                       resource_size(regs));
-	if (!membase) {
+				       resource_size(regs));
+	if (!membase)
 		return -ENODEV;
-	}
 
 	memset(&up, 0, sizeof(up));
 	up.port.dev = &pdev->dev;
@@ -1462,7 +1433,7 @@ static int omap8250_probe(struct platform_device *pdev)
 	up.port.type = PORT_8250;
 	up.port.iotype = UPIO_MEM;
 	up.port.flags = UPF_FIXED_PORT | UPF_FIXED_TYPE | UPF_SOFT_FLOW |
-	                UPF_HARD_FLOW;
+		UPF_HARD_FLOW;
 	up.port.private_data = priv;
 
 	up.port.regshift = OMAP_UART_REGSHIFT;
@@ -1504,29 +1475,26 @@ static int omap8250_probe(struct platform_device *pdev)
 
 		clk = devm_clk_get(&pdev->dev, NULL);
 		if (IS_ERR(clk)) {
-			if (PTR_ERR(clk) == -EPROBE_DEFER) {
+			if (PTR_ERR(clk) == -EPROBE_DEFER)
 				return -EPROBE_DEFER;
-			}
 		} else {
 			up.port.uartclk = clk_get_rate(clk);
 		}
 	}
 
 	if (of_property_read_u32(np, "overrun-throttle-ms",
-	                         &up.overrun_backoff_time_ms) != 0) {
+				 &up.overrun_backoff_time_ms) != 0)
 		up.overrun_backoff_time_ms = 0;
-	}
 
 	pdata = of_device_get_match_data(&pdev->dev);
-	if (pdata) {
+	if (pdata)
 		priv->habit |= pdata->habit;
-	}
 
 	if (!up.port.uartclk) {
 		up.port.uartclk = DEFAULT_CLK_SPEED;
 		dev_warn(&pdev->dev,
-		         "No clock speed specified: using default: %d\n",
-		         DEFAULT_CLK_SPEED);
+			 "No clock speed specified: using default: %d\n",
+			 DEFAULT_CLK_SPEED);
 	}
 
 	priv->membase = membase;
@@ -1551,9 +1519,8 @@ static int omap8250_probe(struct platform_device *pdev)
 	 * For serdev devices this is not needed, the policy can be managed by
 	 * the serdev driver.
 	 */
-	if (!of_get_available_child_count(pdev->dev.of_node)) {
+	if (!of_get_available_child_count(pdev->dev.of_node))
 		pm_runtime_set_autosuspend_delay(&pdev->dev, -1);
-	}
 
 	pm_runtime_irq_safe(&pdev->dev);
 
@@ -1580,9 +1547,8 @@ static int omap8250_probe(struct platform_device *pdev)
 		dma->fn = the_no_dma_filter_fn;
 		dma->tx_dma = omap_8250_tx_dma;
 		dma->rx_dma = omap_8250_rx_dma;
-		if (pdata) {
+		if (pdata)
 			dma_params = pdata->dma_params;
-		}
 
 		if (dma_params) {
 			dma->rx_size = dma_params->rx_size;
@@ -1600,10 +1566,9 @@ static int omap8250_probe(struct platform_device *pdev)
 
 	irq_set_status_flags(irq, IRQ_NOAUTOEN);
 	ret = devm_request_irq(&pdev->dev, irq, omap8250_irq, 0,
-	                       dev_name(&pdev->dev), priv);
-	if (ret < 0) {
-		return ret;
-	}
+			       dev_name(&pdev->dev), priv);
+	if (ret < 0)
+		goto err;
 
 	priv->wakeirq = irq_of_parse_and_map(np, 1);
 
@@ -1632,9 +1597,8 @@ static int omap8250_remove(struct platform_device *pdev)
 	int err;
 
 	err = pm_runtime_resume_and_get(&pdev->dev);
-	if (err) {
+	if (err)
 		dev_err(&pdev->dev, "Failed to resume hardware\n");
-	}
 
 	up = serial8250_get_port(priv->line);
 	omap_8250_shutdown(&up->port);
@@ -1653,9 +1617,8 @@ static int omap8250_prepare(struct device *dev)
 {
 	struct omap8250_priv *priv = dev_get_drvdata(dev);
 
-	if (!priv) {
+	if (!priv)
 		return 0;
-	}
 	priv->is_suspending = true;
 	return 0;
 }
@@ -1664,9 +1627,8 @@ static void omap8250_complete(struct device *dev)
 {
 	struct omap8250_priv *priv = dev_get_drvdata(dev);
 
-	if (!priv) {
+	if (!priv)
 		return;
-	}
 	priv->is_suspending = false;
 }
 
@@ -1679,16 +1641,13 @@ static int omap8250_suspend(struct device *dev)
 	serial8250_suspend_port(priv->line);
 
 	err = pm_runtime_resume_and_get(dev);
-	if (err) {
+	if (err)
 		return err;
-	}
-	if (!device_may_wakeup(dev)) {
+	if (!device_may_wakeup(dev))
 		priv->wer = 0;
-	}
 	serial_out(up, UART_OMAP_WER, priv->wer);
-	if (uart_console(&up->port) && console_suspend_enabled) {
+	if (uart_console(&up->port) && console_suspend_enabled)
 		err = pm_runtime_force_suspend(dev);
-	}
 	flush_work(&priv->qos_work);
 
 	return err;
@@ -1702,9 +1661,8 @@ static int omap8250_resume(struct device *dev)
 
 	if (uart_console(&up->port) && console_suspend_enabled) {
 		err = pm_runtime_force_resume(dev);
-		if (err) {
+		if (err)
 			return err;
-		}
 	}
 
 	serial8250_resume_port(priv->line);
@@ -1725,9 +1683,8 @@ static int omap8250_lost_context(struct uart_8250_port *up)
 	 * After set_termios() we set bit 3 of SCR (TX_EMPTY_CTL_IT) to 1,
 	 * among other bits, to never set the register back to zero again.
 	 */
-	if (!val) {
+	if (!val)
 		return 1;
-	}
 	return 0;
 }
 
@@ -1755,7 +1712,7 @@ static int omap8250_soft_reset(struct device *dev)
 	 */
 	uart_write(priv, UART_OMAP_SCR, OMAP_UART_SCR_DMAMODE_1);
 	uart_write(priv, UART_OMAP_SCR,
-	           OMAP_UART_SCR_DMAMODE_1 | OMAP_UART_SCR_DMAMODE_CTL);
+		   OMAP_UART_SCR_DMAMODE_1 | OMAP_UART_SCR_DMAMODE_CTL);
 
 	sysc = uart_read(priv, UART_OMAP_SYSC);
 
@@ -1782,17 +1739,15 @@ static int omap8250_runtime_suspend(struct device *dev)
 	struct omap8250_priv *priv = dev_get_drvdata(dev);
 	struct uart_8250_port *up = NULL;
 
-	if (priv->line >= 0) {
+	if (priv->line >= 0)
 		up = serial8250_get_port(priv->line);
-	}
 
 	if (priv->habit & UART_ERRATA_CLOCK_DISABLE) {
 		int ret;
 
 		ret = omap8250_soft_reset(dev);
-		if (ret) {
+		if (ret)
 			return ret;
-		}
 
 		if (up) {
 			/* Restore to UART mode after reset (for wakeup) */
@@ -1802,9 +1757,8 @@ static int omap8250_runtime_suspend(struct device *dev)
 		}
 	}
 
-	if (up && up->dma && up->dma->rxchan) {
+	if (up && up->dma && up->dma->rxchan)
 		omap_8250_rx_dma_flush(up);
-	}
 
 	priv->latency = PM_QOS_CPU_LATENCY_DEFAULT_VALUE;
 	schedule_work(&priv->qos_work);
@@ -1817,9 +1771,8 @@ static int omap8250_runtime_resume(struct device *dev)
 	struct omap8250_priv *priv = dev_get_drvdata(dev);
 	struct uart_8250_port *up = NULL;
 
-	if (priv->line >= 0) {
+	if (priv->line >= 0)
 		up = serial8250_get_port(priv->line);
-	}
 
 	if (up && omap8250_lost_context(up)) {
 		uart_port_lock_irq(&up->port);
@@ -1847,23 +1800,18 @@ static int __init omap8250_console_fixup(void)
 
 	if (strstr(boot_command_line, "console=ttyS"))
 		/* user set a ttyS based name for the console */
-	{
 		return 0;
-	}
 
 	omap_str = strstr(boot_command_line, "console=ttyO");
 	if (!omap_str)
 		/* user did not set ttyO based console, so we don't care */
-	{
 		return 0;
-	}
 
 	omap_str += 12;
-	if ('0' <= *omap_str && *omap_str <= '9') {
+	if ('0' <= *omap_str && *omap_str <= '9')
 		idx = *omap_str - '0';
-	} else {
+	else
 		return 0;
-	}
 
 	omap_str++;
 	if (omap_str[0] == ',') {
@@ -1886,19 +1834,19 @@ console_initcall(omap8250_console_fixup);
 static const struct dev_pm_ops omap8250_dev_pm_ops = {
 	SYSTEM_SLEEP_PM_OPS(omap8250_suspend, omap8250_resume)
 	RUNTIME_PM_OPS(omap8250_runtime_suspend,
-	               omap8250_runtime_resume, NULL)
+			   omap8250_runtime_resume, NULL)
 	.prepare        = pm_sleep_ptr(omap8250_prepare),
 	.complete       = pm_sleep_ptr(omap8250_complete),
 };
 
 static struct platform_driver omap8250_platform_driver = {
 	.driver = {
-		.name       = "omap8250",
-		.pm     = pm_ptr(&omap8250_dev_pm_ops),
+		.name		= "omap8250",
+		.pm		= pm_ptr(&omap8250_dev_pm_ops),
 		.of_match_table = omap8250_dt_ids,
 	},
-	.probe          = omap8250_probe,
-	.remove         = omap8250_remove,
+	.probe			= omap8250_probe,
+	.remove			= omap8250_remove,
 };
 module_platform_driver(omap8250_platform_driver);
 

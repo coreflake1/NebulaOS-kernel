@@ -31,32 +31,31 @@
  * datasheet: https://www.altera.com/literature/hb/nios2/n2cpu_nii51009.pdf
  */
 
-#define ALTERA_JTAGUART_SIZE            8
+#define ALTERA_JTAGUART_SIZE			8
 
-#define ALTERA_JTAGUART_DATA_REG        0
+#define ALTERA_JTAGUART_DATA_REG		0
 
-#define ALTERA_JTAGUART_DATA_DATA_MSK       0x000000FF
-#define ALTERA_JTAGUART_DATA_RVALID_MSK     0x00008000
-#define ALTERA_JTAGUART_DATA_RAVAIL_MSK     0xFFFF0000
-#define ALTERA_JTAGUART_DATA_RAVAIL_OFF     16
+#define ALTERA_JTAGUART_DATA_DATA_MSK		0x000000FF
+#define ALTERA_JTAGUART_DATA_RVALID_MSK		0x00008000
+#define ALTERA_JTAGUART_DATA_RAVAIL_MSK		0xFFFF0000
+#define ALTERA_JTAGUART_DATA_RAVAIL_OFF		16
 
-#define ALTERA_JTAGUART_CONTROL_REG     4
+#define ALTERA_JTAGUART_CONTROL_REG		4
 
-#define ALTERA_JTAGUART_CONTROL_RE_MSK      0x00000001
-#define ALTERA_JTAGUART_CONTROL_WE_MSK      0x00000002
-#define ALTERA_JTAGUART_CONTROL_RI_MSK      0x00000100
-#define ALTERA_JTAGUART_CONTROL_RI_OFF      8
-#define ALTERA_JTAGUART_CONTROL_WI_MSK      0x00000200
-#define ALTERA_JTAGUART_CONTROL_AC_MSK      0x00000400
-#define ALTERA_JTAGUART_CONTROL_WSPACE_MSK  0xFFFF0000
+#define ALTERA_JTAGUART_CONTROL_RE_MSK		0x00000001
+#define ALTERA_JTAGUART_CONTROL_WE_MSK		0x00000002
+#define ALTERA_JTAGUART_CONTROL_RI_MSK		0x00000100
+#define ALTERA_JTAGUART_CONTROL_RI_OFF		8
+#define ALTERA_JTAGUART_CONTROL_WI_MSK		0x00000200
+#define ALTERA_JTAGUART_CONTROL_AC_MSK		0x00000400
+#define ALTERA_JTAGUART_CONTROL_WSPACE_MSK	0xFFFF0000
 
 static unsigned int altera_jtaguart_tx_space(struct uart_port *port, u32 *ctlp)
 {
 	u32 ctl = readl(port->membase + ALTERA_JTAGUART_CONTROL_REG);
 
-	if (ctlp) {
+	if (ctlp)
 		*ctlp = ctl;
-	}
 
 	return FIELD_GET(ALTERA_JTAGUART_CONTROL_WSPACE_MSK, ctl);
 }
@@ -79,21 +78,21 @@ static void altera_jtaguart_start_tx(struct uart_port *port)
 {
 	port->read_status_mask |= ALTERA_JTAGUART_CONTROL_WE_MSK;
 	writel(port->read_status_mask,
-	       port->membase + ALTERA_JTAGUART_CONTROL_REG);
+			port->membase + ALTERA_JTAGUART_CONTROL_REG);
 }
 
 static void altera_jtaguart_stop_tx(struct uart_port *port)
 {
 	port->read_status_mask &= ~ALTERA_JTAGUART_CONTROL_WE_MSK;
 	writel(port->read_status_mask,
-	       port->membase + ALTERA_JTAGUART_CONTROL_REG);
+			port->membase + ALTERA_JTAGUART_CONTROL_REG);
 }
 
 static void altera_jtaguart_stop_rx(struct uart_port *port)
 {
 	port->read_status_mask &= ~ALTERA_JTAGUART_CONTROL_RE_MSK;
 	writel(port->read_status_mask,
-	       port->membase + ALTERA_JTAGUART_CONTROL_REG);
+			port->membase + ALTERA_JTAGUART_CONTROL_REG);
 }
 
 static void altera_jtaguart_break_ctl(struct uart_port *port, int break_state)
@@ -101,13 +100,12 @@ static void altera_jtaguart_break_ctl(struct uart_port *port, int break_state)
 }
 
 static void altera_jtaguart_set_termios(struct uart_port *port,
-                                        struct ktermios *termios,
-                                        const struct ktermios *old)
+				        struct ktermios *termios,
+				        const struct ktermios *old)
 {
 	/* Just copy the old termios settings back */
-	if (old) {
+	if (old)
 		tty_termios_copy_hw(termios, old);
-	}
 }
 
 static void altera_jtaguart_rx_chars(struct uart_port *port)
@@ -120,9 +118,8 @@ static void altera_jtaguart_rx_chars(struct uart_port *port)
 		ch = status & ALTERA_JTAGUART_DATA_DATA_MSK;
 		port->icount.rx++;
 
-		if (uart_handle_sysrq_char(port, ch)) {
+		if (uart_handle_sysrq_char(port, ch))
 			continue;
-		}
 		uart_insert_char(port, 0, 0, ch, TTY_NORMAL);
 	}
 
@@ -137,9 +134,9 @@ static void altera_jtaguart_tx_chars(struct uart_port *port)
 	count = altera_jtaguart_tx_space(port, NULL);
 
 	uart_port_tx_limited(port, ch, count,
-	                     true,
-	                     writel(ch, port->membase + ALTERA_JTAGUART_DATA_REG),
-	                     ({}));
+		true,
+		writel(ch, port->membase + ALTERA_JTAGUART_DATA_REG),
+		({}));
 }
 
 static irqreturn_t altera_jtaguart_interrupt(int irq, void *data)
@@ -152,12 +149,10 @@ static irqreturn_t altera_jtaguart_interrupt(int irq, void *data)
 
 	uart_port_lock(port);
 
-	if (isr & ALTERA_JTAGUART_CONTROL_RE_MSK) {
+	if (isr & ALTERA_JTAGUART_CONTROL_RE_MSK)
 		altera_jtaguart_rx_chars(port);
-	}
-	if (isr & ALTERA_JTAGUART_CONTROL_WE_MSK) {
+	if (isr & ALTERA_JTAGUART_CONTROL_WE_MSK)
 		altera_jtaguart_tx_chars(port);
-	}
 
 	uart_port_unlock(port);
 
@@ -178,7 +173,7 @@ static int altera_jtaguart_startup(struct uart_port *port)
 	int ret;
 
 	ret = request_irq(port->irq, altera_jtaguart_interrupt, 0,
-	                  DRV_NAME, port);
+			DRV_NAME, port);
 	if (ret) {
 		pr_err(DRV_NAME ": unable to attach Altera JTAG UART %d "
 		       "interrupt vector=%d\n", port->line, port->irq);
@@ -190,7 +185,7 @@ static int altera_jtaguart_startup(struct uart_port *port)
 	/* Enable RX interrupts now */
 	port->read_status_mask = ALTERA_JTAGUART_CONTROL_RE_MSK;
 	writel(port->read_status_mask,
-	       port->membase + ALTERA_JTAGUART_CONTROL_REG);
+			port->membase + ALTERA_JTAGUART_CONTROL_REG);
 
 	uart_port_unlock_irqrestore(port, flags);
 
@@ -206,7 +201,7 @@ static void altera_jtaguart_shutdown(struct uart_port *port)
 	/* Disable all interrupts now */
 	port->read_status_mask = 0;
 	writel(port->read_status_mask,
-	       port->membase + ALTERA_JTAGUART_CONTROL_REG);
+			port->membase + ALTERA_JTAGUART_CONTROL_REG);
 
 	uart_port_unlock_irqrestore(port, flags);
 
@@ -230,33 +225,32 @@ static void altera_jtaguart_release_port(struct uart_port *port)
 }
 
 static int altera_jtaguart_verify_port(struct uart_port *port,
-                                       struct serial_struct *ser)
+				       struct serial_struct *ser)
 {
-	if (ser->type != PORT_UNKNOWN && ser->type != PORT_ALTERA_JTAGUART) {
+	if (ser->type != PORT_UNKNOWN && ser->type != PORT_ALTERA_JTAGUART)
 		return -EINVAL;
-	}
 	return 0;
 }
 
 /*
- *  Define the basic serial functions we support.
+ *	Define the basic serial functions we support.
  */
 static const struct uart_ops altera_jtaguart_ops = {
-	.tx_empty   = altera_jtaguart_tx_empty,
-	.get_mctrl  = altera_jtaguart_get_mctrl,
-	.set_mctrl  = altera_jtaguart_set_mctrl,
-	.start_tx   = altera_jtaguart_start_tx,
-	.stop_tx    = altera_jtaguart_stop_tx,
-	.stop_rx    = altera_jtaguart_stop_rx,
-	.break_ctl  = altera_jtaguart_break_ctl,
-	.startup    = altera_jtaguart_startup,
-	.shutdown   = altera_jtaguart_shutdown,
-	.set_termios    = altera_jtaguart_set_termios,
-	.type       = altera_jtaguart_type,
-	.request_port   = altera_jtaguart_request_port,
-	.release_port   = altera_jtaguart_release_port,
-	.config_port    = altera_jtaguart_config_port,
-	.verify_port    = altera_jtaguart_verify_port,
+	.tx_empty	= altera_jtaguart_tx_empty,
+	.get_mctrl	= altera_jtaguart_get_mctrl,
+	.set_mctrl	= altera_jtaguart_set_mctrl,
+	.start_tx	= altera_jtaguart_start_tx,
+	.stop_tx	= altera_jtaguart_stop_tx,
+	.stop_rx	= altera_jtaguart_stop_rx,
+	.break_ctl	= altera_jtaguart_break_ctl,
+	.startup	= altera_jtaguart_startup,
+	.shutdown	= altera_jtaguart_shutdown,
+	.set_termios	= altera_jtaguart_set_termios,
+	.type		= altera_jtaguart_type,
+	.request_port	= altera_jtaguart_request_port,
+	.release_port	= altera_jtaguart_release_port,
+	.config_port	= altera_jtaguart_config_port,
+	.verify_port	= altera_jtaguart_verify_port,
 };
 
 #define ALTERA_JTAGUART_MAXPORTS 1
@@ -275,7 +269,7 @@ static void altera_jtaguart_console_putc(struct uart_port *port, unsigned char c
 		uart_port_unlock_irqrestore(port, flags);
 
 		if ((status & ALTERA_JTAGUART_CONTROL_AC_MSK) == 0) {
-			return; /* no connection activity */
+			return;	/* no connection activity */
 		}
 
 		cpu_relax();
@@ -301,7 +295,7 @@ static void altera_jtaguart_console_putc(struct uart_port *port, unsigned char c
 #endif
 
 static void altera_jtaguart_console_write(struct console *co, const char *s,
-        unsigned int count)
+					  unsigned int count)
 {
 	struct uart_port *port = &altera_jtaguart_ports[co->index];
 
@@ -309,30 +303,28 @@ static void altera_jtaguart_console_write(struct console *co, const char *s,
 }
 
 static int __init altera_jtaguart_console_setup(struct console *co,
-        char *options)
+						char *options)
 {
 	struct uart_port *port;
 
-	if (co->index < 0 || co->index >= ALTERA_JTAGUART_MAXPORTS) {
+	if (co->index < 0 || co->index >= ALTERA_JTAGUART_MAXPORTS)
 		return -EINVAL;
-	}
 	port = &altera_jtaguart_ports[co->index];
-	if (port->membase == NULL) {
+	if (port->membase == NULL)
 		return -ENODEV;
-	}
 	return 0;
 }
 
 static struct uart_driver altera_jtaguart_driver;
 
 static struct console altera_jtaguart_console = {
-	.name   = "ttyJ",
-	.write  = altera_jtaguart_console_write,
-	.device = uart_console_device,
-	.setup  = altera_jtaguart_console_setup,
-	.flags  = CON_PRINTBUFFER,
-	.index  = -1,
-	.data   = &altera_jtaguart_driver,
+	.name	= "ttyJ",
+	.write	= altera_jtaguart_console_write,
+	.device	= uart_console_device,
+	.setup	= altera_jtaguart_console_setup,
+	.flags	= CON_PRINTBUFFER,
+	.index	= -1,
+	.data	= &altera_jtaguart_driver,
 };
 
 static int __init altera_jtaguart_console_init(void)
@@ -343,10 +335,10 @@ static int __init altera_jtaguart_console_init(void)
 
 console_initcall(altera_jtaguart_console_init);
 
-#define ALTERA_JTAGUART_CONSOLE (&altera_jtaguart_console)
+#define	ALTERA_JTAGUART_CONSOLE	(&altera_jtaguart_console)
 
 static void altera_jtaguart_earlycon_write(struct console *co, const char *s,
-        unsigned int count)
+					   unsigned int count)
 {
 	struct earlycon_device *dev = co->data;
 
@@ -354,11 +346,10 @@ static void altera_jtaguart_earlycon_write(struct console *co, const char *s,
 }
 
 static int __init altera_jtaguart_earlycon_setup(struct earlycon_device *dev,
-        const char *options)
+						 const char *options)
 {
-	if (!dev->port.membase) {
+	if (!dev->port.membase)
 		return -ENODEV;
-	}
 
 	dev->con->write = altera_jtaguart_earlycon_write;
 	return 0;
@@ -368,65 +359,60 @@ OF_EARLYCON_DECLARE(juart, "altr,juart-1.0", altera_jtaguart_earlycon_setup);
 
 #else
 
-#define ALTERA_JTAGUART_CONSOLE NULL
+#define	ALTERA_JTAGUART_CONSOLE	NULL
 
 #endif /* CONFIG_SERIAL_ALTERA_JTAGUART_CONSOLE */
 
 static struct uart_driver altera_jtaguart_driver = {
-	.owner      = THIS_MODULE,
-	.driver_name    = "altera_jtaguart",
-	.dev_name   = "ttyJ",
-	.major      = ALTERA_JTAGUART_MAJOR,
-	.minor      = ALTERA_JTAGUART_MINOR,
-	.nr     = ALTERA_JTAGUART_MAXPORTS,
-	.cons       = ALTERA_JTAGUART_CONSOLE,
+	.owner		= THIS_MODULE,
+	.driver_name	= "altera_jtaguart",
+	.dev_name	= "ttyJ",
+	.major		= ALTERA_JTAGUART_MAJOR,
+	.minor		= ALTERA_JTAGUART_MINOR,
+	.nr		= ALTERA_JTAGUART_MAXPORTS,
+	.cons		= ALTERA_JTAGUART_CONSOLE,
 };
 
 static int altera_jtaguart_probe(struct platform_device *pdev)
 {
 	struct altera_jtaguart_platform_uart *platp =
-	    dev_get_platdata(&pdev->dev);
+			dev_get_platdata(&pdev->dev);
 	struct uart_port *port;
 	struct resource *res_mem;
 	int i = pdev->id;
 	int irq;
+	int ret;
 
 	/* -1 emphasizes that the platform must have one port, no .N suffix */
-	if (i == -1) {
+	if (i == -1)
 		i = 0;
-	}
 
-	if (i >= ALTERA_JTAGUART_MAXPORTS) {
+	if (i >= ALTERA_JTAGUART_MAXPORTS)
 		return -EINVAL;
-	}
 
 	port = &altera_jtaguart_ports[i];
 
 	res_mem = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-	if (res_mem) {
+	if (res_mem)
 		port->mapbase = res_mem->start;
-	} else if (platp) {
+	else if (platp)
 		port->mapbase = platp->mapbase;
-	} else {
+	else
 		return -ENODEV;
-	}
 
 	irq = platform_get_irq_optional(pdev, 0);
-	if (irq < 0 && irq != -ENXIO) {
+	if (irq < 0 && irq != -ENXIO)
 		return irq;
-	}
-	if (irq > 0) {
+	if (irq > 0)
 		port->irq = irq;
-	} else if (platp) {
+	else if (platp)
 		port->irq = platp->irq;
-	} else {
+	else
 		return -ENODEV;
-	}
 
 	port->membase = ioremap(port->mapbase, ALTERA_JTAGUART_SIZE);
-	if (!port->membase) {
+	if (!port->membase)
 		return -ENOMEM;
-	}
 
 	port->line = i;
 	port->type = PORT_ALTERA_JTAGUART;
@@ -435,7 +421,11 @@ static int altera_jtaguart_probe(struct platform_device *pdev)
 	port->flags = UPF_BOOT_AUTOCONF;
 	port->dev = &pdev->dev;
 
-	uart_add_one_port(&altera_jtaguart_driver, port);
+	ret = uart_add_one_port(&altera_jtaguart_driver, port);
+	if (ret) {
+		iounmap(port->membase);
+		return ret;
+	}
 
 	return 0;
 }
@@ -445,9 +435,8 @@ static int altera_jtaguart_remove(struct platform_device *pdev)
 	struct uart_port *port;
 	int i = pdev->id;
 
-	if (i == -1) {
+	if (i == -1)
 		i = 0;
-	}
 
 	port = &altera_jtaguart_ports[i];
 	uart_remove_one_port(&altera_jtaguart_driver, port);
@@ -466,11 +455,11 @@ MODULE_DEVICE_TABLE(of, altera_jtaguart_match);
 #endif /* CONFIG_OF */
 
 static struct platform_driver altera_jtaguart_platform_driver = {
-	.probe  = altera_jtaguart_probe,
-	.remove = altera_jtaguart_remove,
-	.driver = {
-		.name       = DRV_NAME,
-		.of_match_table = of_match_ptr(altera_jtaguart_match),
+	.probe	= altera_jtaguart_probe,
+	.remove	= altera_jtaguart_remove,
+	.driver	= {
+		.name		= DRV_NAME,
+		.of_match_table	= of_match_ptr(altera_jtaguart_match),
 	},
 };
 
@@ -479,13 +468,11 @@ static int __init altera_jtaguart_init(void)
 	int rc;
 
 	rc = uart_register_driver(&altera_jtaguart_driver);
-	if (rc) {
+	if (rc)
 		return rc;
-	}
 	rc = platform_driver_register(&altera_jtaguart_platform_driver);
-	if (rc) {
+	if (rc)
 		uart_unregister_driver(&altera_jtaguart_driver);
-	}
 	return rc;
 }
 

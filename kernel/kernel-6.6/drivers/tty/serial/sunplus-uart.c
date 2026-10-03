@@ -34,42 +34,42 @@
 #include <asm/irq.h>
 
 /* Register offsets */
-#define SUP_UART_DATA           0x00
-#define SUP_UART_LSR            0x04
-#define SUP_UART_MSR            0x08
-#define SUP_UART_LCR            0x0C
-#define SUP_UART_MCR            0x10
-#define SUP_UART_DIV_L          0x14
-#define SUP_UART_DIV_H          0x18
-#define SUP_UART_ISC            0x1C
-#define SUP_UART_TX_RESIDUE     0x20
-#define SUP_UART_RX_RESIDUE     0x24
+#define SUP_UART_DATA			0x00
+#define SUP_UART_LSR			0x04
+#define SUP_UART_MSR			0x08
+#define SUP_UART_LCR			0x0C
+#define SUP_UART_MCR			0x10
+#define SUP_UART_DIV_L			0x14
+#define SUP_UART_DIV_H			0x18
+#define SUP_UART_ISC			0x1C
+#define SUP_UART_TX_RESIDUE		0x20
+#define SUP_UART_RX_RESIDUE		0x24
 
 /* Line Status Register bits */
-#define SUP_UART_LSR_BC         BIT(5) /* break condition status */
-#define SUP_UART_LSR_FE         BIT(4) /* frame error status */
-#define SUP_UART_LSR_OE         BIT(3) /* overrun error status */
-#define SUP_UART_LSR_PE         BIT(2) /* parity error status */
-#define SUP_UART_LSR_RX         BIT(1) /* 1: receive fifo not empty */
-#define SUP_UART_LSR_TX         BIT(0) /* 1: transmit fifo is not full */
-#define SUP_UART_LSR_TX_NOT_FULL    1
-#define SUP_UART_LSR_BRK_ERROR_BITS GENMASK(5, 2)
+#define SUP_UART_LSR_BC			BIT(5) /* break condition status */
+#define SUP_UART_LSR_FE			BIT(4) /* frame error status */
+#define SUP_UART_LSR_OE			BIT(3) /* overrun error status */
+#define SUP_UART_LSR_PE			BIT(2) /* parity error status */
+#define SUP_UART_LSR_RX			BIT(1) /* 1: receive fifo not empty */
+#define SUP_UART_LSR_TX			BIT(0) /* 1: transmit fifo is not full */
+#define SUP_UART_LSR_TX_NOT_FULL	1
+#define SUP_UART_LSR_BRK_ERROR_BITS	GENMASK(5, 2)
 
 /* Line Control Register bits */
-#define SUP_UART_LCR_SBC        BIT(5) /* select break condition */
+#define SUP_UART_LCR_SBC		BIT(5) /* select break condition */
 
 /* Modem Control Register bits */
-#define SUP_UART_MCR_RI         BIT(3) /* ring indicator */
-#define SUP_UART_MCR_DCD        BIT(2) /* data carrier detect */
+#define SUP_UART_MCR_RI			BIT(3) /* ring indicator */
+#define SUP_UART_MCR_DCD		BIT(2) /* data carrier detect */
 
 /* Interrupt Status/Control Register bits */
-#define SUP_UART_ISC_RXM        BIT(5) /* RX interrupt enable */
-#define SUP_UART_ISC_TXM        BIT(4) /* TX interrupt enable */
-#define SUP_UART_ISC_RX         BIT(1) /* RX interrupt status */
-#define SUP_UART_ISC_TX         BIT(0) /* TX interrupt status */
+#define SUP_UART_ISC_RXM		BIT(5) /* RX interrupt enable */
+#define SUP_UART_ISC_TXM		BIT(4) /* TX interrupt enable */
+#define SUP_UART_ISC_RX			BIT(1) /* RX interrupt status */
+#define SUP_UART_ISC_TX			BIT(0) /* TX interrupt status */
 
-#define SUP_DUMMY_READ          BIT(16) /* drop bytes received on a !CREAD port */
-#define SUP_UART_NR         5
+#define SUP_DUMMY_READ			BIT(16) /* drop bytes received on a !CREAD port */
+#define SUP_UART_NR			5
 
 struct sunplus_uart_port {
 	struct uart_port port;
@@ -100,35 +100,30 @@ static void sunplus_set_mctrl(struct uart_port *port, unsigned int mctrl)
 {
 	unsigned int mcr = readl(port->membase + SUP_UART_MCR);
 
-	if (mctrl & TIOCM_DTR) {
+	if (mctrl & TIOCM_DTR)
 		mcr |= UART_MCR_DTR;
-	} else {
+	else
 		mcr &= ~UART_MCR_DTR;
-	}
 
-	if (mctrl & TIOCM_RTS) {
+	if (mctrl & TIOCM_RTS)
 		mcr |= UART_MCR_RTS;
-	} else {
+	else
 		mcr &= ~UART_MCR_RTS;
-	}
 
-	if (mctrl & TIOCM_CAR) {
+	if (mctrl & TIOCM_CAR)
 		mcr |= SUP_UART_MCR_DCD;
-	} else {
+	else
 		mcr &= ~SUP_UART_MCR_DCD;
-	}
 
-	if (mctrl & TIOCM_RI) {
+	if (mctrl & TIOCM_RI)
 		mcr |= SUP_UART_MCR_RI;
-	} else {
+	else
 		mcr &= ~SUP_UART_MCR_RI;
-	}
 
-	if (mctrl & TIOCM_LOOP) {
+	if (mctrl & TIOCM_LOOP)
 		mcr |= UART_MCR_LOOP;
-	} else {
+	else
 		mcr &= ~UART_MCR_LOOP;
-	}
 
 	writel(mcr, port->membase + SUP_UART_MCR);
 }
@@ -139,25 +134,20 @@ static unsigned int sunplus_get_mctrl(struct uart_port *port)
 
 	mcr = readl(port->membase + SUP_UART_MCR);
 
-	if (mcr & UART_MCR_DTR) {
+	if (mcr & UART_MCR_DTR)
 		ret |= TIOCM_DTR;
-	}
 
-	if (mcr & UART_MCR_RTS) {
+	if (mcr & UART_MCR_RTS)
 		ret |= TIOCM_RTS;
-	}
 
-	if (mcr & SUP_UART_MCR_DCD) {
+	if (mcr & SUP_UART_MCR_DCD)
 		ret |= TIOCM_CAR;
-	}
 
-	if (mcr & SUP_UART_MCR_RI) {
+	if (mcr & SUP_UART_MCR_RI)
 		ret |= TIOCM_RI;
-	}
 
-	if (mcr & UART_MCR_LOOP) {
+	if (mcr & UART_MCR_LOOP)
 		ret |= TIOCM_LOOP;
-	}
 
 	return ret;
 }
@@ -198,11 +188,10 @@ static void sunplus_break_ctl(struct uart_port *port, int ctl)
 
 	lcr = readl(port->membase + SUP_UART_LCR);
 
-	if (ctl) {
-		lcr |= SUP_UART_LCR_SBC;    /* start break */
-	} else {
-		lcr &= ~SUP_UART_LCR_SBC;    /* stop break */
-	}
+	if (ctl)
+		lcr |= SUP_UART_LCR_SBC; /* start break */
+	else
+		lcr &= ~SUP_UART_LCR_SBC; /* stop break */
 
 	writel(lcr, port->membase + SUP_UART_LCR);
 
@@ -228,18 +217,15 @@ static void transmit_chars(struct uart_port *port)
 	do {
 		sp_uart_put_char(port, xmit->buf[xmit->tail]);
 		uart_xmit_advance(port, 1);
-		if (uart_circ_empty(xmit)) {
+		if (uart_circ_empty(xmit))
 			break;
-		}
 	} while (sunplus_tx_buf_not_full(port));
 
-	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS) {
+	if (uart_circ_chars_pending(xmit) < WAKEUP_CHARS)
 		uart_write_wakeup(port);
-	}
 
-	if (uart_circ_empty(xmit)) {
+	if (uart_circ_empty(xmit))
 		sunplus_stop_tx(port);
-	}
 }
 
 static void receive_chars(struct uart_port *port)
@@ -257,9 +243,8 @@ static void receive_chars(struct uart_port *port)
 				lsr &= ~(SUP_UART_LSR_FE | SUP_UART_LSR_PE);
 				port->icount.brk++;
 				flag = TTY_BREAK;
-				if (uart_handle_break(port)) {
+				if (uart_handle_break(port))
 					goto ignore_char;
-				}
 			} else if (lsr & SUP_UART_LSR_PE) {
 				port->icount.parity++;
 				flag = TTY_PARITY;
@@ -268,18 +253,15 @@ static void receive_chars(struct uart_port *port)
 				flag = TTY_FRAME;
 			}
 
-			if (lsr & SUP_UART_LSR_OE) {
+			if (lsr & SUP_UART_LSR_OE)
 				port->icount.overrun++;
-			}
 		}
 
-		if (port->ignore_status_mask & SUP_DUMMY_READ) {
+		if (port->ignore_status_mask & SUP_DUMMY_READ)
 			goto ignore_char;
-		}
 
-		if (uart_handle_sysrq_char(port, ch)) {
+		if (uart_handle_sysrq_char(port, ch))
 			goto ignore_char;
-		}
 
 		uart_insert_char(port, lsr, SUP_UART_LSR_OE, ch, flag);
 
@@ -299,13 +281,11 @@ static irqreturn_t sunplus_uart_irq(int irq, void *args)
 
 	isc = readl(port->membase + SUP_UART_ISC);
 
-	if (isc & SUP_UART_ISC_RX) {
+	if (isc & SUP_UART_ISC_RX)
 		receive_chars(port);
-	}
 
-	if (isc & SUP_UART_ISC_TX) {
+	if (isc & SUP_UART_ISC_TX)
 		transmit_chars(port);
-	}
 
 	uart_port_unlock(port);
 
@@ -319,9 +299,8 @@ static int sunplus_startup(struct uart_port *port)
 	int ret;
 
 	ret = request_irq(port->irq, sunplus_uart_irq, 0, "sunplus_uart", port);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	uart_port_lock_irqsave(port, &flags);
 	/* isc define Bit[7:4] int setting, Bit[3:0] int status
@@ -351,8 +330,8 @@ static void sunplus_shutdown(struct uart_port *port)
 }
 
 static void sunplus_set_termios(struct uart_port *port,
-                                struct ktermios *termios,
-                                const struct ktermios *oldtermios)
+				struct ktermios *termios,
+				const struct ktermios *oldtermios)
 {
 	u32 ext, div, div_l, div_h, baud, lcr;
 	u32 clk = port->uartclk;
@@ -369,30 +348,28 @@ static void sunplus_set_termios(struct uart_port *port,
 	div_h = div >> 8;
 
 	switch (termios->c_cflag & CSIZE) {
-		case CS5:
-			lcr = UART_LCR_WLEN5;
-			break;
-		case CS6:
-			lcr = UART_LCR_WLEN6;
-			break;
-		case CS7:
-			lcr = UART_LCR_WLEN7;
-			break;
-		default:
-			lcr = UART_LCR_WLEN8;
-			break;
+	case CS5:
+		lcr = UART_LCR_WLEN5;
+		break;
+	case CS6:
+		lcr = UART_LCR_WLEN6;
+		break;
+	case CS7:
+		lcr = UART_LCR_WLEN7;
+		break;
+	default:
+		lcr = UART_LCR_WLEN8;
+		break;
 	}
 
-	if (termios->c_cflag & CSTOPB) {
+	if (termios->c_cflag & CSTOPB)
 		lcr |= UART_LCR_STOP;
-	}
 
 	if (termios->c_cflag & PARENB) {
 		lcr |= UART_LCR_PARITY;
 
-		if (!(termios->c_cflag & PARODD)) {
+		if (!(termios->c_cflag & PARODD))
 			lcr |= UART_LCR_EPAR;
-		}
 	}
 
 	uart_port_lock_irqsave(port, &flags);
@@ -400,26 +377,22 @@ static void sunplus_set_termios(struct uart_port *port,
 	uart_update_timeout(port, termios->c_cflag, baud);
 
 	port->read_status_mask = 0;
-	if (termios->c_iflag & INPCK) {
+	if (termios->c_iflag & INPCK)
 		port->read_status_mask |= SUP_UART_LSR_PE | SUP_UART_LSR_FE;
-	}
 
-	if (termios->c_iflag & (BRKINT | PARMRK)) {
+	if (termios->c_iflag & (BRKINT | PARMRK))
 		port->read_status_mask |= SUP_UART_LSR_BC;
-	}
 
 	/* Characters to ignore */
 	port->ignore_status_mask = 0;
-	if (termios->c_iflag & IGNPAR) {
+	if (termios->c_iflag & IGNPAR)
 		port->ignore_status_mask |= SUP_UART_LSR_FE | SUP_UART_LSR_PE;
-	}
 
 	if (termios->c_iflag & IGNBRK) {
 		port->ignore_status_mask |= SUP_UART_LSR_BC;
 
-		if (termios->c_iflag & IGNPAR) {
+		if (termios->c_iflag & IGNPAR)
 			port->ignore_status_mask |= SUP_UART_LSR_OE;
-		}
 	}
 
 	/* Ignore all characters if CREAD is not set */
@@ -441,11 +414,10 @@ static void sunplus_set_ldisc(struct uart_port *port, struct ktermios *termios)
 {
 	int new = termios->c_line;
 
-	if (new == N_PPS) {
+	if (new == N_PPS)
 		port->flags |= UPF_HARDPPS_CD;
-	} else {
+	else
 		port->flags &= ~UPF_HARDPPS_CD;
-	}
 }
 
 static const char *sunplus_type(struct uart_port *port)
@@ -455,16 +427,14 @@ static const char *sunplus_type(struct uart_port *port)
 
 static void sunplus_config_port(struct uart_port *port, int type)
 {
-	if (type & UART_CONFIG_TYPE) {
+	if (type & UART_CONFIG_TYPE)
 		port->type = PORT_SUNPLUS;
-	}
 }
 
 static int sunplus_verify_port(struct uart_port *port, struct serial_struct *ser)
 {
-	if (ser->type != PORT_UNKNOWN && ser->type != PORT_SUNPLUS) {
+	if (ser->type != PORT_UNKNOWN && ser->type != PORT_SUNPLUS)
 		return -EINVAL;
-	}
 
 	return 0;
 }
@@ -477,7 +447,7 @@ static void wait_for_xmitr(struct uart_port *port)
 
 	/* Wait while FIFO is full or timeout */
 	ret = readl_poll_timeout_atomic(port->membase + SUP_UART_LSR, val,
-	                                (val & SUP_UART_LSR_TX), 1, 10000);
+					(val & SUP_UART_LSR_TX), 1, 10000);
 
 	if (ret == -ETIMEDOUT) {
 		dev_err(port->dev, "Timeout waiting while UART TX FULL\n");
@@ -497,32 +467,31 @@ static int sunplus_poll_get_char(struct uart_port *port)
 {
 	unsigned int lsr = readl(port->membase + SUP_UART_LSR);
 
-	if (!(lsr & SUP_UART_LSR_RX)) {
+	if (!(lsr & SUP_UART_LSR_RX))
 		return NO_POLL_CHAR;
-	}
 
 	return readl(port->membase + SUP_UART_DATA);
 }
 #endif
 
 static const struct uart_ops sunplus_uart_ops = {
-	.tx_empty   = sunplus_tx_empty,
-	.set_mctrl  = sunplus_set_mctrl,
-	.get_mctrl  = sunplus_get_mctrl,
-	.stop_tx    = sunplus_stop_tx,
-	.start_tx   = sunplus_start_tx,
-	.stop_rx    = sunplus_stop_rx,
-	.break_ctl  = sunplus_break_ctl,
-	.startup    = sunplus_startup,
-	.shutdown   = sunplus_shutdown,
-	.set_termios    = sunplus_set_termios,
-	.set_ldisc  = sunplus_set_ldisc,
-	.type       = sunplus_type,
-	.config_port    = sunplus_config_port,
-	.verify_port    = sunplus_verify_port,
+	.tx_empty	= sunplus_tx_empty,
+	.set_mctrl	= sunplus_set_mctrl,
+	.get_mctrl	= sunplus_get_mctrl,
+	.stop_tx	= sunplus_stop_tx,
+	.start_tx	= sunplus_start_tx,
+	.stop_rx	= sunplus_stop_rx,
+	.break_ctl	= sunplus_break_ctl,
+	.startup	= sunplus_startup,
+	.shutdown	= sunplus_shutdown,
+	.set_termios	= sunplus_set_termios,
+	.set_ldisc	= sunplus_set_ldisc,
+	.type		= sunplus_type,
+	.config_port	= sunplus_config_port,
+	.verify_port	= sunplus_verify_port,
 #ifdef CONFIG_CONSOLE_POLL
-	.poll_put_char  = sunplus_poll_put_char,
-	.poll_get_char  = sunplus_poll_get_char,
+	.poll_put_char	= sunplus_poll_put_char,
+	.poll_get_char	= sunplus_poll_get_char,
 #endif
 };
 
@@ -530,35 +499,33 @@ static const struct uart_ops sunplus_uart_ops = {
 static struct sunplus_uart_port *sunplus_console_ports[SUP_UART_NR];
 
 static void sunplus_uart_console_putchar(struct uart_port *port,
-        unsigned char ch)
+					 unsigned char ch)
 {
 	wait_for_xmitr(port);
 	sp_uart_put_char(port, ch);
 }
 
 static void sunplus_console_write(struct console *co,
-                                  const char *s,
-                                  unsigned int count)
+				  const char *s,
+				  unsigned int count)
 {
 	unsigned long flags;
 	int locked = 1;
 
 	local_irq_save(flags);
 
-	if (sunplus_console_ports[co->index]->port.sysrq) {
+	if (sunplus_console_ports[co->index]->port.sysrq)
 		locked = 0;
-	} else if (oops_in_progress) {
+	else if (oops_in_progress)
 		locked = uart_port_trylock(&sunplus_console_ports[co->index]->port);
-	} else {
+	else
 		uart_port_lock(&sunplus_console_ports[co->index]->port);
-	}
 
 	uart_console_write(&sunplus_console_ports[co->index]->port, s, count,
-	                   sunplus_uart_console_putchar);
+			   sunplus_uart_console_putchar);
 
-	if (locked) {
+	if (locked)
 		uart_port_unlock(&sunplus_console_ports[co->index]->port);
-	}
 
 	local_irq_restore(flags);
 }
@@ -571,46 +538,43 @@ static int __init sunplus_console_setup(struct console *co, char *options)
 	int parity = 'n';
 	int flow = 'n';
 
-	if (co->index < 0 || co->index >= SUP_UART_NR) {
+	if (co->index < 0 || co->index >= SUP_UART_NR)
 		return -EINVAL;
-	}
 
 	sup = sunplus_console_ports[co->index];
-	if (!sup) {
+	if (!sup)
 		return -ENODEV;
-	}
 
-	if (options) {
+	if (options)
 		uart_parse_options(options, &baud, &parity, &bits, &flow);
-	}
 
 	return uart_set_options(&sup->port, co, baud, parity, bits, flow);
 }
 
 static struct uart_driver sunplus_uart_driver;
 static struct console sunplus_uart_console = {
-	.name       = "ttySUP",
-	.write      = sunplus_console_write,
-	.device     = uart_console_device,
-	.setup      = sunplus_console_setup,
-	.flags      = CON_PRINTBUFFER,
-	.index      = -1,
-	.data       = &sunplus_uart_driver
+	.name		= "ttySUP",
+	.write		= sunplus_console_write,
+	.device		= uart_console_device,
+	.setup		= sunplus_console_setup,
+	.flags		= CON_PRINTBUFFER,
+	.index		= -1,
+	.data		= &sunplus_uart_driver
 };
 
-#define SERIAL_SUNPLUS_CONSOLE  (&sunplus_uart_console)
+#define	SERIAL_SUNPLUS_CONSOLE	(&sunplus_uart_console)
 #else
-#define SERIAL_SUNPLUS_CONSOLE  NULL
+#define	SERIAL_SUNPLUS_CONSOLE	NULL
 #endif
 
 static struct uart_driver sunplus_uart_driver = {
-	.owner      = THIS_MODULE,
-	.driver_name    = "sunplus_uart",
-	.dev_name   = "ttySUP",
-	.major      = TTY_MAJOR,
-	.minor      = 64,
-	.nr     = SUP_UART_NR,
-	.cons       = SERIAL_SUNPLUS_CONSOLE,
+	.owner		= THIS_MODULE,
+	.driver_name	= "sunplus_uart",
+	.dev_name	= "ttySUP",
+	.major		= TTY_MAJOR,
+	.minor		= 64,
+	.nr		= SUP_UART_NR,
+	.cons		= SERIAL_SUNPLUS_CONSOLE,
 };
 
 static void sunplus_uart_disable_unprepare(void *data)
@@ -632,46 +596,38 @@ static int sunplus_uart_probe(struct platform_device *pdev)
 
 	pdev->id = of_alias_get_id(pdev->dev.of_node, "serial");
 
-	if (pdev->id < 0 || pdev->id >= SUP_UART_NR) {
+	if (pdev->id < 0 || pdev->id >= SUP_UART_NR)
 		return -EINVAL;
-	}
 
 	sup = devm_kzalloc(&pdev->dev, sizeof(*sup), GFP_KERNEL);
-	if (!sup) {
+	if (!sup)
 		return -ENOMEM;
-	}
 
 	sup->clk = devm_clk_get_optional(&pdev->dev, NULL);
-	if (IS_ERR(sup->clk)) {
+	if (IS_ERR(sup->clk))
 		return dev_err_probe(&pdev->dev, PTR_ERR(sup->clk), "clk not found\n");
-	}
 
 	ret = clk_prepare_enable(sup->clk);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = devm_add_action_or_reset(&pdev->dev, sunplus_uart_disable_unprepare, sup->clk);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	sup->rstc = devm_reset_control_get_exclusive(&pdev->dev, NULL);
-	if (IS_ERR(sup->rstc)) {
+	if (IS_ERR(sup->rstc))
 		return dev_err_probe(&pdev->dev, PTR_ERR(sup->rstc), "rstc not found\n");
-	}
 
 	port = &sup->port;
 
 	port->membase = devm_platform_get_and_ioremap_resource(pdev, 0, &res);
-	if (IS_ERR(port->membase)) {
+	if (IS_ERR(port->membase))
 		return dev_err_probe(&pdev->dev, PTR_ERR(port->membase), "membase not found\n");
-	}
 
 	irq = platform_get_irq(pdev, 0);
-	if (irq < 0) {
+	if (irq < 0)
 		return irq;
-	}
 
 	port->mapbase = res->start;
 	port->uartclk = clk_get_rate(sup->clk);
@@ -684,14 +640,12 @@ static int sunplus_uart_probe(struct platform_device *pdev)
 	port->fifosize = 128;
 
 	ret = reset_control_deassert(sup->rstc);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = devm_add_action_or_reset(&pdev->dev, sunplus_uart_reset_control_assert, sup->rstc);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 #ifdef CONFIG_SERIAL_SUNPLUS_CONSOLE
 	sunplus_console_ports[sup->port.line] = sup;
@@ -701,9 +655,8 @@ static int sunplus_uart_probe(struct platform_device *pdev)
 
 	ret = uart_add_one_port(&sunplus_uart_driver, &sup->port);
 #ifdef CONFIG_SERIAL_SUNPLUS_CONSOLE
-	if (ret) {
+	if (ret)
 		sunplus_console_ports[sup->port.line] = NULL;
-	}
 #endif
 
 	return ret;
@@ -722,9 +675,8 @@ static int __maybe_unused sunplus_uart_suspend(struct device *dev)
 {
 	struct sunplus_uart_port *sup = dev_get_drvdata(dev);
 
-	if (!uart_console(&sup->port)) {
+	if (!uart_console(&sup->port))
 		uart_suspend_port(&sunplus_uart_driver, &sup->port);
-	}
 
 	return 0;
 }
@@ -733,9 +685,8 @@ static int __maybe_unused sunplus_uart_resume(struct device *dev)
 {
 	struct sunplus_uart_port *sup = dev_get_drvdata(dev);
 
-	if (!uart_console(&sup->port)) {
+	if (!uart_console(&sup->port))
 		uart_resume_port(&sunplus_uart_driver, &sup->port);
-	}
 
 	return 0;
 }
@@ -751,10 +702,10 @@ static const struct of_device_id sp_uart_of_match[] = {
 MODULE_DEVICE_TABLE(of, sp_uart_of_match);
 
 static struct platform_driver sunplus_uart_platform_driver = {
-	.probe      = sunplus_uart_probe,
-	.remove     = sunplus_uart_remove,
+	.probe		= sunplus_uart_probe,
+	.remove		= sunplus_uart_remove,
 	.driver = {
-		.name   = "sunplus_uart",
+		.name	= "sunplus_uart",
 		.of_match_table = sp_uart_of_match,
 		.pm     = &sunplus_uart_pm_ops,
 	}
@@ -765,14 +716,12 @@ static int __init sunplus_uart_init(void)
 	int ret;
 
 	ret = uart_register_driver(&sunplus_uart_driver);
-	if (ret) {
+	if (ret)
 		return ret;
-	}
 
 	ret = platform_driver_register(&sunplus_uart_platform_driver);
-	if (ret) {
+	if (ret)
 		uart_unregister_driver(&sunplus_uart_driver);
-	}
 
 	return ret;
 }
@@ -792,10 +741,9 @@ static void sunplus_uart_putc(struct uart_port *port, unsigned char c)
 	int ret;
 
 	ret = readl_poll_timeout_atomic(port->membase + SUP_UART_LSR, val,
-	                                (val & UART_LSR_TEMT), 1, 10000);
-	if (ret) {
+					(val & UART_LSR_TEMT), 1, 10000);
+	if (ret)
 		return;
-	}
 
 	writel(c, port->membase + SUP_UART_DATA);
 }
@@ -810,9 +758,8 @@ static void sunplus_uart_early_write(struct console *con, const char *s, unsigne
 static int __init
 sunplus_uart_early_setup(struct earlycon_device *dev, const char *opt)
 {
-	if (!(dev->port.membase || dev->port.iobase)) {
+	if (!(dev->port.membase || dev->port.iobase))
 		return -ENODEV;
-	}
 
 	dev->con->write = sunplus_uart_early_write;
 

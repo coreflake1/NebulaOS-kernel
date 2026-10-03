@@ -59,15 +59,14 @@ static __always_inline int rwbase_read_trylock(struct rwbase_rt *rwb)
 	 * set.
 	 */
 	for (r = atomic_read(&rwb->readers); r < 0;) {
-		if (likely(atomic_try_cmpxchg_acquire(&rwb->readers, &r, r + 1))) {
+		if (likely(atomic_try_cmpxchg_acquire(&rwb->readers, &r, r + 1)))
 			return 1;
-		}
 	}
 	return 0;
 }
 
 static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
-                                      unsigned int state)
+				      unsigned int state)
 {
 	struct rt_mutex_base *rtm = &rwb->rtmutex;
 	int ret;
@@ -79,26 +78,26 @@ static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
 	 * Call into the slow lock path with the rtmutex->wait_lock
 	 * held, so this can't result in the following race:
 	 *
-	 * Reader1      Reader2     Writer
-	 *          down_read()
-	 *                  down_write()
-	 *                  rtmutex_lock(m)
-	 *                  wait()
+	 * Reader1		Reader2		Writer
+	 *			down_read()
+	 *					down_write()
+	 *					rtmutex_lock(m)
+	 *					wait()
 	 * down_read()
 	 * unlock(m->wait_lock)
-	 *          up_read()
-	 *          wake(Writer)
-	 *                  lock(m->wait_lock)
-	 *                  sem->writelocked=true
-	 *                  unlock(m->wait_lock)
+	 *			up_read()
+	 *			wake(Writer)
+	 *					lock(m->wait_lock)
+	 *					sem->writelocked=true
+	 *					unlock(m->wait_lock)
 	 *
-	 *                  up_write()
-	 *                  sem->writelocked=false
-	 *                  rtmutex_unlock(m)
-	 *          down_read()
-	 *                  down_write()
-	 *                  rtmutex_lock(m)
-	 *                  wait()
+	 *					up_write()
+	 *					sem->writelocked=false
+	 *					rtmutex_unlock(m)
+	 *			down_read()
+	 *					down_write()
+	 *					rtmutex_lock(m)
+	 *					wait()
 	 * rtmutex_lock(m)
 	 *
 	 * That would put Reader1 behind the writer waiting on
@@ -120,13 +119,11 @@ static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
 	 *
 	 * rtmutex->wait_lock has to be unlocked in any case of course.
 	 */
-	if (!ret) {
+	if (!ret)
 		atomic_inc(&rwb->readers);
-	}
 	raw_spin_unlock_irq(&rtm->wait_lock);
-	if (!ret) {
+	if (!ret)
 		rwbase_rtmutex_unlock(rtm);
-	}
 
 	trace_contention_end(rwb, ret);
 	rwbase_post_schedule();
@@ -134,19 +131,18 @@ static int __sched __rwbase_read_lock(struct rwbase_rt *rwb,
 }
 
 static __always_inline int rwbase_read_lock(struct rwbase_rt *rwb,
-        unsigned int state)
+					    unsigned int state)
 {
 	lockdep_assert(!current->pi_blocked_on);
 
-	if (rwbase_read_trylock(rwb)) {
+	if (rwbase_read_trylock(rwb))
 		return 0;
-	}
 
 	return __rwbase_read_lock(rwb, state);
 }
 
 static void __sched __rwbase_read_unlock(struct rwbase_rt *rwb,
-        unsigned int state)
+					 unsigned int state)
 {
 	struct rt_mutex_base *rtm = &rwb->rtmutex;
 	struct task_struct *owner;
@@ -160,9 +156,8 @@ static void __sched __rwbase_read_unlock(struct rwbase_rt *rwb,
 	 * worst case which can happen is a spurious wakeup.
 	 */
 	owner = rt_mutex_owner(rtm);
-	if (owner) {
+	if (owner)
 		rt_mutex_wake_q_add_task(&wqh, owner, state);
-	}
 
 	/* Pairs with the preempt_enable in rt_mutex_wake_up_q() */
 	preempt_disable();
@@ -171,7 +166,7 @@ static void __sched __rwbase_read_unlock(struct rwbase_rt *rwb,
 }
 
 static __always_inline void rwbase_read_unlock(struct rwbase_rt *rwb,
-        unsigned int state)
+					       unsigned int state)
 {
 	/*
 	 * rwb->readers can only hit 0 when a writer is waiting for the
@@ -179,13 +174,12 @@ static __always_inline void rwbase_read_unlock(struct rwbase_rt *rwb,
 	 *
 	 * dec_and_test() is fully ordered, provides RELEASE.
 	 */
-	if (unlikely(atomic_dec_and_test(&rwb->readers))) {
+	if (unlikely(atomic_dec_and_test(&rwb->readers)))
 		__rwbase_read_unlock(rwb, state);
-	}
 }
 
 static inline void __rwbase_write_unlock(struct rwbase_rt *rwb, int bias,
-        unsigned long flags)
+					 unsigned long flags)
 {
 	struct rt_mutex_base *rtm = &rwb->rtmutex;
 
@@ -235,15 +229,14 @@ static inline bool __rwbase_write_trylock(struct rwbase_rt *rwb)
 }
 
 static int __sched rwbase_write_lock(struct rwbase_rt *rwb,
-                                     unsigned int state)
+				     unsigned int state)
 {
 	struct rt_mutex_base *rtm = &rwb->rtmutex;
 	unsigned long flags;
 
 	/* Take the rtmutex as a first step */
-	if (rwbase_rtmutex_lock_state(rtm, state)) {
+	if (rwbase_rtmutex_lock_state(rtm, state))
 		return -EINTR;
-	}
 
 	/* Force readers into slow path */
 	atomic_sub(READER_BIAS, &rwb->readers);
@@ -251,9 +244,8 @@ static int __sched rwbase_write_lock(struct rwbase_rt *rwb,
 	rwbase_pre_schedule();
 
 	raw_spin_lock_irqsave(&rtm->wait_lock, flags);
-	if (__rwbase_write_trylock(rwb)) {
+	if (__rwbase_write_trylock(rwb))
 		goto out_unlock;
-	}
 
 	rwbase_set_and_save_current_state(state);
 	trace_contention_begin(rwb, LCB_F_RT | LCB_F_WRITE);
@@ -267,9 +259,8 @@ static int __sched rwbase_write_lock(struct rwbase_rt *rwb,
 			return -EINTR;
 		}
 
-		if (__rwbase_write_trylock(rwb)) {
+		if (__rwbase_write_trylock(rwb))
 			break;
-		}
 
 		raw_spin_unlock_irqrestore(&rtm->wait_lock, flags);
 		rwbase_schedule();
@@ -291,9 +282,8 @@ static inline int rwbase_write_trylock(struct rwbase_rt *rwb)
 	struct rt_mutex_base *rtm = &rwb->rtmutex;
 	unsigned long flags;
 
-	if (!rwbase_rtmutex_trylock(rtm)) {
+	if (!rwbase_rtmutex_trylock(rtm))
 		return 0;
-	}
 
 	atomic_sub(READER_BIAS, &rwb->readers);
 
