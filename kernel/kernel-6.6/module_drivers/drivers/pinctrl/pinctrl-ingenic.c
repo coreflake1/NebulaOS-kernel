@@ -638,14 +638,14 @@ static int ingenic_gpio_direction_input(struct gpio_chip *chip,
                                         unsigned pin)
 {
 	BUG_ON(pin > chip->ngpio);
-	return pinctrl_gpio_direction_input(chip->base + pin);
+	return pinctrl_gpio_direction_input(chip, pin);
 }
 
 static int ingenic_gpio_direction_output(struct gpio_chip *chip,
         unsigned pin, int value)
 {
 	ingenic_gpio_set(chip, pin, value);
-	return pinctrl_gpio_direction_output(chip->base + pin);
+	return pinctrl_gpio_direction_output(chip, pin);
 }
 
 static int ingenic_gpio_to_irq(struct gpio_chip *chip,
