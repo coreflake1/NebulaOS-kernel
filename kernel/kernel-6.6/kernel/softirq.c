@@ -1030,7 +1030,16 @@ static struct smp_hotplug_thread softirq_threads = {
 #ifdef CONFIG_PREEMPT_RT
 static void timersd_setup(unsigned int cpu)
 {
-        sched_set_fifo_low(current);
+	/*
+	 * NebulaOS: ktimers runs every soft hrtimer on PREEMPT_RT, including
+	 * POSIX timer expiry (SIGALRM delivery to a SCHED_FIFO task such as
+	 * klipper_mcu). At the upstream FIFO 1 that delivery waits behind all
+	 * lower-band RT work; CONFIG_NEBULAOS_KTIMERS_PRIO places it just above
+	 * the timer's owner. smpboot calls this once per thread, so it holds.
+	 */
+	struct sched_param sp = { .sched_priority = CONFIG_NEBULAOS_KTIMERS_PRIO };
+
+	sched_setscheduler_nocheck(current, SCHED_FIFO, &sp);
 }
 
 static int timersd_should_run(unsigned int cpu)

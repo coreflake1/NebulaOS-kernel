@@ -148,4 +148,13 @@ config SCHED_CORE
 	  which is the likely usage by Linux distributions, there should
 	  be no measurable impact on performance.
 
-
+config NEBULAOS_KTIMERS_PRIO
+	int "SCHED_FIFO priority of the ktimers/N softirq threads"
+	range 1 98
+	default 1
+	depends on PREEMPT_RT
+	help
+	  NebulaOS: on PREEMPT_RT, ktimers/N expires every soft hrtimer and the
+	  timer wheel, including POSIX timer signal delivery to real-time
+	  tasks. Upstream runs it at SCHED_FIFO 1. Set it just above the
+	  highest-priority task that depends on POSIX timers. 1 = upstream.
