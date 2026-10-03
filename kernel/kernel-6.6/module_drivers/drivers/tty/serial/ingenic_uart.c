@@ -1358,12 +1358,23 @@ static void serial_ingenic_console_putchar(struct uart_port *port, unsigned char
 static void serial_ingenic_console_write(struct console *co, const char *s, unsigned int count)
 {
 	struct uart_ingenic_port *up = serial_ingenic_ports[co->index];
+	unsigned long flags;
+	int locked = 1;
 	//unsigned int ier;
+
+	/*
+	 * irqsave: the port lock is also taken by the interrupt path. While
+	 * an oops is in progress the lock may already be held by the context
+	 * that crashed; do not wait for it there (same as 8250).
+	 */
+	if (oops_in_progress)
+		locked = uart_port_trylock_irqsave(&up->port, &flags);
+	else
+		uart_port_lock_irqsave(&up->port, &flags);
 
 	/*
 	 *  First save the IER then disable the interrupts
 	 */
-	spin_lock(&up->port.lock);
 	//ier = up->ier;
 	up->ier &= ~UART_IER_THRI;
 	serial_out(up, UART_IER, up->ier);
@@ -1377,7 +1388,8 @@ static void serial_ingenic_console_write(struct console *co, const char *s, unsi
 	wait_for_xmitr(up);
 	up->ier |= UART_IER_THRI;
 	serial_out(up, UART_IER, up->ier);
-	spin_unlock(&up->port.lock);
+	if (locked)
+		uart_port_unlock_irqrestore(&up->port, flags);
 }
 
 static int __init serial_ingenic_console_setup(struct console *co, char *options)
