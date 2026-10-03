@@ -1099,6 +1099,13 @@ struct dwc2_hsotg {
 	unsigned int phy_off_for_suspend:1;
 	unsigned int vbus_supply_enabled:1;
 	u16 frame_number;
+	/*
+	 * NebulaOS SOF filter (CONFIG_USB_DWC2_SOF_FILTER): sof_filter is
+	 * written (WRITE_ONCE) only under hsotg->lock and read (READ_ONCE) by
+	 * the hard-IRQ primary; sof_filtered is written only by the primary.
+	 */
+	u32 sof_filter;
+	u32 sof_filtered;
 
 	struct phy *phy;
 	struct usb_phy *uphy;
@@ -1377,6 +1384,24 @@ irqreturn_t dwc2_handle_common_intr(int irq, void *dev);
 irqreturn_t dwc2_hard_irq(int irq, void *dev);
 irqreturn_t dwc2_thread_irq(int irq, void *dev);
 
+/*
+ * SOF filter word. 0 = disarmed: the primary always wakes the thread.
+ * ARMED: the schedule had no work except inactive periodic QHs when the
+ * thread last ran; NODUE: not even those; otherwise the low bits hold the
+ * earliest next_active_frame among them. Any path that adds schedule work or
+ * leaves L0 disarms it, so a stale word only ever causes extra wakeups.
+ */
+#define DWC2_SOFF_ARMED		BIT(31)
+#define DWC2_SOFF_NODUE		BIT(30)
+#define DWC2_SOFF_FRAME		HFNUM_MAX_FRNUM
+
+extern bool dwc2_sof_filter_param;
+
+static inline void dwc2_sof_filter_disarm(struct dwc2_hsotg *hsotg)
+{
+	WRITE_ONCE(hsotg->sof_filter, 0);
+}
+
 /* The device ID match table */
 extern const struct of_device_id dwc2_of_match_table[];
 extern const struct acpi_device_id dwc2_acpi_match[];
@@ -1517,6 +1542,7 @@ static inline void dwc2_clear_fifo_map(struct dwc2_hsotg *hsotg) {}
 int dwc2_hcd_get_frame_number(struct dwc2_hsotg *hsotg);
 int dwc2_hcd_get_future_frame_number(struct dwc2_hsotg *hsotg, int us);
 irqreturn_t dwc2_handle_hcd_intr_locked(struct dwc2_hsotg *hsotg);
+void dwc2_sof_filter_publish(struct dwc2_hsotg *hsotg);
 void dwc2_hcd_connect(struct dwc2_hsotg *hsotg);
 void dwc2_hcd_disconnect(struct dwc2_hsotg *hsotg, bool force);
 void dwc2_hcd_start(struct dwc2_hsotg *hsotg);
@@ -1541,6 +1567,7 @@ static inline bool dwc2_host_port_is_enable(struct dwc2_hsotg *hsotg)
 #else
 static inline irqreturn_t dwc2_handle_hcd_intr_locked(struct dwc2_hsotg *hsotg)
 { return IRQ_NONE; }
+static inline void dwc2_sof_filter_publish(struct dwc2_hsotg *hsotg) {}
 static inline int dwc2_hcd_get_frame_number(struct dwc2_hsotg *hsotg)
 { return 0; }
 static inline int dwc2_hcd_get_future_frame_number(struct dwc2_hsotg *hsotg,

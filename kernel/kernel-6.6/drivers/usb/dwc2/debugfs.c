@@ -769,6 +769,17 @@ static int dr_mode_show(struct seq_file *seq, void *v)
 }
 DEFINE_SHOW_ATTRIBUTE(dr_mode);
 
+static int sof_filter_show(struct seq_file *seq, void *v)
+{
+	struct dwc2_hsotg *hsotg = seq->private;
+
+	seq_printf(seq, "filtered %u\n", READ_ONCE(hsotg->sof_filtered));
+	seq_printf(seq, "word 0x%08x\n", READ_ONCE(hsotg->sof_filter));
+	seq_printf(seq, "param %d\n", READ_ONCE(dwc2_sof_filter_param));
+	return 0;
+}
+DEFINE_SHOW_ATTRIBUTE(sof_filter);
+
 int dwc2_debugfs_init(struct dwc2_hsotg *hsotg)
 {
 	int			ret;
@@ -780,6 +791,7 @@ int dwc2_debugfs_init(struct dwc2_hsotg *hsotg)
 	debugfs_create_file("params", 0444, root, hsotg, &params_fops);
 	debugfs_create_file("hw_params", 0444, root, hsotg, &hw_params_fops);
 	debugfs_create_file("dr_mode", 0444, root, hsotg, &dr_mode_fops);
+	debugfs_create_file("sof_filter", 0444, root, hsotg, &sof_filter_fops);
 
 	/* Add gadget debugfs nodes */
 	dwc2_hsotg_create_debug(hsotg);

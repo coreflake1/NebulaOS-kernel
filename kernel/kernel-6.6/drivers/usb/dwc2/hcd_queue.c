@@ -1448,6 +1448,7 @@ static enum hrtimer_restart dwc2_wait_timer_fn(struct hrtimer *t)
 	unsigned long flags;
 
 	spin_lock_irqsave(&hsotg->lock, flags);
+	dwc2_sof_filter_disarm(hsotg);
 
 	/*
 	 * We'll set wait_timer_cancel to true if we want to cancel this
@@ -1468,6 +1469,49 @@ static enum hrtimer_restart dwc2_wait_timer_fn(struct hrtimer *t)
 
 	spin_unlock_irqrestore(&hsotg->lock, flags);
 	return HRTIMER_NORESTART;
+}
+
+/**
+ * dwc2_sof_filter_publish() - recompute the SOF filter word
+ * @hsotg: The HCD state structure
+ *
+ * Called by the interrupt thread as its last step under hsotg->lock. Arms
+ * the filter only when the outcome of an SOF interrupt can be predicted:
+ * nothing ready, assigned, queued or waiting to be selected, and the
+ * controller in L0 and accessible. Otherwise publishes 0 (always wake).
+ */
+void dwc2_sof_filter_publish(struct dwc2_hsotg *hsotg)
+{
+	struct usb_hcd *hcd = dwc2_hsotg_to_hcd(hsotg);
+	struct dwc2_qh *qh;
+	bool first = true;
+	u16 e = 0;
+
+	lockdep_assert_held(&hsotg->lock);
+
+	if (!READ_ONCE(dwc2_sof_filter_param) ||
+	    IS_ENABLED(CONFIG_USB_DWC2_TRACK_MISSED_SOFS) ||
+	    hsotg->params.dma_desc_enable ||
+	    hsotg->lx_state != DWC2_L0 || !hcd || !HCD_HW_ACCESSIBLE(hcd) ||
+	    hsotg->hibernated || hsotg->in_ppd ||
+	    !list_empty(&hsotg->periodic_sched_ready) ||
+	    !list_empty(&hsotg->periodic_sched_assigned) ||
+	    !list_empty(&hsotg->periodic_sched_queued) ||
+	    !list_empty(&hsotg->non_periodic_sched_inactive)) {
+		dwc2_sof_filter_disarm(hsotg);
+		return;
+	}
+
+	list_for_each_entry(qh, &hsotg->periodic_sched_inactive, qh_list_entry) {
+		if (first || dwc2_frame_num_gt(e, qh->next_active_frame))
+			e = qh->next_active_frame;
+		first = false;
+	}
+	if (first)
+		WRITE_ONCE(hsotg->sof_filter, DWC2_SOFF_ARMED | DWC2_SOFF_NODUE);
+	else
+		WRITE_ONCE(hsotg->sof_filter,
+			   DWC2_SOFF_ARMED | (e & DWC2_SOFF_FRAME));
 }
 
 /**
@@ -1697,6 +1741,8 @@ int dwc2_hcd_qh_add(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh)
 	int status;
 	u32 intr_mask;
 	ktime_t delay;
+
+	dwc2_sof_filter_disarm(hsotg);
 
 	if (dbg_qh(qh))
 		dev_vdbg(hsotg->dev, "%s()\n", __func__);
@@ -1954,6 +2000,8 @@ void dwc2_hcd_qh_deactivate(struct dwc2_hsotg *hsotg, struct dwc2_qh *qh,
 	u16 old_frame = qh->next_active_frame;
 	u16 frame_number;
 	int missed;
+
+	dwc2_sof_filter_disarm(hsotg);
 
 	if (dbg_qh(qh))
 		dev_vdbg(hsotg->dev, "%s()\n", __func__);

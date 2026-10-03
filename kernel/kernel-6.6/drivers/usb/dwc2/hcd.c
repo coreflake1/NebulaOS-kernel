@@ -1760,6 +1760,8 @@ void dwc2_hcd_disconnect(struct dwc2_hsotg *hsotg, bool force)
 	u32 intr;
 	u32 hprt0;
 
+	dwc2_sof_filter_disarm(hsotg);
+
 	/* Set status flags for the hub driver */
 	hsotg->flags.b.port_connect_status_change = 1;
 	hsotg->flags.b.port_connect_status = 0;
@@ -4304,6 +4306,8 @@ static void _dwc2_hcd_stop(struct usb_hcd *hcd)
 	unsigned long flags;
 	u32 hprt0;
 
+	dwc2_sof_filter_disarm(hsotg);
+
 	/* Turn off all host-specific interrupts */
 	dwc2_disable_host_interrupts(hsotg);
 
@@ -4334,6 +4338,7 @@ static int _dwc2_hcd_suspend(struct usb_hcd *hcd)
 	int ret = 0;
 
 	spin_lock_irqsave(&hsotg->lock, flags);
+	dwc2_sof_filter_disarm(hsotg);
 
 	if (dwc2_is_device_mode(hsotg))
 		goto unlock;
@@ -5494,6 +5499,8 @@ int dwc2_host_enter_hibernation(struct dwc2_hsotg *hsotg)
 	u32 gusbcfg;
 	u32 gpwrdn;
 
+	dwc2_sof_filter_disarm(hsotg);
+
 	dev_dbg(hsotg->dev, "Preparing host for hibernation\n");
 	ret = dwc2_backup_global_registers(hsotg);
 	if (ret) {
@@ -5745,6 +5752,8 @@ int dwc2_host_enter_partial_power_down(struct dwc2_hsotg *hsotg)
 	u32 hprt0;
 	int ret = 0;
 
+	dwc2_sof_filter_disarm(hsotg);
+
 	dev_dbg(hsotg->dev, "Entering host partial power down started.\n");
 
 	/* Put this port in suspend mode. */
@@ -5869,6 +5878,8 @@ int dwc2_host_exit_partial_power_down(struct dwc2_hsotg *hsotg,
 void dwc2_host_enter_clock_gating(struct dwc2_hsotg *hsotg)
 {
 	u32 hprt0;
+
+	dwc2_sof_filter_disarm(hsotg);
 
 	dev_dbg(hsotg->dev, "Entering host clock gating.\n");
 

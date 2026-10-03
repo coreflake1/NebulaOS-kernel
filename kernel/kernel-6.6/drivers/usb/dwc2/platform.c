@@ -27,6 +27,15 @@
 static const char dwc2_driver_name[] = "dwc2";
 
 /*
+ * NebulaOS: runtime switch for the hard-IRQ idle-SOF filter
+ * (CONFIG_USB_DWC2_SOF_FILTER); /sys/module/dwc2/parameters/sof_filter.
+ * Takes effect at the next interrupt.
+ */
+bool dwc2_sof_filter_param = true;
+module_param_named(sof_filter, dwc2_sof_filter_param, bool, 0644);
+MODULE_PARM_DESC(sof_filter, "filter idle SOF interrupts in hard-IRQ context");
+
+/*
  * Check the dr_mode against the module configuration and hardware
  * capabilities.
  *
@@ -518,6 +527,7 @@ static int dwc2_driver_probe(struct platform_device *dev)
 	dev_dbg(hsotg->dev, "registering common handler for irq%d\n",
 		hsotg->irq);
 #if IS_ENABLED(CONFIG_USB_DWC2_SOF_FILTER)
+	dwc2_sof_filter_disarm(hsotg);
 	/*
 	 * Not IRQF_SHARED: IRQ 9 is DWC2's alone, and a stray second requester
 	 * now fails loudly (-EBUSY) instead of silently defeating the filter.

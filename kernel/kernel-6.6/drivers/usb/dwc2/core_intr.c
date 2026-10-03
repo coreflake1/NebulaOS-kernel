@@ -932,7 +932,29 @@ irqreturn_t dwc2_handle_common_intr(int irq, void *dev)
  */
 irqreturn_t dwc2_hard_irq(int irq, void *dev)
 {
-	return IRQ_WAKE_THREAD;
+	struct dwc2_hsotg *hsotg = dev;
+	u32 f = READ_ONCE(hsotg->sof_filter);
+	u32 pend, now;
+
+	if (!(f & DWC2_SOFF_ARMED) || !READ_ONCE(dwc2_sof_filter_param))
+		return IRQ_WAKE_THREAD;		/* no MMIO while disarmed */
+	pend = dwc2_readl(hsotg, GINTSTS) & dwc2_readl(hsotg, GINTMSK);
+	if (pend != GINTSTS_SOF)		/* other work, or none: thread */
+		return IRQ_WAKE_THREAD;
+	if (!(f & DWC2_SOFF_NODUE)) {
+		now = (dwc2_readl(hsotg, HFNUM) & HFNUM_FRNUM_MASK) >>
+		      HFNUM_FRNUM_SHIFT;
+		if (dwc2_frame_num_le(f & DWC2_SOFF_FRAME, now))
+			return IRQ_WAKE_THREAD;	/* a periodic QH is due */
+	}
+	/*
+	 * Nothing for this SOF: the thread's dwc2_sof_intr() would move no QH
+	 * and select no transaction. Acknowledge it (w1c) so the level line
+	 * deasserts, and do not wake the thread.
+	 */
+	dwc2_writel(hsotg, GINTSTS_SOF, GINTSTS);
+	hsotg->sof_filtered++;
+	return IRQ_HANDLED;
 }
 
 irqreturn_t dwc2_thread_irq(int irq, void *dev)
@@ -945,6 +967,7 @@ irqreturn_t dwc2_thread_irq(int irq, void *dev)
 		local_irq_disable();
 	spin_lock(&hsotg->lock);
 	retval = dwc2_handle_irq_locked_all(hsotg);
+	dwc2_sof_filter_publish(hsotg);
 	spin_unlock(&hsotg->lock);
 	if (!IS_ENABLED(CONFIG_PREEMPT_RT))
 		local_irq_enable();
