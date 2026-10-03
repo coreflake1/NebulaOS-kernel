@@ -732,15 +732,11 @@ void dwc2_hcd_save_data_toggle(struct dwc2_hsotg *hsotg,
 
 /* HCD Core API */
 
-/**
- * dwc2_handle_hcd_intr() - Called on every hardware interrupt
- *
- * @hsotg: The DWC2 HCD
- *
- * Returns IRQ_HANDLED if interrupt is handled
- * Return IRQ_NONE if interrupt is not handled
+/*
+ * dwc2_handle_hcd_intr_locked() (core.h) services the host interrupts with
+ * hsotg->lock held; it is called from the single DWC2 interrupt handler in
+ * core_intr.c.
  */
-irqreturn_t dwc2_handle_hcd_intr(struct dwc2_hsotg *hsotg);
 
 /**
  * dwc2_hcd_stop() - Halts the DWC_otg host mode operation

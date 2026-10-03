@@ -831,18 +831,12 @@ static int dwc2_handle_gpwrdn_intr(struct dwc2_hsotg *hsotg)
  * - Resume / Remote Wakeup Detected Interrupt
  * - Suspend Interrupt
  */
-irqreturn_t dwc2_handle_common_intr(int irq, void *dev)
+static irqreturn_t dwc2_handle_common_intr_locked(struct dwc2_hsotg *hsotg)
 {
-	struct dwc2_hsotg *hsotg = dev;
 	u32 gintsts;
 	irqreturn_t retval = IRQ_NONE;
 
-	spin_lock(&hsotg->lock);
-
-	if (!dwc2_is_controller_alive(hsotg)) {
-		dev_warn(hsotg->dev, "Controller is dead\n");
-		goto out;
-	}
+	lockdep_assert_held(&hsotg->lock);
 
 	/* Reading current frame number value in device or host modes. */
 	if (dwc2_is_device_mode(hsotg))
@@ -859,8 +853,7 @@ irqreturn_t dwc2_handle_common_intr(int irq, void *dev)
 	/* In case of hibernated state gintsts must not work */
 	if (hsotg->hibernated) {
 		dwc2_handle_gpwrdn_intr(hsotg);
-		retval = IRQ_HANDLED;
-		goto out;
+		return IRQ_HANDLED;
 	}
 
 	if (gintsts & GINTSTS_MODEMIS)
@@ -893,7 +886,41 @@ irqreturn_t dwc2_handle_common_intr(int irq, void *dev)
 		}
 	}
 
-out:
+	return retval;
+}
+
+/*
+ * NebulaOS: the common and the host interrupts used to be two irqactions on
+ * the same line (this handler plus the USB core's usb_hcd_irq), i.e. two
+ * threads woken per interrupt on PREEMPT_RT, each taking hsotg->lock. One
+ * action now services both under a single lock acquisition. The host part
+ * is gated like usb_hcd_irq (not dead, hardware accessible) and still runs
+ * after a hibernated common part, as the separate action did.
+ */
+static irqreturn_t dwc2_handle_irq_locked_all(struct dwc2_hsotg *hsotg)
+{
+	struct usb_hcd *hcd;
+	irqreturn_t retval;
+
+	if (!dwc2_is_controller_alive(hsotg)) {
+		dev_warn_ratelimited(hsotg->dev, "Controller is dead\n");
+		return IRQ_HANDLED;
+	}
+
+	retval = dwc2_handle_common_intr_locked(hsotg);
+	hcd = dwc2_hsotg_to_hcd(hsotg);
+	if (hcd && !HCD_DEAD(hcd) && HCD_HW_ACCESSIBLE(hcd))
+		retval |= dwc2_handle_hcd_intr_locked(hsotg);
+	return retval;
+}
+
+irqreturn_t dwc2_handle_common_intr(int irq, void *dev)
+{
+	struct dwc2_hsotg *hsotg = dev;
+	irqreturn_t retval;
+
+	spin_lock(&hsotg->lock);
+	retval = dwc2_handle_irq_locked_all(hsotg);
 	spin_unlock(&hsotg->lock);
 	return retval;
 }

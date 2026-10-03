@@ -4307,8 +4307,8 @@ static void _dwc2_hcd_stop(struct usb_hcd *hcd)
 	/* Turn off all host-specific interrupts */
 	dwc2_disable_host_interrupts(hsotg);
 
-	/* Wait for interrupt processing to finish */
-	synchronize_irq(hcd->irq);
+	/* Wait for interrupt processing to finish (the IRQ is the core's) */
+	synchronize_irq(hsotg->irq);
 
 	spin_lock_irqsave(&hsotg->lock, flags);
 	hprt0 = dwc2_read_hprt0(hsotg);
@@ -4894,20 +4894,6 @@ static void _dwc2_hcd_endpoint_reset(struct usb_hcd *hcd,
 }
 
 /*
- * Handles host mode interrupts for the DWC_otg controller. Returns IRQ_NONE if
- * there was no interrupt to handle. Returns IRQ_HANDLED if there was a valid
- * interrupt.
- *
- * This function is called by the USB core when an interrupt occurs
- */
-static irqreturn_t _dwc2_hcd_irq(struct usb_hcd *hcd)
-{
-	struct dwc2_hsotg *hsotg = dwc2_hcd_to_hsotg(hcd);
-
-	return dwc2_handle_hcd_intr(hsotg);
-}
-
-/*
  * Creates Status Change bitmap for the root hub and root port. The bitmap is
  * returned in buf. Bit 0 is the status change indicator for the root hub. Bit 1
  * is the status change indicator for the single root port. Returns 1 if either
@@ -5011,7 +4997,6 @@ static struct hc_driver dwc2_hc_driver = {
 	.product_desc = "DWC OTG Controller",
 	.hcd_priv_size = sizeof(struct wrapper_priv_data),
 
-	.irq = _dwc2_hcd_irq,
 	.flags = HCD_MEMORY | HCD_USB2 | HCD_BH,
 
 	.start = _dwc2_hcd_start,
@@ -5343,7 +5328,11 @@ int dwc2_hcd_init(struct dwc2_hsotg *hsotg)
 	 * allocates the DMA buffer pool, registers the USB bus, requests the
 	 * IRQ line, and calls hcd_start method.
 	 */
-	retval = usb_add_hcd(hcd, hsotg->irq, IRQF_SHARED);
+	/*
+	 * No separate HCD irqaction: the DWC2 core's single handler
+	 * (dwc2_handle_common_intr) services the host interrupts too.
+	 */
+	retval = usb_add_hcd(hcd, 0, 0);
 	if (retval < 0)
 		goto error4;
 

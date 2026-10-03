@@ -2199,27 +2199,18 @@ static void dwc2_hc_intr(struct dwc2_hsotg *hsotg)
 }
 
 /* This function handles interrupts for the HCD */
-irqreturn_t dwc2_handle_hcd_intr(struct dwc2_hsotg *hsotg)
+irqreturn_t dwc2_handle_hcd_intr_locked(struct dwc2_hsotg *hsotg)
 {
 	u32 gintsts, dbg_gintsts;
-	irqreturn_t retval = IRQ_HANDLED;
+	irqreturn_t retval = IRQ_NONE;
 
-	if (!dwc2_is_controller_alive(hsotg)) {
-		dev_warn(hsotg->dev, "Controller is dead\n");
-		return retval;
-	} else {
-		retval = IRQ_NONE;
-	}
-
-	spin_lock(&hsotg->lock);
+	lockdep_assert_held(&hsotg->lock);
 
 	/* Check if HOST Mode */
 	if (dwc2_is_host_mode(hsotg)) {
 		gintsts = dwc2_read_core_intr(hsotg);
-		if (!gintsts) {
-			spin_unlock(&hsotg->lock);
+		if (!gintsts)
 			return retval;
-		}
 
 		retval = IRQ_HANDLED;
 
@@ -2259,8 +2250,6 @@ irqreturn_t dwc2_handle_hcd_intr(struct dwc2_hsotg *hsotg)
 				 dwc2_readl(hsotg, GINTMSK));
 		}
 	}
-
-	spin_unlock(&hsotg->lock);
 
 	return retval;
 }

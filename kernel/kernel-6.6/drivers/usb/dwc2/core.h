@@ -1514,6 +1514,7 @@ static inline void dwc2_clear_fifo_map(struct dwc2_hsotg *hsotg) {}
 #if IS_ENABLED(CONFIG_USB_DWC2_HOST) || IS_ENABLED(CONFIG_USB_DWC2_DUAL_ROLE)
 int dwc2_hcd_get_frame_number(struct dwc2_hsotg *hsotg);
 int dwc2_hcd_get_future_frame_number(struct dwc2_hsotg *hsotg, int us);
+irqreturn_t dwc2_handle_hcd_intr_locked(struct dwc2_hsotg *hsotg);
 void dwc2_hcd_connect(struct dwc2_hsotg *hsotg);
 void dwc2_hcd_disconnect(struct dwc2_hsotg *hsotg, bool force);
 void dwc2_hcd_start(struct dwc2_hsotg *hsotg);
@@ -1536,6 +1537,8 @@ static inline void dwc2_host_schedule_phy_reset(struct dwc2_hsotg *hsotg)
 static inline bool dwc2_host_port_is_enable(struct dwc2_hsotg *hsotg)
 { return (dwc2_readl(hsotg, HPRT0) & HPRT0_ENA); }
 #else
+static inline irqreturn_t dwc2_handle_hcd_intr_locked(struct dwc2_hsotg *hsotg)
+{ return IRQ_NONE; }
 static inline int dwc2_hcd_get_frame_number(struct dwc2_hsotg *hsotg)
 { return 0; }
 static inline int dwc2_hcd_get_future_frame_number(struct dwc2_hsotg *hsotg,
