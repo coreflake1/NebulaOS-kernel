@@ -760,7 +760,7 @@ static void nblc_converge_gpc0_safe_on_locked(struct nblc *n, const char *reason
 
 		pwm_get_state(n->pwm, &st);
 		st.enabled = false;
-		ret = pwm_apply_state(n->pwm, &st);
+		ret = pwm_apply_might_sleep(n->pwm, &st);
 		if (ret)
 			dev_err(n->dev, "converge: failed to disable PWM channel 0: %d\n", ret);
 		pwm_put(n->pwm);
@@ -1113,9 +1113,9 @@ static int nblc_enter_pwm_active_locked(struct nblc *n, unsigned int duty_pct)
 	st.polarity = PWM_POLARITY_NORMAL;
 	st.enabled = true;
 	st.usage_power = false;
-	ret = pwm_apply_state(n->pwm, &st);
+	ret = pwm_apply_might_sleep(n->pwm, &st);
 	if (ret) {
-		dev_err(n->dev, "enter-pwm-active: pwm_apply_state(%u%%) failed: %d\n",
+		dev_err(n->dev, "enter-pwm-active: pwm_apply_might_sleep(%u%%) failed: %d\n",
 			duty_pct, ret);
 		goto unwind;
 	}
