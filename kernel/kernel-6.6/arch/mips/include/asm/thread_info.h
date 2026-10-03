@@ -107,7 +107,6 @@ static inline struct thread_info *current_thread_info(void)
  * - pending work-to-be-done flags are in LSW
  * - other flags in MSW
  */
-#define TIF_ARCH_RESCHED_LAZY   0   /* Lazy rescheduling */
 #define TIF_SIGPENDING      1   /* signal pending */
 #define TIF_NEED_RESCHED    2   /* rescheduling necessary */
 #define TIF_SYSCALL_AUDIT   3   /* syscall auditing active */
@@ -132,7 +131,6 @@ static inline struct thread_info *current_thread_info(void)
 #define TIF_MSA_CTX_LIVE    30  /* MSA context must be preserved */
 #define TIF_SYSCALL_TRACE   31  /* syscall trace active */
 
-#define _TIF_ARCH_RESCHED_LAZY  (1 << TIF_ARCH_RESCHED_LAZY)
 #define _TIF_SYSCALL_TRACE  (1<<TIF_SYSCALL_TRACE)
 #define _TIF_SIGPENDING     (1<<TIF_SIGPENDING)
 #define _TIF_NEED_RESCHED   (1<<TIF_NEED_RESCHED)
