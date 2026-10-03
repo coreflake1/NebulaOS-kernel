@@ -39,10 +39,6 @@
 / {
 	compatible = "ingenic,halley5", "ingenic,x2000";
 
-	/*chosen {
-		bootargs = "console=ttyS1,115200 mem=128M@0x0 ip=off init=/linuxrc ubi.mtd=3 root=ubi0:rootfs ubi.mtd=4 rootfstype=ubifs rw";
-	};*/
-
 	reserved-memory {
 		#address-cells = <1>;
 		#size-cells = <1>;
