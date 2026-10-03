@@ -490,6 +490,13 @@ asmlinkage void do_be(struct pt_regs *regs)
 		goto out;
 
 	die_if_kernel("Oops", regs);
+	/*
+	 * User mode only from here. The ibe/dbe handlers enter with interrupts
+	 * disabled (genex.S "cli"); force_sig() takes sighand->siglock, a
+	 * sleeping lock on PREEMPT_RT. Enable interrupts as the "sti" handlers
+	 * do; the return path disables them again (resume_userspace).
+	 */
+	local_irq_enable();
 	force_sig(SIGBUS);
 
 out:
