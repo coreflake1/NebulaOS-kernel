@@ -932,7 +932,9 @@
 };
 
 &otg {
-	dr_mode = "otg";
+	/* host-only product (NebulaOS DWC2 workstream, B1): the port only
+	 * ever drives the camera hub and USB storage; no gadget/OTG role. */
+	dr_mode = "host";
 	device-using-dma = <1>;
 	status = "okay";
 };
