@@ -137,6 +137,25 @@ config GENERIC_IRQ_DEBUGFS
 
 	  If you don't know what to do here, say N.
 
+config NEBULAOS_IRQ_THREAD_PRIO
+	string "SCHED_FIFO priorities of IRQ threads, by action name"
+	depends on IRQ_FORCED_THREADING
+	default ""
+	help
+	  NebulaOS: the SCHED_FIFO priority each IRQ thread gets when it is
+	  created (irq_thread()), instead of the fixed MAX_RT_PRIO/2. Applied at
+	  creation, so a thread that is re-created whenever its device opens
+	  (a UART) keeps its priority without a userspace supervisor.
+
+	  Grammar: name=prio[,name=prio...], prio 1..98. "name" is the
+	  irqaction name (the untruncated part after "irq/N-" in the thread
+	  name). A key starting with "s-" applies to the secondary thread of a
+	  forced-threaded action, other keys to primary threads. A trailing
+	  "*" makes a key a prefix match. A lone "*" is the default for every
+	  thread not matched by an explicit key, wherever it appears. Empty or
+	  no match without "*": MAX_RT_PRIO/2 (upstream behaviour).
+	  Overridable at boot with irq_thread_prio=.
+
 endmenu
 
 config GENERIC_IRQ_MULTI_HANDLER

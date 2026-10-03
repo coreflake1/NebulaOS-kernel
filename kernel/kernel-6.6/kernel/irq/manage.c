@@ -1295,6 +1295,83 @@ static void wake_up_and_wait_for_irq_thread_ready(struct irq_desc *desc,
 /*
  * Interrupt handler thread
  */
+#ifdef CONFIG_NEBULAOS_IRQ_THREAD_PRIO
+/*
+ * NebulaOS: per-name SCHED_FIFO priority for IRQ threads, applied when the
+ * thread is created. See CONFIG_NEBULAOS_IRQ_THREAD_PRIO for the grammar.
+ */
+static char *irq_thread_prio_tbl = CONFIG_NEBULAOS_IRQ_THREAD_PRIO;
+core_param(irq_thread_prio, irq_thread_prio_tbl, charp, 0444);
+
+static int irq_thread_prio_lookup(const char *name, bool secondary)
+{
+	const char *p = irq_thread_prio_tbl;
+	int dflt = -1;
+
+	if (!name)
+		name = "";
+	while (p && *p) {
+		const char *end = strchrnul(p, ',');
+		const char *eq = memchr(p, '=', end - p);
+		const char *k = p;
+		size_t klen, vlen;
+		char vbuf[4];
+		bool ksec;
+		int prio;
+
+		p = *end ? end + 1 : end;
+		if (!eq)
+			continue;
+		klen = eq - k;
+		vlen = end - eq - 1;
+		if (!klen || !vlen || vlen >= sizeof(vbuf))
+			goto bad;
+		memcpy(vbuf, eq + 1, vlen);
+		vbuf[vlen] = '\0';
+		if (kstrtoint(vbuf, 10, &prio) || prio < 1 || prio > MAX_RT_PRIO - 2)
+			goto bad;
+		if (klen == 1 && k[0] == '*') {
+			if (dflt < 0)
+				dflt = prio;
+			continue;
+		}
+		ksec = klen > 2 && !strncmp(k, "s-", 2);
+		if (ksec != secondary)
+			continue;
+		if (ksec) {
+			k += 2;
+			klen -= 2;
+		}
+		if (k[klen - 1] == '*') {
+			if (!strncmp(name, k, klen - 1))
+				return prio;
+		} else if (strlen(name) == klen && !strncmp(name, k, klen)) {
+			return prio;
+		}
+		continue;
+bad:
+		pr_warn_once("irq_thread_prio: ignoring malformed entry in \"%s\"\n",
+			     irq_thread_prio_tbl);
+	}
+	return dflt >= 0 ? dflt : MAX_RT_PRIO / 2;
+}
+
+static void irq_thread_set_prio(struct irqaction *action)
+{
+	struct sched_param sp = {
+		.sched_priority = irq_thread_prio_lookup(action->name,
+				action->handler == irq_forced_secondary_handler),
+	};
+
+	sched_setscheduler_nocheck(current, SCHED_FIFO, &sp);
+}
+#else
+static void irq_thread_set_prio(struct irqaction *action)
+{
+	sched_set_fifo(current);
+}
+#endif
+
 static int irq_thread(void *data)
 {
 	struct callback_head on_exit_work;
@@ -1305,7 +1382,7 @@ static int irq_thread(void *data)
 
 	irq_thread_set_ready(desc, action);
 
-	sched_set_fifo(current);
+	irq_thread_set_prio(action);
 
 	if (force_irqthreads() && test_bit(IRQTF_FORCED_THREAD,
 					   &action->thread_flags))
