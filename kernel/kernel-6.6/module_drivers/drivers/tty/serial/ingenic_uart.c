@@ -691,7 +691,7 @@ static inline void receive_chars(unsigned long data)
 			}
 		}
 #ifdef CONFIG_SERIAL_INGENIC_MAGIC_SYSRQ
-		if (uart_handle_sysrq_char(&up->port, ch)) {
+		if (uart_prepare_sysrq_char(&up->port, ch)) {
 			goto ignore_char;
 		}
 #endif
@@ -776,6 +776,7 @@ static inline void check_modem_status(struct uart_ingenic_port *up)
 static inline irqreturn_t serial_ingenic_irq(int irq, void *dev_id)
 {
 	struct uart_ingenic_port *up = dev_id;
+	unsigned long flags;
 	unsigned int iir, lsr;
 	iir = serial_in(up, UART_IIR);
 	lsr = serial_in(up, UART_LSR);
@@ -795,6 +796,15 @@ static inline irqreturn_t serial_ingenic_irq(int irq, void *dev_id)
 
 		serial_out(up, UART_IER, UART_IER_RLSI | UART_IER_RETOIE);  /* enable_irq */
 	} else {
+		/*
+		 * Serialize with serial_core (start_tx/stop_tx/set_termios/
+		 * flush run under the port lock) as 8250 does: without it a
+		 * stop_tx here can race a start_tx and strand queued bytes, and
+		 * uart_handle_cts_change() requires the lock. Only the PIO
+		 * branch: the DMA receive path takes the lock itself. A sysrq
+		 * character is handled after the unlock.
+		 */
+		uart_port_lock_irqsave(&up->port, &flags);
 		if (lsr & UART_LSR_DR) {
 			receive_chars((unsigned long)up);
 		}
@@ -802,6 +812,7 @@ static inline irqreturn_t serial_ingenic_irq(int irq, void *dev_id)
 		if (lsr & UART_LSR_THRE) {
 			transmit_chars(up);
 		}
+		uart_unlock_and_check_sysrq_irqrestore(&up->port, flags);
 	}
 	return IRQ_HANDLED;
 }
