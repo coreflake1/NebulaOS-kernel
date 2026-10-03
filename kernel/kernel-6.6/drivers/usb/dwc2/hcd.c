@@ -54,7 +54,13 @@ static void dwc2_enable_common_interrupts(struct dwc2_hsotg *hsotg)
 
 	if (!hsotg->params.host_dma)
 		intmsk |= GINTSTS_RXFLVL;
-	if (!hsotg->params.external_id_pin_ctl)
+	/*
+	 * host-only: the role is forced (FORCEHOSTMODE), so an ID edge must not
+	 * reach dwc2_conn_id_status_change(), which drops VBUS and waits for a
+	 * device mode the core can no longer enter.
+	 */
+	if (!hsotg->params.external_id_pin_ctl &&
+	    hsotg->dr_mode != USB_DR_MODE_HOST)
 		intmsk |= GINTSTS_CONIDSTSCHNG;
 
 	intmsk |= GINTSTS_WKUPINT | GINTSTS_USBSUSP |
