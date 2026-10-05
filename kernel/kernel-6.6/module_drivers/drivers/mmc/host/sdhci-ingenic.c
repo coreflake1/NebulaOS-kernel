@@ -318,16 +318,14 @@ static inline void ingenic_mmc_clk_onoff(struct sdhci_ingenic *ingenic_ing, unsi
  * only changed words with a millisecond timestamp - same format/offsets as
  * the stock capture, for a direct diff.
  *
- * Gated behind msc1_trace (default off) so this doesn't spam production
- * boots: with it off, the poll loop still runs (cheap - one bounded 2s
- * window, only on manual insert) but stays silent unless SDHCI_RESPONSE_0
- * (offset 0x10) - the one register that actually distinguishes "chip
- * answered" from "chip never answered" - changes, which is the single
- * signal worth surfacing unconditionally. Full per-register logging needs
- * msc1_trace=1. Blocking is fine here: this runs synchronously from
- * openke_wifi_manual_insert()'s late_initcall context, not from an
- * interrupt or atomic path. Not permanent - remove once WiFi works
- * reliably. */
+ * Gated behind msc1_trace (default off). NebulaOS BOOT-06: the whole 2 s
+ * window now only runs with msc1_trace=1. It ran synchronously from
+ * openke_wifi_manual_insert()'s late_initcall on every boot, so the kernel
+ * waited 2 s before mounting root while the card was already detected
+ * (~0.45 s after the trigger) and brcmfmac (built-in firmware) was up - the
+ * detection itself is mmc_detect_change()'s asynchronous rescan and is not
+ * affected. msc1_trace=1 still traces exactly as before, including the
+ * first SDHCI_RESPONSE_0 change. */
 static bool msc1_trace;
 module_param(msc1_trace, bool, 0644);
 MODULE_PARM_DESC(msc1_trace, "log every MSC1 SDHCI register change during manual insert (default: off, only report the first SDHCI_RESPONSE_0 change)");
@@ -524,7 +522,8 @@ int ingenic_mmc_manual_detect(int index, int on)
 		host->quirks |= SDHCI_QUIRK_BROKEN_CARD_DETECTION;
 		pr_info("openke: WIFI_SEQ: triggering manual detection\n");
 		mmc_detect_change(sdhci_ing->host->mmc, 0);
-		openke_msc1_trace(host);
+		if (msc1_trace)
+			openke_msc1_trace(host);
 	} else {
 		dev_err(&sdhci_ing->pdev->dev, "card remove manually\n");
 		clear_bit(INGENIC_MMC_CARD_PRESENT, &sdhci_ing->flags);
