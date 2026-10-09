@@ -507,6 +507,8 @@
 #include <linux/build_bug.h>
 #include <linux/moduleparam.h>
 #include <linux/stringify.h>
+#include <linux/backlight.h>
+#include <linux/fb.h>
 
 #define NBLC_NAME				"nebulaos_backlight_final"
 
@@ -699,6 +701,11 @@ struct nblc {
 	char			last_restore_reason[40];
 
 	struct dentry		*debugfs_dir;
+
+	/* Standard backlight class device (Phase 15) - see "STANDARD
+	 * BACKLIGHT INTERFACE" above nblc_status_dump(). NULL if registration
+	 * failed (debugfs stays available either way). */
+	struct backlight_device	*bl;
 };
 
 static const char *nblc_state_name(enum nblc_state s)
@@ -1517,6 +1524,200 @@ static int nblc_cmd_pc22_test(struct nblc *n, int level)
 	return 0;
 }
 
+/*
+ * STANDARD BACKLIGHT INTERFACE (Phase 15, NebulaOS GUI/service readiness,
+ * 2026-10-09).
+ *
+ * /sys/class/backlight/nebulaos_backlight - the stable runtime interface
+ * userspace uses; debugfs above stays for diagnostics/qualification only.
+ *
+ *   max_brightness  4
+ *   brightness      0 = off  (the "sleep" mechanism: GPC0 held low)
+ *                   1 = 25%, 2 = 50%, 3 = 75%  (PWM, held: the pwm-active +
+ *                       commit-pwm mechanism)
+ *                   4 = full (safe-on: GPC0 driven high, readback verified)
+ *   bl_power        anything but FB_BLANK_UNBLANK = off (level 0)
+ *   actual_brightness  derived from the state machine, never cached
+ *
+ * Rules, all inherited rather than re-implemented:
+ *   - Registering the device touches no hardware: the controller stays in
+ *     boot-preserve until userspace writes a value, exactly as before.
+ *   - Every transition goes through the command functions above, so the
+ *     same watchdog arming, readback verification and safe-on convergence
+ *     apply; any failure leaves the backlight in safe-on (lit) or reports
+ *     the existing fault state - never dark by accident.
+ *   - A bounded debugfs diagnostic in flight makes a write fail with
+ *     -EBUSY instead of interleaving with it.
+ *   - One change versus the command interface: PWM level to PWM level is
+ *     changed in place (same claimed channel, new duty) instead of passing
+ *     through safe-on, so there is no full-brightness flash between two
+ *     dimmed levels. A failed in-place change converges to safe-on.
+ *   - check_fb returns 0: the backlight core's framebuffer-blank notifier
+ *     never acts on this device, so FBIOBLANK from the UI cannot switch
+ *     the backlight behind userspace's back.
+ *   - Writes are serialised by the backlight core's update_lock; each
+ *     command function additionally takes n->lock.
+ */
+#define NBLC_BL_NAME		"nebulaos_backlight"
+#define NBLC_BL_MAX		4
+
+static unsigned int nblc_bl_level_duty(int level)
+{
+	switch (level) {
+	case 1: return 25;
+	case 2: return 50;
+	case 3: return 75;
+	default: return 0;
+	}
+}
+
+static int nblc_bl_duty_level(unsigned int duty_pct)
+{
+	switch (duty_pct) {
+	case 25: return 1;
+	case 50: return 2;
+	case 75: return 3;
+	default: return -EIO;
+	}
+}
+
+/* PWM-committed -> PWM-committed at another fixed duty, in place. Returns
+ * -EAGAIN (nothing touched) when the controller is not in that state, so
+ * the caller takes the full safe-on -> pwm-active -> commit-pwm path. */
+static int nblc_change_committed_duty(struct nblc *n, unsigned int duty_pct)
+{
+	struct pwm_state st;
+	int ret;
+
+	mutex_lock(&n->lock);
+	if (n->state != NBLC_STATE_PWM_COMMITTED || n->active_op != NBLC_OP_NONE ||
+	    !n->pwm) {
+		mutex_unlock(&n->lock);
+		return -EAGAIN;
+	}
+	pwm_get_state(n->pwm, &st);
+	st.period = NBLC_PWM_PERIOD_NS;
+	st.duty_cycle = (u64)NBLC_PWM_PERIOD_NS * duty_pct / 100;
+	st.polarity = PWM_POLARITY_NORMAL;
+	st.enabled = true;
+	ret = pwm_apply_might_sleep(n->pwm, &st);
+	if (ret) {
+		n->op_failure_count++;
+		dev_err(n->dev, "backlight: in-place duty change to %u%% failed: %d - "
+			"converging to safe-on\n", duty_pct, ret);
+		nblc_converge_gpc0_safe_on_locked(n, "duty-change-failed");
+	} else {
+		n->pwm_duty_pct = duty_pct;
+		n->committed_since = jiffies;
+	}
+	mutex_unlock(&n->lock);
+	return ret;
+}
+
+static int nblc_bl_update_status(struct backlight_device *bd)
+{
+	struct nblc *n = bl_get_data(bd);
+	int level = backlight_is_blank(bd) ? 0 : bd->props.brightness;
+	enum nblc_state st;
+	unsigned int duty, target;
+	bool busy;
+	int ret;
+
+	if (level < 0 || level > NBLC_BL_MAX)
+		return -EINVAL;
+
+	mutex_lock(&n->lock);
+	st = n->state;
+	duty = n->pwm_duty_pct;
+	busy = n->active_op != NBLC_OP_NONE;
+	mutex_unlock(&n->lock);
+	if (busy)
+		return -EBUSY;
+
+	if (level == 0) {
+		if (st == NBLC_STATE_ASLEEP)
+			return 0;
+		if (st != NBLC_STATE_SAFE_ON && st != NBLC_STATE_PWM_COMMITTED) {
+			ret = nblc_cmd_enter_safe_on(n);
+			if (ret)
+				return ret;
+		}
+		return nblc_cmd_sleep(n);
+	}
+
+	if (st == NBLC_STATE_ASLEEP) {
+		ret = nblc_cmd_wake(n);
+		if (ret)
+			return ret;
+		mutex_lock(&n->lock);
+		st = n->state;
+		duty = n->pwm_duty_pct;
+		mutex_unlock(&n->lock);
+	}
+
+	if (level == NBLC_BL_MAX)
+		return st == NBLC_STATE_SAFE_ON ? 0 : nblc_cmd_enter_safe_on(n);
+
+	target = nblc_bl_level_duty(level);
+	if (st == NBLC_STATE_PWM_COMMITTED) {
+		if (duty == target)
+			return 0;
+		ret = nblc_change_committed_duty(n, target);
+		if (ret != -EAGAIN)
+			return ret;
+		mutex_lock(&n->lock);
+		st = n->state;
+		mutex_unlock(&n->lock);
+	}
+	if (st != NBLC_STATE_SAFE_ON) {
+		ret = nblc_cmd_enter_safe_on(n);
+		if (ret)
+			return ret;
+	}
+	ret = nblc_cmd_pwm_active(n, target);
+	if (ret)
+		return ret;
+	return nblc_cmd_commit_pwm(n);
+}
+
+static int nblc_bl_get_brightness(struct backlight_device *bd)
+{
+	struct nblc *n = bl_get_data(bd);
+	int level;
+
+	mutex_lock(&n->lock);
+	switch (n->state) {
+	case NBLC_STATE_BOOT_PRESERVE:
+	case NBLC_STATE_SAFE_ON:
+		level = NBLC_BL_MAX;
+		break;
+	case NBLC_STATE_PWM_ACTIVE:
+	case NBLC_STATE_PWM_COMMITTED:
+		level = nblc_bl_duty_level(n->pwm_duty_pct);
+		break;
+	case NBLC_STATE_ASLEEP:
+	case NBLC_STATE_SAFE_OFF_TEST:
+		level = 0;
+		break;
+	default:
+		level = -EIO;	/* fault: hardware state indeterminate */
+		break;
+	}
+	mutex_unlock(&n->lock);
+	return level;
+}
+
+static int nblc_bl_check_fb(struct backlight_device *bd, struct fb_info *info)
+{
+	return 0;
+}
+
+static const struct backlight_ops nblc_bl_ops = {
+	.update_status	= nblc_bl_update_status,
+	.get_brightness	= nblc_bl_get_brightness,
+	.check_fb	= nblc_bl_check_fb,
+};
+
 static void nblc_status_dump(struct nblc *n, struct seq_file *s)
 {
 	unsigned long remaining_ms = 0;
@@ -1585,6 +1786,7 @@ static void nblc_status_dump(struct nblc *n, struct seq_file *s)
 		P("op_failure_count: %u", n->op_failure_count);
 		P("last_restore_reason: %s", n->last_restore_reason);
 		P("safe_on_verified: %d", n->safe_on_verified);
+		P("sysfs_backlight: %s", n->bl ? NBLC_BL_NAME : "absent");
 #undef P
 	} else {
 		dev_info(n->dev,
@@ -1732,6 +1934,27 @@ static int nblc_probe(struct platform_device *pdev)
 		debugfs_create_file("status", 0444, n->debugfs_dir, n, &nblc_status_fops);
 	}
 
+	/* Standard backlight class device (Phase 15). Registration touches no
+	 * hardware - boot-preserve is unchanged until userspace writes. Not
+	 * devm: remove() must unregister it before converging, so no sysfs
+	 * write can re-claim GPC0 after teardown. A failure here is not fatal:
+	 * the debugfs interface stays. */
+	{
+		struct backlight_properties props;
+
+		memset(&props, 0, sizeof(props));
+		props.type = BACKLIGHT_RAW;
+		props.max_brightness = NBLC_BL_MAX;
+		props.brightness = NBLC_BL_MAX;
+		props.power = FB_BLANK_UNBLANK;
+		n->bl = backlight_device_register(NBLC_BL_NAME, dev, n, &nblc_bl_ops, &props);
+		if (IS_ERR(n->bl)) {
+			dev_warn(dev, "backlight class device registration failed: %ld\n",
+				 PTR_ERR(n->bl));
+			n->bl = NULL;
+		}
+	}
+
 	dev_info(dev, "backlight final controller ready - boot-preserve (zero hardware "
 		 "claimed, bootloader's own GPC0 configuration untouched); write "
 		 "\"enter-safe-on\" to .../command to begin\n");
@@ -1742,7 +1965,12 @@ static int nblc_remove(struct platform_device *pdev)
 {
 	struct nblc *n = platform_get_drvdata(pdev);
 
-	/* Remove debugfs first so no new command can race with teardown. */
+	/* Remove both userspace interfaces first so no new command can race
+	 * with teardown. */
+	if (n->bl) {
+		backlight_device_unregister(n->bl);
+		n->bl = NULL;
+	}
 	debugfs_remove_recursive(n->debugfs_dir);
 	n->debugfs_dir = NULL;
 

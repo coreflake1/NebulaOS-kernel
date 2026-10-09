@@ -53,6 +53,7 @@ config BCM_4345C5_RFKILL
 config NEBULAOS_BACKLIGHT_FINAL_CONTROLLER
 	bool "NebulaOS kernel-owned backlight final controller (GPC0/PWM0/PC22)"
 	depends on PWM
+	depends on BACKLIGHT_CLASS_DEVICE
 	default n
 	help
 	  Post-incident redesign (2026-08-02+) of the backlight hardware
